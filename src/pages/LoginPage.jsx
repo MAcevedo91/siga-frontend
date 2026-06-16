@@ -23,8 +23,8 @@ export default function LoginPage() {
     setServerError('')
     setIsLoading(true)
     try {
-      const { data } = await loginRequest(email, password)
-      login(data.token, data.user)
+      const { token, user } = await loginRequest(email, password)
+      login(token, user)
       navigate('/dashboard')
     } catch (err) {
       const status = err.response?.status
