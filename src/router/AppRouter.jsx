@@ -5,6 +5,8 @@ import LoginPage from '@/pages/LoginPage'
 import DashboardPage from '@/pages/DashboardPage'
 import UnauthorizedPage from '@/pages/UnauthorizedPage'
 import UsuariosPage from '@/pages/UsuariosPage'
+import EstudiantesPage from '@/pages/EstudiantesPage'
+import EstudiantePerfilPage from '@/pages/EstudiantePerfilPage'
 import { useAuth } from '@/store/useAuthStore'
 
 export default function AppRouter() {
@@ -28,6 +30,22 @@ export default function AppRouter() {
           <RoleRoute allowedRoles={['Administrador']}>
             <UsuariosPage />
           </RoleRoute>
+        }
+      />
+      <Route
+        path="/estudiantes"
+        element={
+          <PrivateRoute>
+            <EstudiantesPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/estudiantes/:id"
+        element={
+          <PrivateRoute>
+            <EstudiantePerfilPage />
+          </PrivateRoute>
         }
       />
       <Route
