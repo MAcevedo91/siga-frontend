@@ -10,6 +10,9 @@ import EstudiantePerfilPage from '@/pages/EstudiantePerfilPage'
 import IncidentesPage from '@/pages/IncidentesPage'
 import NuevoIncidentePage from '@/pages/NuevoIncidentePage'
 import IncidenteDetallePage from '@/pages/IncidenteDetallePage'
+import ProtocolosPage from '@/pages/ProtocolosPage'
+import NuevoProtocoloPage from '@/pages/NuevoProtocoloPage'
+import ProtocoloDetallePage from '@/pages/ProtocoloDetallePage'
 import { useAuth } from '@/store/useAuthStore'
 
 export default function AppRouter() {
@@ -73,6 +76,30 @@ export default function AppRouter() {
           <PrivateRoute>
             <IncidenteDetallePage />
           </PrivateRoute>
+        }
+      />
+      <Route
+        path="/protocolos"
+        element={
+          <RoleRoute allowedRoles={['Administrador', 'Coordinador']}>
+            <ProtocolosPage />
+          </RoleRoute>
+        }
+      />
+      <Route
+        path="/protocolos/nuevo"
+        element={
+          <RoleRoute allowedRoles={['Administrador', 'Coordinador']}>
+            <NuevoProtocoloPage />
+          </RoleRoute>
+        }
+      />
+      <Route
+        path="/protocolos/:id"
+        element={
+          <RoleRoute allowedRoles={['Administrador', 'Coordinador']}>
+            <ProtocoloDetallePage />
+          </RoleRoute>
         }
       />
       <Route
