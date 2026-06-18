@@ -1,25 +1,39 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getProtocolos } from '@/services/protocolosService'
+import { getProtocolos, getTiposProtocolo } from '@/services/protocolosService'
 
 export default function ProtocolosPage() {
   const navigate = useNavigate()
   const [protocolos, setProtocolos] = useState([])
+  const [tiposProtocolo, setTiposProtocolo] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [estadoFilter, setEstadoFilter] = useState('')
   const [tipoFilter, setTipoFilter] = useState('')
 
   useEffect(() => {
+    loadTipos()
+  }, [])
+
+  useEffect(() => {
     loadProtocolos()
   }, [estadoFilter, tipoFilter])
+
+  const loadTipos = async () => {
+    try {
+      const data = await getTiposProtocolo()
+      setTiposProtocolo(data)
+    } catch (err) {
+      console.error('Error al cargar tipos', err)
+    }
+  }
 
   const loadProtocolos = async () => {
     try {
       setLoading(true)
       const params = {}
       if (estadoFilter) params.estado = estadoFilter
-      if (tipoFilter) params.tipo = tipoFilter
+      if (tipoFilter) params.tipo_protocolo_id = tipoFilter
       const data = await getProtocolos(params)
       setProtocolos(data)
     } catch (err) {
@@ -118,16 +132,11 @@ export default function ProtocolosPage() {
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
               <option value="">Todos</option>
-              <option value="Vulneración de Derechos">Vulneración de Derechos</option>
-              <option value="Maltrato Infantil">Maltrato Infantil</option>
-              <option value="Abuso Sexual">Abuso Sexual</option>
-              <option value="Embarazo Adolescente">Embarazo Adolescente</option>
-              <option value="Accidente Escolar">Accidente Escolar</option>
-              <option value="Deserción Escolar">Deserción Escolar</option>
-              <option value="Ideación Suicida">Ideación Suicida</option>
-              <option value="Consumo de Sustancias">Consumo de Sustancias</option>
-              <option value="Violencia Intrafamiliar">Violencia Intrafamiliar</option>
-              <option value="Bullying">Bullying</option>
+              {tiposProtocolo.map((tipo) => (
+                <option key={tipo.id} value={tipo.id}>
+                  {tipo.nombre}
+                </option>
+              ))}
             </select>
           </div>
         </div>

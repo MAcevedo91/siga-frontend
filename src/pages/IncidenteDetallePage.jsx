@@ -167,9 +167,8 @@ export default function IncidenteDetallePage() {
                       onChange={(e) => setNuevoEstado(e.target.value)}
                       className="block flex-1 rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                     >
-                      <option value="Abierto">Abierto</option>
                       <option value="En Investigación">En Investigación</option>
-                      <option value="Resuelto">Resuelto</option>
+                      <option value="Derivado">Derivado</option>
                       <option value="Cerrado">Cerrado</option>
                     </select>
                     <button

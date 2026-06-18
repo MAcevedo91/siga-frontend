@@ -89,11 +89,11 @@ export default function NuevoIncidentePage() {
     setError(null)
     try {
       const payload = {
-        tipo_abordaje_id: data.tipo_abordaje_id,
+        tipo_abordaje_id: Number(data.tipo_abordaje_id),
         fecha: data.fecha,
         gravedad: data.gravedad,
         relato: data.relato,
-        medidas_adoptadas: data.medidas_adoptadas,
+        medidas: data.medidas_adoptadas,
         estudiantes: data.estudiantes.map((e) => ({
           estudiante_id: e.estudiante_id,
           es_victima: e.es_victima,

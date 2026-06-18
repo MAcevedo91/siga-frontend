@@ -27,7 +27,7 @@ export const getTiposAbordaje = async () => {
 
 export const buscarEstudiantes = async (query) => {
   const response = await api.get('/estudiantes', {
-    params: { nombre: query },
+    params: { search: query },
   })
   return response.data.data
 }

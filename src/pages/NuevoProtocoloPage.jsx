@@ -94,11 +94,11 @@ export default function NuevoProtocoloPage() {
     setError(null)
     try {
       const payload = {
-        tipo_protocolo_id: data.tipo_protocolo_id,
+        tipo_protocolo_id: Number(data.tipo_protocolo_id),
         estudiante_id: selectedEstudiante.id,
         incidente_id: data.incidente_id || null,
         fecha_apertura: data.fecha_apertura,
-        observaciones_iniciales: data.observaciones_iniciales,
+        observaciones: data.observaciones_iniciales,
       }
 
       await createProtocolo(payload)

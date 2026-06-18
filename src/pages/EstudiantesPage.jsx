@@ -8,6 +8,7 @@ import { useAuth } from '@/store/useAuthStore'
 export default function EstudiantesPage() {
   const [estudiantes, setEstudiantes] = useState([])
   const [loading, setLoading] = useState(true)
+  const [initialLoad, setInitialLoad] = useState(true)
   const [error, setError] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [cursoFilter, setCursoFilter] = useState('')
@@ -35,6 +36,7 @@ export default function EstudiantesPage() {
       setError('Error al cargar estudiantes')
     } finally {
       setLoading(false)
+      setInitialLoad(false)
     }
   }
 
@@ -47,7 +49,7 @@ export default function EstudiantesPage() {
     navigate(`/estudiantes/${id}`)
   }
 
-  if (loading && estudiantes.length === 0) {
+  if (initialLoad) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
@@ -139,7 +141,7 @@ export default function EstudiantesPage() {
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-lg bg-white shadow">
+        <div className={`overflow-hidden rounded-lg bg-white shadow transition-opacity duration-200 ${loading ? 'opacity-50' : 'opacity-100'}`}>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
