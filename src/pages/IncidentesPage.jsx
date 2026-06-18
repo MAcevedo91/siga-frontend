@@ -14,7 +14,7 @@ export default function IncidentesPage() {
   const [fechaHasta, setFechaHasta] = useState('')
   const { user } = useAuth()
 
-  const canCreate = ['Administrador', 'Coordinador', 'Inspector'].includes(user?.rol)
+  const canCreate = ['Administrador', 'Equipo de Formación', 'Inspector'].includes(user?.rol)
 
   useEffect(() => {
     loadIncidentes()

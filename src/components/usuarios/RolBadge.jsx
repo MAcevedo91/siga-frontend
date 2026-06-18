@@ -1,6 +1,7 @@
 const ROL_COLORS = {
   Administrador: 'bg-purple-100 text-purple-800',
-  Coordinador: 'bg-blue-100 text-blue-800',
+  'Equipo de Formación': 'bg-blue-100 text-blue-800',
+  Directivo: 'bg-indigo-100 text-indigo-800',
   Inspector: 'bg-green-100 text-green-800',
   Docente: 'bg-yellow-100 text-yellow-800',
 }

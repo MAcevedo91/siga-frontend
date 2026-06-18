@@ -17,7 +17,7 @@ export default function EstudiantesPage() {
 
   const debouncedSearch = useDebounce(searchTerm, 300)
 
-  const canWrite = ['Administrador', 'Coordinador'].includes(user?.rol)
+  const canWrite = ['Administrador', 'Equipo de Formación'].includes(user?.rol)
 
   useEffect(() => {
     loadEstudiantes()

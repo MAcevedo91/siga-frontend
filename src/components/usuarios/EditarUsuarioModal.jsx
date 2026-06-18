@@ -136,7 +136,8 @@ export default function EditarUsuarioModal({ isOpen, onClose, onSuccess, usuario
             >
               <option value="">Seleccionar rol</option>
               <option value="Administrador">Administrador</option>
-              <option value="Coordinador">Coordinador</option>
+              <option value="Equipo de Formación">Equipo de Formación</option>
+              <option value="Directivo">Directivo</option>
               <option value="Inspector">Inspector</option>
               <option value="Docente">Docente</option>
             </select>

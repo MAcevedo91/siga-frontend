@@ -65,7 +65,7 @@ export default function AppRouter() {
       <Route
         path="/incidentes/nuevo"
         element={
-          <RoleRoute allowedRoles={['Administrador', 'Coordinador', 'Inspector']}>
+          <RoleRoute allowedRoles={['Administrador', 'Equipo de Formación', 'Inspector']}>
             <NuevoIncidentePage />
           </RoleRoute>
         }
@@ -81,7 +81,7 @@ export default function AppRouter() {
       <Route
         path="/protocolos"
         element={
-          <RoleRoute allowedRoles={['Administrador', 'Coordinador']}>
+          <RoleRoute allowedRoles={['Administrador', 'Equipo de Formación']}>
             <ProtocolosPage />
           </RoleRoute>
         }
@@ -89,7 +89,7 @@ export default function AppRouter() {
       <Route
         path="/protocolos/nuevo"
         element={
-          <RoleRoute allowedRoles={['Administrador', 'Coordinador']}>
+          <RoleRoute allowedRoles={['Administrador', 'Equipo de Formación']}>
             <NuevoProtocoloPage />
           </RoleRoute>
         }
@@ -97,7 +97,7 @@ export default function AppRouter() {
       <Route
         path="/protocolos/:id"
         element={
-          <RoleRoute allowedRoles={['Administrador', 'Coordinador']}>
+          <RoleRoute allowedRoles={['Administrador', 'Equipo de Formación']}>
             <ProtocoloDetallePage />
           </RoleRoute>
         }

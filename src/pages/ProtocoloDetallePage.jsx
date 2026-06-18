@@ -16,7 +16,7 @@ export default function ProtocoloDetallePage() {
   const [updatingEstado, setUpdatingEstado] = useState(false)
   const { user } = useAuth()
 
-  const canEdit = ['Administrador', 'Coordinador'].includes(user?.rol)
+  const canEdit = ['Administrador', 'Equipo de Formación'].includes(user?.rol)
 
   useEffect(() => {
     loadProtocolo()

@@ -1,27 +1,27 @@
 import api from './api'
 
 export const getEstudiantes = async (params = {}) => {
-  const response = await api.get('/api/v1/estudiantes', { params })
+  const response = await api.get('/estudiantes', { params })
   return response.data.data
 }
 
 export const getEstudianteById = async (id) => {
-  const response = await api.get(`/api/v1/estudiantes/${id}`)
+  const response = await api.get(`/estudiantes/${id}/perfil`)
   return response.data.data
 }
 
 export const createEstudiante = async (estudianteData) => {
-  const response = await api.post('/api/v1/estudiantes', estudianteData)
+  const response = await api.post('/estudiantes', estudianteData)
   return response.data.data
 }
 
 export const updateEstudiante = async (id, estudianteData) => {
-  const response = await api.put(`/api/v1/estudiantes/${id}`, estudianteData)
+  const response = await api.put(`/estudiantes/${id}`, estudianteData)
   return response.data.data
 }
 
 export const importarEstudiantes = async (formData) => {
-  const response = await api.post('/api/v1/estudiantes/importar', formData, {
+  const response = await api.post('/estudiantes/importar', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
