@@ -7,6 +7,9 @@ import UnauthorizedPage from '@/pages/UnauthorizedPage'
 import UsuariosPage from '@/pages/UsuariosPage'
 import EstudiantesPage from '@/pages/EstudiantesPage'
 import EstudiantePerfilPage from '@/pages/EstudiantePerfilPage'
+import IncidentesPage from '@/pages/IncidentesPage'
+import NuevoIncidentePage from '@/pages/NuevoIncidentePage'
+import IncidenteDetallePage from '@/pages/IncidenteDetallePage'
 import { useAuth } from '@/store/useAuthStore'
 
 export default function AppRouter() {
@@ -45,6 +48,30 @@ export default function AppRouter() {
         element={
           <PrivateRoute>
             <EstudiantePerfilPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/incidentes"
+        element={
+          <PrivateRoute>
+            <IncidentesPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/incidentes/nuevo"
+        element={
+          <RoleRoute allowedRoles={['Administrador', 'Coordinador', 'Inspector']}>
+            <NuevoIncidentePage />
+          </RoleRoute>
+        }
+      />
+      <Route
+        path="/incidentes/:id"
+        element={
+          <PrivateRoute>
+            <IncidenteDetallePage />
           </PrivateRoute>
         }
       />
