@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getProtocolos, getTiposProtocolo } from '@/services/protocolosService'
+import DashboardLayout from '@/components/layout/DashboardLayout'
+import { ShieldAlert, Clock, CheckCircle, AlertTriangle, Calendar, User, FileText, Plus, Filter, X } from 'lucide-react'
 
 export default function ProtocolosPage() {
   const navigate = useNavigate()
@@ -83,8 +85,8 @@ export default function ProtocolosPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
-      <div className="mx-auto max-w-7xl">
+    <DashboardLayout>
+      <div className="p-6 max-w-7xl mx-auto">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Protocolos RICE</h1>
@@ -103,41 +105,80 @@ export default function ProtocolosPage() {
           </button>
         </div>
 
-        <div className="mb-6 grid gap-4 sm:grid-cols-2">
-          <div>
-            <label htmlFor="estado" className="block text-sm font-medium text-gray-700">
-              Estado
-            </label>
-            <select
-              id="estado"
-              value={estadoFilter}
-              onChange={(e) => setEstadoFilter(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            >
-              <option value="">Todos</option>
-              <option value="En Investigación">En Investigación</option>
-              <option value="Derivado">Derivado</option>
-              <option value="Cerrado">Cerrado</option>
-            </select>
+        <div className="mb-6 bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+          <div className="flex items-center gap-2 mb-4">
+            <Filter className="w-5 h-5 text-gray-500" />
+            <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Filtros</h3>
           </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wider">
+                Estado del Protocolo
+              </label>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setEstadoFilter('')}
+                  className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${
+                    estadoFilter === ''
+                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  Todos
+                </button>
+                <button
+                  onClick={() => setEstadoFilter('En Investigación')}
+                  className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${
+                    estadoFilter === 'En Investigación'
+                      ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md'
+                      : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+                  }`}
+                >
+                  <Clock className="w-3 h-3 inline mr-1" />
+                  En Investigación
+                </button>
+                <button
+                  onClick={() => setEstadoFilter('Derivado')}
+                  className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${
+                    estadoFilter === 'Derivado'
+                      ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md'
+                      : 'bg-purple-50 text-purple-700 hover:bg-purple-100'
+                  }`}
+                >
+                  <AlertTriangle className="w-3 h-3 inline mr-1" />
+                  Derivado
+                </button>
+                <button
+                  onClick={() => setEstadoFilter('Cerrado')}
+                  className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${
+                    estadoFilter === 'Cerrado'
+                      ? 'bg-gradient-to-r from-gray-600 to-slate-600 text-white shadow-md'
+                      : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <CheckCircle className="w-3 h-3 inline mr-1" />
+                  Cerrado
+                </button>
+              </div>
+            </div>
 
-          <div>
-            <label htmlFor="tipo" className="block text-sm font-medium text-gray-700">
-              Tipo de Protocolo
-            </label>
-            <select
-              id="tipo"
-              value={tipoFilter}
-              onChange={(e) => setTipoFilter(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            >
-              <option value="">Todos</option>
-              {tiposProtocolo.map((tipo) => (
-                <option key={tipo.id} value={tipo.id}>
-                  {tipo.nombre}
-                </option>
-              ))}
-            </select>
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wider">
+                Tipo de Protocolo
+              </label>
+              <select
+                value={tipoFilter}
+                onChange={(e) => setTipoFilter(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              >
+                <option value="">Todos los tipos</option>
+                {tiposProtocolo.map((tipo) => (
+                  <option key={tipo.id} value={tipo.id}>
+                    {tipo.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 
@@ -199,6 +240,6 @@ export default function ProtocolosPage() {
           </div>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   )
 }

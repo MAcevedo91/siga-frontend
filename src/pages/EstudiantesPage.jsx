@@ -4,6 +4,8 @@ import { getEstudiantes } from '@/services/estudiantesService'
 import { useDebounce } from '@/hooks/useDebounce'
 import ImportarEstudiantesModal from '@/components/estudiantes/ImportarEstudiantesModal'
 import { useAuth } from '@/store/useAuthStore'
+import DashboardLayout from '@/components/layout/DashboardLayout'
+import { Search, Upload, User } from 'lucide-react'
 
 export default function EstudiantesPage() {
   const [estudiantes, setEstudiantes] = useState([])
@@ -49,7 +51,26 @@ export default function EstudiantesPage() {
     navigate(`/estudiantes/${id}`)
   }
 
-  if (initialLoad) {
+  const getInitials = (nombre, apellido) => {
+    return `${nombre?.[0] || ''}${apellido?.[0] || ''}`.toUpperCase()
+  }
+
+  const getCursoColor = (curso) => {
+    const colors = [
+      'from-cyan-400 to-blue-500',
+      'from-blue-400 to-indigo-500',
+      'from-indigo-400 to-purple-500',
+      'from-purple-400 to-pink-500',
+      'from-pink-400 to-rose-500',
+      'from-rose-400 to-red-500',
+      'from-orange-400 to-amber-500',
+      'from-teal-400 to-emerald-500',
+    ]
+    const hash = (curso || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+    return colors[hash % colors.length]
+  }
+
+  if (loading && estudiantes.length === 0) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
@@ -80,8 +101,8 @@ export default function EstudiantesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
-      <div className="mx-auto max-w-7xl">
+    <DashboardLayout>
+      <div className="p-6 max-w-7xl mx-auto">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Estudiantes</h1>
@@ -196,13 +217,14 @@ export default function EstudiantesPage() {
         </div>
       </div>
 
-      {canWrite && (
-        <ImportarEstudiantesModal
-          isOpen={showImportModal}
-          onClose={() => setShowImportModal(false)}
-          onSuccess={handleImportSuccess}
-        />
-      )}
-    </div>
+        {canWrite && (
+          <ImportarEstudiantesModal
+            isOpen={showImportModal}
+            onClose={() => setShowImportModal(false)}
+            onSuccess={handleImportSuccess}
+          />
+        )}
+      </div>
+    </DashboardLayout>
   )
 }
