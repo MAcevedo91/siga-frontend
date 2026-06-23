@@ -3,7 +3,7 @@
 Stack: React 18 + Vite 5 + Tailwind CSS 3
 
 ## Instalación Local
-1. Clonar el repo: `git clone https://github.com/MAcevedo91/siga-frontend.git`
+1. Clonar el repo: `git clone https://github.com/MasterCapehart/siga-frontend.git`
 2. Instalar dependencias: `npm install`
 3. Copiar `.env.example` a `.env.local` y configurar la URL del backend.
 4. Levantar servidor: `npm run dev` → http://localhost:5173
