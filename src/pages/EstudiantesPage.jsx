@@ -224,7 +224,6 @@ export default function EstudiantesPage() {
             onSuccess={handleImportSuccess}
           />
         )}
-      </div>
     </DashboardLayout>
   )
 }

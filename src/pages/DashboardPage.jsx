@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/store/useAuthStore'
+import api from '@/services/api'
 import {
   LayoutDashboard,
   Users,
@@ -156,22 +157,34 @@ const KpiCard = ({ title, value, trend, icon: Icon, trendUp, colorClasses }) => 
   </div>
 )
 
-const BarChart = () => {
-  const data = [
-    { label: '5° Básico', value: 12, color: 'from-cyan-400 to-blue-500' },
-    { label: '6° Básico', value: 8, color: 'from-blue-400 to-indigo-500' },
-    { label: '7° Básico', value: 24, color: 'from-indigo-400 to-purple-500' },
-    { label: '8° Básico', value: 18, color: 'from-purple-400 to-pink-500' },
-    { label: '1° Medio', value: 15, color: 'from-pink-400 to-rose-500' },
-    { label: '2° Medio', value: 9, color: 'from-rose-400 to-red-500' },
-  ]
-  const max = Math.max(...data.map(d => d.value))
+const COLORS = [
+  'from-cyan-400 to-blue-500',
+  'from-blue-400 to-indigo-500',
+  'from-indigo-400 to-purple-500',
+  'from-purple-400 to-pink-500',
+  'from-pink-400 to-rose-500',
+  'from-rose-400 to-red-500',
+]
+
+const BarChart = ({ data = [] }) => {
+  const chartData = data.map((d, i) => ({
+    label: d.curso,
+    value: d.total,
+    color: COLORS[i % COLORS.length],
+  }))
+  const max = Math.max(...chartData.map(d => d.value), 1)
+
+  if (chartData.length === 0) return (
+    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-md flex items-center justify-center h-full">
+      <p className="text-gray-400 text-sm">Sin datos de incidentes por curso</p>
+    </div>
+  )
 
   return (
     <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-md flex flex-col h-full hover:shadow-xl transition-shadow">
       <h3 className="text-lg font-bold text-gray-900 mb-6">Frecuencia de Incidentes por Nivel</h3>
       <div className="flex-1 flex items-end justify-between gap-3 mt-auto pb-2">
-        {data.map((item, idx) => (
+        {chartData.map((item, idx) => (
           <div key={idx} className="flex flex-col items-center flex-1 group">
             <div className="relative w-full flex justify-center">
               <span className="absolute -top-8 text-sm font-bold text-gray-900 opacity-0 group-hover:opacity-100 transition-opacity bg-white px-2 py-1 rounded shadow-md">
@@ -192,28 +205,59 @@ const BarChart = () => {
   )
 }
 
-const DonutChart = () => {
+const GRAVEDAD_COLORS = { Leve: '#3b82f6', Grave: '#f59e0b', 'Gravísima': '#ef4444' }
+
+const DonutChart = ({ data = [] }) => {
+  const total = data.reduce((sum, d) => sum + d.cantidad, 0)
+  const circumference = 251.2
+  let offset = 0
+
   return (
     <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col h-full">
       <h3 className="text-base font-semibold text-gray-800 mb-6">Distribución por Gravedad</h3>
       <div className="flex-1 flex flex-col items-center justify-center">
-        <div className="relative w-40 h-40">
-          <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
-            <circle cx="50" cy="50" r="40" fill="transparent" stroke="#f3f4f6" strokeWidth="20" />
-            <circle cx="50" cy="50" r="40" fill="transparent" stroke="#3b82f6" strokeWidth="20" strokeDasharray="251.2" strokeDashoffset="113.04" />
-            <circle cx="50" cy="50" r="40" fill="transparent" stroke="#f59e0b" strokeWidth="20" strokeDasharray="251.2" strokeDashoffset="175.84" className="origin-center" style={{ transform: 'rotate(198deg)' }} />
-            <circle cx="50" cy="50" r="40" fill="transparent" stroke="#ef4444" strokeWidth="20" strokeDasharray="251.2" strokeDashoffset="213.52" className="origin-center" style={{ transform: 'rotate(306deg)' }} />
-          </svg>
-          <div className="absolute inset-0 flex items-center justify-center flex-col">
-            <span className="text-3xl font-bold text-gray-800">86</span>
-            <span className="text-xs text-gray-500">Casos Totales</span>
-          </div>
-        </div>
-        <div className="mt-6 flex justify-center gap-4 w-full flex-wrap">
-          <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-blue-500"></div><span className="text-xs text-gray-600">Leve (55%)</span></div>
-          <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-amber-500"></div><span className="text-xs text-gray-600">Grave (30%)</span></div>
-          <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-red-500"></div><span className="text-xs text-gray-600">Grav. (15%)</span></div>
-        </div>
+        {total === 0 ? (
+          <p className="text-gray-400 text-sm">Sin datos</p>
+        ) : (
+          <>
+            <div className="relative w-40 h-40">
+              <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
+                <circle cx="50" cy="50" r="40" fill="transparent" stroke="#f3f4f6" strokeWidth="20" />
+                {data.map((d, i) => {
+                  const pct = d.cantidad / total
+                  const dashArray = circumference
+                  const dashOffset = circumference * (1 - pct)
+                  const rotation = (offset / total) * 360
+                  offset += d.cantidad
+                  return (
+                    <circle
+                      key={i}
+                      cx="50" cy="50" r="40"
+                      fill="transparent"
+                      stroke={GRAVEDAD_COLORS[d.gravedad] || '#94a3b8'}
+                      strokeWidth="20"
+                      strokeDasharray={dashArray}
+                      strokeDashoffset={dashOffset}
+                      style={{ transform: `rotate(${rotation}deg)`, transformOrigin: 'center' }}
+                    />
+                  )
+                })}
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center flex-col">
+                <span className="text-3xl font-bold text-gray-800">{total}</span>
+                <span className="text-xs text-gray-500">Casos Totales</span>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-center gap-4 w-full flex-wrap">
+              {data.map((d, i) => (
+                <div key={i} className="flex items-center gap-1.5">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: GRAVEDAD_COLORS[d.gravedad] || '#94a3b8' }}></div>
+                  <span className="text-xs text-gray-600">{d.gravedad} ({d.porcentaje}%)</span>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   )
@@ -266,7 +310,28 @@ const RecentActivityList = () => {
 
 export default function DashboardPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [resumen, setResumen] = useState(null)
+  const [porCurso, setPorCurso] = useState([])
+  const [porGravedad, setPorGravedad] = useState([])
   const navigate = useNavigate()
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const [resumenRes, cursoRes, gravedadRes] = await Promise.all([
+          api.get('/dashboard/resumen'),
+          api.get('/dashboard/incidentes-por-curso'),
+          api.get('/dashboard/por-gravedad'),
+        ])
+        setResumen(resumenRes.data.data)
+        setPorCurso(cursoRes.data.data)
+        setPorGravedad(gravedadRes.data.data)
+      } catch (err) {
+        console.error('Error cargando dashboard:', err)
+      }
+    }
+    fetchDashboard()
+  }, [])
 
   return (
     <div className="flex h-screen bg-slate-50 font-sans overflow-hidden text-gray-900">
@@ -284,33 +349,33 @@ export default function DashboardPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
             <KpiCard
-              title="Incidentes Totales (Mes)"
-              value="86"
-              trend="+12%"
+              title="Incidentes Totales"
+              value={resumen ? String(resumen.total_incidentes) : '—'}
+              trend=""
               trendUp={true}
               icon={AlertTriangle}
               colorClasses="bg-gradient-to-br from-orange-400 to-amber-500 text-white"
             />
             <KpiCard
-              title="Protocolos RICE Activos"
-              value="8"
-              trend="-2"
-              trendUp={false}
+              title="Incidentes Graves"
+              value={resumen ? String(resumen.total_graves) : '—'}
+              trend=""
+              trendUp={true}
               icon={ShieldAlert}
               colorClasses="bg-gradient-to-br from-rose-500 to-purple-600 text-white"
             />
             <KpiCard
-              title="Entrevistas Apoderados"
-              value="42"
-              trend="+15%"
-              trendUp={true}
+              title="Protocolos RICE Activos"
+              value={resumen ? String(resumen.protocolos_activos) : '—'}
+              trend=""
+              trendUp={false}
               icon={Users}
               colorClasses="bg-gradient-to-br from-cyan-500 to-blue-600 text-white"
             />
             <KpiCard
-              title="Derivaciones Externas"
-              value="15"
-              trend="0%"
+              title="Estudiantes con Incidentes"
+              value={resumen ? String(resumen.estudiantes_con_incidentes) : '—'}
+              trend=""
               trendUp={false}
               icon={UserCheck}
               colorClasses="bg-gradient-to-br from-teal-500 to-emerald-600 text-white"
@@ -319,10 +384,10 @@ export default function DashboardPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
             <div className="lg:col-span-2">
-              <BarChart />
+              <BarChart data={porCurso} />
             </div>
             <div className="lg:col-span-1">
-              <DonutChart />
+              <DonutChart data={porGravedad} />
             </div>
           </div>
 

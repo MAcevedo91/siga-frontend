@@ -146,10 +146,10 @@ export default function ProtocoloDetallePage() {
                 </div>
               )}
 
-              {protocolo.observaciones_iniciales && (
+              {protocolo.observaciones && (
                 <div>
                   <h2 className="mb-2 text-sm font-medium text-gray-500">Observaciones Iniciales</h2>
-                  <p className="whitespace-pre-wrap text-gray-700">{protocolo.observaciones_iniciales}</p>
+                  <p className="whitespace-pre-wrap text-gray-700">{protocolo.observaciones}</p>
                 </div>
               )}
             </div>

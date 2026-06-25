@@ -93,7 +93,7 @@ export default function NuevoIncidentePage() {
         fecha: data.fecha,
         gravedad: data.gravedad,
         relato: data.relato,
-        medidas: data.medidas_adoptadas,
+        medidas: data.medidas,
         estudiantes: data.estudiantes.map((e) => ({
           estudiante_id: e.estudiante_id,
           es_victima: e.es_victima,
@@ -296,12 +296,12 @@ export default function NuevoIncidentePage() {
             </div>
 
             <div>
-              <label htmlFor="medidas_adoptadas" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="medidas" className="block text-sm font-medium text-gray-700">
                 Medidas Adoptadas
               </label>
               <textarea
-                id="medidas_adoptadas"
-                {...register('medidas_adoptadas')}
+                id="medidas"
+                {...register('medidas')}
                 rows={3}
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 placeholder="Acciones tomadas frente al incidente..."

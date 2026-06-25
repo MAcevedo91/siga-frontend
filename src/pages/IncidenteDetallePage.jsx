@@ -125,10 +125,10 @@ export default function IncidenteDetallePage() {
                 <p className="whitespace-pre-wrap text-gray-700">{incidente.relato}</p>
               </div>
 
-              {incidente.medidas_adoptadas && (
+              {incidente.medidas && (
                 <div>
                   <h2 className="mb-2 text-lg font-semibold text-gray-900">Medidas Adoptadas</h2>
-                  <p className="whitespace-pre-wrap text-gray-700">{incidente.medidas_adoptadas}</p>
+                  <p className="whitespace-pre-wrap text-gray-700">{incidente.medidas}</p>
                 </div>
               )}
 
