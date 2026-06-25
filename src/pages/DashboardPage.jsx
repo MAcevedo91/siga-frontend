@@ -1,140 +1,25 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/store/useAuthStore'
-import api from '@/services/api'
+import DashboardLayout from '@/components/layout/DashboardLayout'
 import {
-  LayoutDashboard,
-  Users,
+  BarChart, Bar, PieChart, Pie, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell
+} from 'recharts'
+import {
   AlertTriangle,
-  FileText,
-  Settings,
-  Bell,
-  Search,
-  Menu,
-  ChevronDown,
-  TrendingUp,
   ShieldAlert,
+  Users,
   UserCheck,
-  Calendar
+  TrendingUp,
+  Calendar,
+  FileText
 } from 'lucide-react'
-
-const Sidebar = ({ isOpen, setIsOpen }) => {
-  const navigate = useNavigate()
-  const currentPath = window.location.pathname
-
-  const navItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-    { icon: Users, label: 'Directorio Estudiantes', path: '/estudiantes' },
-    { icon: AlertTriangle, label: 'Registro Incidentes', path: '/incidentes' },
-    { icon: ShieldAlert, label: 'Protocolos RICE', path: '/protocolos' },
-    { icon: Users, label: 'Gestión de Usuarios', path: '/usuarios' },
-  ]
-
-  return (
-    <>
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-gray-800/50 z-20 md:hidden"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
-
-      <div className={`
-        fixed inset-y-0 left-0 z-30 w-64 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white transition-transform duration-300 ease-in-out shadow-2xl
-        ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:static md:flex-shrink-0
-      `}>
-        <div className="flex items-center justify-center h-16 border-b border-slate-700/50 bg-slate-900/50">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg">
-              <ShieldAlert className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-bold tracking-wider">SIGA<span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">escolar</span></span>
-          </div>
-        </div>
-
-        <div className="p-4">
-          <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-4">Menú Principal</p>
-          <nav className="space-y-1">
-            {navItems.map((item, idx) => {
-              const isActive = currentPath === item.path
-              return (
-                <button
-                  key={idx}
-                  onClick={() => {
-                    navigate(item.path)
-                    setIsOpen(false)
-                  }}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
-                    isActive
-                      ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg shadow-cyan-500/50'
-                      : 'text-slate-300 hover:bg-slate-800/80 hover:text-white hover:translate-x-1'
-                  }`}
-                >
-                  <item.icon className="w-5 h-5" />
-                  <span className="font-medium">{item.label}</span>
-                </button>
-              )
-            })}
-          </nav>
-        </div>
-      </div>
-    </>
-  )
-}
-
-const Header = ({ setIsOpen }) => {
-  const { user, logout } = useAuth()
-  const navigate = useNavigate()
-
-  const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
-
-  const getInitials = (nombre, apellido) => {
-    return `${nombre?.[0] || ''}${apellido?.[0] || ''}`.toUpperCase()
-  }
-
-  return (
-    <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 sm:px-6 z-10 sticky top-0">
-      <div className="flex items-center gap-4">
-        <button
-          className="md:hidden p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100"
-          onClick={() => setIsOpen(true)}
-        >
-          <Menu className="w-6 h-6" />
-        </button>
-        <div className="hidden sm:flex items-center bg-gray-100 rounded-lg px-3 py-1.5 w-64">
-          <Search className="w-4 h-4 text-gray-400 mr-2" />
-          <input
-            type="text"
-            placeholder="Buscar estudiante (RUT o Nombre)..."
-            className="bg-transparent border-none focus:outline-none text-sm w-full"
-          />
-        </div>
-      </div>
-
-      <div className="flex items-center gap-4">
-        <button className="relative p-2 text-gray-400 hover:text-gray-600">
-          <Bell className="w-5 h-5" />
-          <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
-        </button>
-        <div className="flex items-center gap-3 border-l border-gray-200 pl-4">
-          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-sm">
-            {getInitials(user?.nombre, user?.apellido)}
-          </div>
-          <div className="hidden sm:block text-sm">
-            <p className="font-semibold text-gray-700">{user?.nombre} {user?.apellido}</p>
-            <p className="text-xs text-gray-500">{user?.rol}</p>
-          </div>
-          <button onClick={handleLogout} className="text-gray-400 hover:text-gray-600">
-            <ChevronDown className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-    </header>
-  )
-}
+import {
+  getDashboardResumen,
+  getIncidentesPorCurso,
+  getIncidentesPorGravedad,
+  getTendenciaMensual
+} from '@/services/dashboardService'
 
 const KpiCard = ({ title, value, trend, icon: Icon, trendUp, colorClasses }) => (
   <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
@@ -147,283 +32,317 @@ const KpiCard = ({ title, value, trend, icon: Icon, trendUp, colorClasses }) => 
         <Icon className="w-6 h-6" />
       </div>
     </div>
-    <div className="pt-3 border-t border-gray-100 flex items-center gap-1.5">
-      <span className={`text-sm font-bold flex items-center ${trendUp ? 'text-red-600' : 'text-emerald-600'}`}>
-        <TrendingUp className={`w-4 h-4 mr-1 ${!trendUp && 'rotate-180'}`} />
-        {trend}
-      </span>
-      <span className="text-sm text-gray-500">vs mes anterior</span>
-    </div>
+    {trend && (
+      <div className="pt-3 border-t border-gray-100 flex items-center gap-1.5">
+        <span className={`text-sm font-bold flex items-center ${trendUp ? 'text-red-600' : 'text-emerald-600'}`}>
+          <TrendingUp className={`w-4 h-4 mr-1 ${!trendUp && 'rotate-180'}`} />
+          {trend}
+        </span>
+        <span className="text-sm text-gray-500">vs mes anterior</span>
+      </div>
+    )}
   </div>
 )
 
-const COLORS = [
-  'from-cyan-400 to-blue-500',
-  'from-blue-400 to-indigo-500',
-  'from-indigo-400 to-purple-500',
-  'from-purple-400 to-pink-500',
-  'from-pink-400 to-rose-500',
-  'from-rose-400 to-red-500',
+const CURSO_COLORS = [
+  '#06b6d4', '#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899', '#f43f5e'
 ]
 
-const BarChart = ({ data = [] }) => {
-  const chartData = data.map((d, i) => ({
-    label: d.curso,
-    value: d.total,
-    color: COLORS[i % COLORS.length],
-  }))
-  const max = Math.max(...chartData.map(d => d.value), 1)
-
-  if (chartData.length === 0) return (
-    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-md flex items-center justify-center h-full">
-      <p className="text-gray-400 text-sm">Sin datos de incidentes por curso</p>
-    </div>
-  )
-
-  return (
-    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-md flex flex-col h-full hover:shadow-xl transition-shadow">
-      <h3 className="text-lg font-bold text-gray-900 mb-6">Frecuencia de Incidentes por Nivel</h3>
-      <div className="flex-1 flex items-end justify-between gap-3 mt-auto pb-2">
-        {chartData.map((item, idx) => (
-          <div key={idx} className="flex flex-col items-center flex-1 group">
-            <div className="relative w-full flex justify-center">
-              <span className="absolute -top-8 text-sm font-bold text-gray-900 opacity-0 group-hover:opacity-100 transition-opacity bg-white px-2 py-1 rounded shadow-md">
-                {item.value}
-              </span>
-              <div
-                className={`w-full max-w-[45px] bg-gradient-to-t ${item.color} rounded-t-lg hover:shadow-lg transition-all cursor-pointer transform hover:scale-105`}
-                style={{ height: `${(item.value / max) * 180}px` }}
-              ></div>
-            </div>
-            <span className="text-xs font-medium text-gray-600 mt-3 text-center whitespace-nowrap">
-              {item.label}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
+const GRAVEDAD_CONFIG = {
+  'Leve': { color: '#10b981', label: 'Leve' },
+  'Grave': { color: '#f59e0b', label: 'Grave' },
+  'Gravísima': { color: '#ef4444', label: 'Gravísima' }
 }
 
-const GRAVEDAD_COLORS = { Leve: '#3b82f6', Grave: '#f59e0b', 'Gravísima': '#ef4444' }
-
-const DonutChart = ({ data = [] }) => {
-  const total = data.reduce((sum, d) => sum + d.cantidad, 0)
-  const circumference = 251.2
-  let offset = 0
-
-  return (
-    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col h-full">
-      <h3 className="text-base font-semibold text-gray-800 mb-6">Distribución por Gravedad</h3>
-      <div className="flex-1 flex flex-col items-center justify-center">
-        {total === 0 ? (
-          <p className="text-gray-400 text-sm">Sin datos</p>
-        ) : (
-          <>
-            <div className="relative w-40 h-40">
-              <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
-                <circle cx="50" cy="50" r="40" fill="transparent" stroke="#f3f4f6" strokeWidth="20" />
-                {data.map((d, i) => {
-                  const pct = d.cantidad / total
-                  const dashArray = circumference
-                  const dashOffset = circumference * (1 - pct)
-                  const rotation = (offset / total) * 360
-                  offset += d.cantidad
-                  return (
-                    <circle
-                      key={i}
-                      cx="50" cy="50" r="40"
-                      fill="transparent"
-                      stroke={GRAVEDAD_COLORS[d.gravedad] || '#94a3b8'}
-                      strokeWidth="20"
-                      strokeDasharray={dashArray}
-                      strokeDashoffset={dashOffset}
-                      style={{ transform: `rotate(${rotation}deg)`, transformOrigin: 'center' }}
-                    />
-                  )
-                })}
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center flex-col">
-                <span className="text-3xl font-bold text-gray-800">{total}</span>
-                <span className="text-xs text-gray-500">Casos Totales</span>
-              </div>
-            </div>
-            <div className="mt-6 flex justify-center gap-4 w-full flex-wrap">
-              {data.map((d, i) => (
-                <div key={i} className="flex items-center gap-1.5">
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: GRAVEDAD_COLORS[d.gravedad] || '#94a3b8' }}></div>
-                  <span className="text-xs text-gray-600">{d.gravedad} ({d.porcentaje}%)</span>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
+const GraficoBarrasCurso = ({ data }) => {
+  if (!data || data.length === 0) {
+    return (
+      <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-md flex items-center justify-center h-full">
+        <p className="text-gray-400 text-sm">Sin datos de incidentes por curso</p>
       </div>
-    </div>
-  )
-}
-
-const RecentActivityList = () => {
-  const activities = [
-    { id: 1, type: 'protocol', title: 'Protocolo RICE #042 Activado', desc: 'Acoso escolar reportado en 7° Básico B', time: 'Hace 2 horas', severity: 'high' },
-    { id: 2, type: 'incident', title: 'Incidente Leve Registrado', desc: 'Conflicto durante el recreo (8° Básico A)', time: 'Hace 4 horas', severity: 'low' },
-    { id: 3, type: 'interview', title: 'Entrevista Apoderado', desc: 'Citación preventiva completada - Juan Pérez', time: 'Ayer', severity: 'info' },
-    { id: 4, type: 'incident', title: 'Incidente Grave Registrado', desc: 'Agresión física en gimnasio (1° Medio)', time: 'Ayer', severity: 'medium' },
-  ]
-
-  const getSeverityStyles = (severity) => {
-    switch(severity) {
-      case 'high': return 'bg-red-50 text-red-600 border-red-200'
-      case 'medium': return 'bg-amber-50 text-amber-600 border-amber-200'
-      case 'low': return 'bg-blue-50 text-blue-600 border-blue-200'
-      default: return 'bg-gray-50 text-gray-600 border-gray-200'
-    }
+    )
   }
 
+  const chartData = data.map(item => ({
+    curso: item.curso || 'Sin curso',
+    total: item.total || 0
+  }))
+
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-      <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50/50">
-        <h3 className="text-base font-semibold text-gray-800">Actividad Reciente</h3>
-        <button className="text-sm text-blue-600 font-medium hover:text-blue-700">Ver todo</button>
+    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-md h-full hover:shadow-xl transition-shadow">
+      <h3 className="text-lg font-bold text-gray-900 mb-6">Frecuencia de Incidentes por Curso</h3>
+      <ResponsiveContainer width="100%" height={300}>
+        <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+          <XAxis dataKey="curso" tick={{ fontSize: 12 }} />
+          <YAxis tick={{ fontSize: 12 }} />
+          <Tooltip
+            contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+            cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }}
+          />
+          <Bar dataKey="total" fill="#3b82f6" radius={[8, 8, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  )
+}
+
+const GraficoTortaGravedad = ({ data }) => {
+  if (!data || data.length === 0) {
+    return (
+      <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-md flex items-center justify-center h-full">
+        <p className="text-gray-400 text-sm">Sin datos de distribución por gravedad</p>
       </div>
-      <div className="divide-y divide-gray-100">
-        {activities.map((item) => (
-          <div key={item.id} className="p-4 sm:px-6 hover:bg-gray-50 transition-colors flex gap-4">
-            <div className={`mt-1 w-10 h-10 rounded-full border flex items-center justify-center flex-shrink-0 ${getSeverityStyles(item.severity)}`}>
-              {item.type === 'protocol' && <ShieldAlert className="w-5 h-5" />}
-              {item.type === 'incident' && <AlertTriangle className="w-5 h-5" />}
-              {item.type === 'interview' && <UserCheck className="w-5 h-5" />}
-            </div>
-            <div>
-              <h4 className="text-sm font-semibold text-gray-900">{item.title}</h4>
-              <p className="text-sm text-gray-500 mt-0.5">{item.desc}</p>
-              <span className="text-xs text-gray-400 mt-2 block flex items-center gap-1">
-                <Calendar className="w-3 h-3" /> {item.time}
-              </span>
-            </div>
-          </div>
-        ))}
+    )
+  }
+
+  const chartData = data.map(item => ({
+    name: item.gravedad,
+    value: item.cantidad,
+    porcentaje: item.porcentaje
+  }))
+
+  const COLORS_ARRAY = chartData.map(item => GRAVEDAD_CONFIG[item.name]?.color || '#94a3b8')
+
+  return (
+    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-md h-full hover:shadow-xl transition-shadow">
+      <h3 className="text-lg font-bold text-gray-900 mb-6">Distribución por Gravedad</h3>
+      <ResponsiveContainer width="100%" height={300}>
+        <PieChart>
+          <Pie
+            data={chartData}
+            cx="50%"
+            cy="50%"
+            labelLine={false}
+            label={({ porcentaje }) => `${porcentaje}%`}
+            outerRadius={80}
+            fill="#8884d8"
+            dataKey="value"
+          >
+            {chartData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS_ARRAY[index]} />
+            ))}
+          </Pie>
+          <Tooltip
+            contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+            formatter={(value, name) => [`${value} casos`, name]}
+          />
+          <Legend
+            verticalAlign="bottom"
+            height={36}
+            formatter={(value) => GRAVEDAD_CONFIG[value]?.label || value}
+          />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
+  )
+}
+
+const GraficoTendenciaMensual = ({ data }) => {
+  if (!data || data.length === 0) {
+    return (
+      <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-md flex items-center justify-center h-full">
+        <p className="text-gray-400 text-sm">Sin datos de tendencia mensual</p>
+      </div>
+    )
+  }
+
+  const chartData = data.map(item => ({
+    mes: item.mes,
+    incidentes: item.total || 0
+  }))
+
+  return (
+    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-md h-full hover:shadow-xl transition-shadow">
+      <h3 className="text-lg font-bold text-gray-900 mb-6">Tendencia Mensual de Incidentes</h3>
+      <ResponsiveContainer width="100%" height={300}>
+        <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+          <XAxis dataKey="mes" tick={{ fontSize: 12 }} />
+          <YAxis tick={{ fontSize: 12 }} />
+          <Tooltip
+            contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+            cursor={{ stroke: 'rgba(59, 130, 246, 0.3)' }}
+          />
+          <Legend />
+          <Line
+            type="monotone"
+            dataKey="incidentes"
+            stroke="#8b5cf6"
+            strokeWidth={3}
+            dot={{ fill: '#8b5cf6', r: 5 }}
+            activeDot={{ r: 7 }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  )
+}
+
+const AccionesRapidas = () => {
+  const navigate = useNavigate()
+
+  return (
+    <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-xl shadow-xl p-6 text-white flex flex-col justify-center relative overflow-hidden h-full">
+      <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20"></div>
+      <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full -ml-16 -mb-16"></div>
+
+      <div className="relative z-10">
+        <h3 className="text-2xl font-bold mb-2">Acciones Rápidas</h3>
+        <p className="text-purple-100 text-sm mb-6">
+          Registra una intervención o activa un protocolo inmediatamente desde tu dispositivo.
+        </p>
+
+        <div className="space-y-3">
+          <button
+            onClick={() => navigate('/incidentes/nuevo')}
+            className="w-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/30 transition-all py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 font-semibold hover:scale-105 transform shadow-lg"
+          >
+            <AlertTriangle className="w-5 h-5" />
+            Registrar Incidente
+          </button>
+          <button
+            onClick={() => navigate('/protocolos/nuevo')}
+            className="w-full bg-white text-purple-700 hover:bg-purple-50 transition-all py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 font-bold shadow-lg hover:scale-105 transform"
+          >
+            <ShieldAlert className="w-5 h-5 text-rose-600" />
+            Activar Protocolo RICE
+          </button>
+        </div>
       </div>
     </div>
   )
 }
 
+const EstadoVacio = () => (
+  <div className="bg-white rounded-xl border-2 border-dashed border-gray-300 p-12 text-center">
+    <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+    <h3 className="text-lg font-semibold text-gray-700 mb-2">No hay datos disponibles</h3>
+    <p className="text-sm text-gray-500 mb-6">
+      Aún no se han registrado incidentes en el sistema. Comienza registrando el primer incidente para ver las estadísticas.
+    </p>
+    <button
+      onClick={() => window.location.href = '/incidentes/nuevo'}
+      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+    >
+      <AlertTriangle className="w-4 h-4" />
+      Registrar Primer Incidente
+    </button>
+  </div>
+)
+
 export default function DashboardPage() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const { user } = useAuth()
+  const [loading, setLoading] = useState(true)
   const [resumen, setResumen] = useState(null)
   const [porCurso, setPorCurso] = useState([])
   const [porGravedad, setPorGravedad] = useState([])
-  const navigate = useNavigate()
+  const [tendencia, setTendencia] = useState([])
 
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const [resumenRes, cursoRes, gravedadRes] = await Promise.all([
-          api.get('/dashboard/resumen'),
-          api.get('/dashboard/incidentes-por-curso'),
-          api.get('/dashboard/por-gravedad'),
+        setLoading(true)
+        const [resumenData, cursoData, gravedadData, tendenciaData] = await Promise.all([
+          getDashboardResumen(),
+          getIncidentesPorCurso(),
+          getIncidentesPorGravedad(),
+          getTendenciaMensual()
         ])
-        setResumen(resumenRes.data.data)
-        setPorCurso(cursoRes.data.data)
-        setPorGravedad(gravedadRes.data.data)
+        setResumen(resumenData)
+        setPorCurso(cursoData)
+        setPorGravedad(gravedadData)
+        setTendencia(tendenciaData)
       } catch (err) {
         console.error('Error cargando dashboard:', err)
+      } finally {
+        setLoading(false)
       }
     }
     fetchDashboard()
   }, [])
 
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Cargando dashboard...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
+  }
+
+  const sinDatos = !resumen || resumen.total_incidentes === 0
+
   return (
-    <div className="flex h-screen bg-slate-50 font-sans overflow-hidden text-gray-900">
-      <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+    <DashboardLayout>
+      <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-gray-900">Panel de Convivencia Escolar</h1>
+          <p className="text-sm text-gray-500 mt-1 flex items-center gap-2">
+            <Calendar className="w-4 h-4" />
+            Visión general institucional • Escuela Coeducacional N°1
+          </p>
+        </div>
 
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header setIsOpen={setIsSidebarOpen} />
-
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50 p-4 sm:p-6 lg:p-8">
-
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold text-gray-900">Panel de Convivencia</h1>
-            <p className="text-sm text-gray-500 mt-1">Visión general institucional • Escuela Coeducacional N°1</p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
-            <KpiCard
-              title="Incidentes Totales"
-              value={resumen ? String(resumen.total_incidentes) : '—'}
-              trend=""
-              trendUp={true}
-              icon={AlertTriangle}
-              colorClasses="bg-gradient-to-br from-orange-400 to-amber-500 text-white"
-            />
-            <KpiCard
-              title="Incidentes Graves"
-              value={resumen ? String(resumen.total_graves) : '—'}
-              trend=""
-              trendUp={true}
-              icon={ShieldAlert}
-              colorClasses="bg-gradient-to-br from-rose-500 to-purple-600 text-white"
-            />
-            <KpiCard
-              title="Protocolos RICE Activos"
-              value={resumen ? String(resumen.protocolos_activos) : '—'}
-              trend=""
-              trendUp={false}
-              icon={Users}
-              colorClasses="bg-gradient-to-br from-cyan-500 to-blue-600 text-white"
-            />
-            <KpiCard
-              title="Estudiantes con Incidentes"
-              value={resumen ? String(resumen.estudiantes_con_incidentes) : '—'}
-              trend=""
-              trendUp={false}
-              icon={UserCheck}
-              colorClasses="bg-gradient-to-br from-teal-500 to-emerald-600 text-white"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
-            <div className="lg:col-span-2">
-              <BarChart data={porCurso} />
+        {sinDatos ? (
+          <EstadoVacio />
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+              <KpiCard
+                title="Incidentes Totales"
+                value={resumen.total_incidentes}
+                trend=""
+                trendUp={true}
+                icon={AlertTriangle}
+                colorClasses="bg-gradient-to-br from-orange-400 to-amber-500 text-white"
+              />
+              <KpiCard
+                title="Incidentes Graves"
+                value={resumen.total_graves}
+                trend=""
+                trendUp={true}
+                icon={ShieldAlert}
+                colorClasses="bg-gradient-to-br from-rose-500 to-purple-600 text-white"
+              />
+              <KpiCard
+                title="Protocolos RICE Activos"
+                value={resumen.protocolos_activos}
+                trend=""
+                trendUp={false}
+                icon={Users}
+                colorClasses="bg-gradient-to-br from-cyan-500 to-blue-600 text-white"
+              />
+              <KpiCard
+                title="Estudiantes en Seguimiento"
+                value={resumen.estudiantes_con_incidentes}
+                trend=""
+                trendUp={false}
+                icon={UserCheck}
+                colorClasses="bg-gradient-to-br from-teal-500 to-emerald-600 text-white"
+              />
             </div>
-            <div className="lg:col-span-1">
-              <DonutChart data={porGravedad} />
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-            <RecentActivityList />
-
-            <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-xl shadow-xl p-6 text-white flex flex-col justify-center relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20"></div>
-              <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full -ml-16 -mb-16"></div>
-
-              <div className="relative z-10">
-                <h3 className="text-2xl font-bold mb-2">Acciones Rápidas</h3>
-                <p className="text-purple-100 text-sm mb-6">Registra una intervención o activa un protocolo inmediatamente desde tu dispositivo.</p>
-
-                <div className="space-y-3">
-                  <button
-                    onClick={() => navigate('/incidentes/nuevo')}
-                    className="w-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/30 transition-all py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 font-semibold hover:scale-105 transform shadow-lg"
-                  >
-                    <AlertTriangle className="w-5 h-5" />
-                    Registrar Incidente en Patio
-                  </button>
-                  <button
-                    onClick={() => navigate('/protocolos/nuevo')}
-                    className="w-full bg-white text-purple-700 hover:bg-purple-50 transition-all py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 font-bold shadow-lg hover:scale-105 transform"
-                  >
-                    <ShieldAlert className="w-5 h-5 text-rose-600" />
-                    Activar Protocolo Normativo (RICE)
-                  </button>
-                </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
+              <div className="lg:col-span-2">
+                <GraficoBarrasCurso data={porCurso} />
+              </div>
+              <div className="lg:col-span-1">
+                <GraficoTortaGravedad data={porGravedad} />
               </div>
             </div>
-          </div>
 
-        </main>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-8">
+              <GraficoTendenciaMensual data={tendencia} />
+              <AccionesRapidas />
+            </div>
+          </>
+        )}
       </div>
-    </div>
+    </DashboardLayout>
   )
 }

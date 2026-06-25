@@ -25,9 +25,9 @@ export default function AppRouter() {
       <Route
         path="/dashboard"
         element={
-          <PrivateRoute>
+          <RoleRoute allowedRoles={['Administrador', 'Equipo de Formación', 'Directivo']}>
             <DashboardPage />
-          </PrivateRoute>
+          </RoleRoute>
         }
       />
       <Route
