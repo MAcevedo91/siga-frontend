@@ -30,6 +30,11 @@ export function useNotifications() {
     // Listen for real-time notifications
     const socket = getSocket()
 
+    if (!socket) {
+      console.warn('Socket not available, real-time notifications disabled')
+      return
+    }
+
     socket.on('notificacion:nueva', (notificacion) => {
       console.log('Nueva notificación recibida:', notificacion)
 
@@ -45,7 +50,9 @@ export function useNotifications() {
     })
 
     return () => {
-      socket.off('notificacion:nueva')
+      if (socket) {
+        socket.off('notificacion:nueva')
+      }
     }
   }, [loadNotificaciones])
 

@@ -33,7 +33,8 @@ export function initSocket(token) {
 
 export function getSocket() {
   if (!socket) {
-    throw new Error('Socket not initialized. Call initSocket first.')
+    console.warn('Socket not initialized. Call initSocket first.')
+    return null
   }
   return socket
 }
