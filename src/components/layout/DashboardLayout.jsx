@@ -13,6 +13,7 @@ import {
   Search,
   Menu,
   ChevronDown,
+  BarChart3,
 } from 'lucide-react'
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
@@ -21,6 +22,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 
   const navItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
+    { icon: BarChart3, label: 'Analytics', path: '/analytics' },
     { icon: Users, label: 'Directorio Estudiantes', path: '/estudiantes' },
     { icon: AlertTriangle, label: 'Registro Incidentes', path: '/incidentes' },
     { icon: ShieldAlert, label: 'Protocolos RICE', path: '/protocolos' },
