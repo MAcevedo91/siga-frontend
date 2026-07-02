@@ -14,6 +14,7 @@ import ProtocolosPage from '@/pages/ProtocolosPage'
 import NuevoProtocoloPage from '@/pages/NuevoProtocoloPage'
 import ProtocoloDetallePage from '@/pages/ProtocoloDetallePage'
 import AnalyticsDashboard from '@/pages/AnalyticsDashboard'
+import AsistenciaPage from '@/pages/AsistenciaPage'
 import { useAuth } from '@/store/useAuthStore'
 
 export default function AppRouter() {
@@ -109,6 +110,14 @@ export default function AppRouter() {
           <RoleRoute allowedRoles={['Administrador', 'Equipo de Formación', 'Directivo']}>
             <AnalyticsDashboard />
           </RoleRoute>
+        }
+      />
+      <Route
+        path="/asistencia"
+        element={
+          <PrivateRoute>
+            <AsistenciaPage />
+          </PrivateRoute>
         }
       />
       <Route
