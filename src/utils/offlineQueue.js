@@ -29,8 +29,11 @@ export async function addToOfflineQueue(request) {
     timestamp: Date.now()
   }
 
-  await store.add(item)
-  return item
+  return new Promise((resolve, reject) => {
+    const addRequest = store.add(item)
+    addRequest.onsuccess = () => resolve(item)
+    addRequest.onerror = () => reject(addRequest.error)
+  })
 }
 
 export async function getOfflineQueue() {
@@ -50,7 +53,11 @@ export async function removeFromOfflineQueue(id) {
   const tx = db.transaction(STORE_NAME, 'readwrite')
   const store = tx.objectStore(STORE_NAME)
 
-  await store.delete(id)
+  return new Promise((resolve, reject) => {
+    const deleteRequest = store.delete(id)
+    deleteRequest.onsuccess = () => resolve()
+    deleteRequest.onerror = () => reject(deleteRequest.error)
+  })
 }
 
 export async function clearOfflineQueue() {
@@ -58,7 +65,11 @@ export async function clearOfflineQueue() {
   const tx = db.transaction(STORE_NAME, 'readwrite')
   const store = tx.objectStore(STORE_NAME)
 
-  await store.clear()
+  return new Promise((resolve, reject) => {
+    const clearRequest = store.clear()
+    clearRequest.onsuccess = () => resolve()
+    clearRequest.onerror = () => reject(clearRequest.error)
+  })
 }
 
 export async function syncOfflineQueue(apiClient) {
