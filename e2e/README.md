@@ -104,6 +104,7 @@ npm run test:e2e:report
 ### Test Files
 
 - `auth.spec.js` - Authentication flows (login, logout, validation)
+- `asistencia.spec.js` - Asistencia registration flow (mark attendance, alertas widget)
 - `estudiantes.spec.js` - Student management (list, search, filter)
 - `incidentes.spec.js` - Incident management (list, filter, navigation)
 
@@ -216,6 +217,11 @@ Current test coverage includes:
 - ✅ Invalid credentials error
 - ✅ Successful login
 - ✅ Logout
+
+### Asistencia (asistencia.spec.js)
+- ✅ Register asistencia for curso completo
+- ✅ Show alertas ausentismo widget
+- ✅ Fetch existing asistencia when opening curso
 
 ### Estudiantes (estudiantes.spec.js)
 - ✅ Navigation from sidebar

@@ -60,7 +60,7 @@ export default function AlertasAusentismoWidget() {
 
         {mostrarDetalle && (
           <div className="mt-4 border-t border-red-200 dark:border-red-800 pt-4">
-            <div className="space-y-2">
+            <div className="space-y-2" data-testid="alertas-lista">
               {alertas.map((alerta) => (
                 <div
                   key={alerta.estudianteId}
