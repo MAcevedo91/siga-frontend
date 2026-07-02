@@ -7,7 +7,7 @@ export function initSocket(token) {
     socket.disconnect()
   }
 
-  socket = io('http://localhost:3001', {
+  socket = io(import.meta.env.VITE_SOCKET_URL, {
     auth: {
       token
     },
