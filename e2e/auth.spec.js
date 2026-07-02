@@ -57,8 +57,8 @@ test.describe('Authentication', () => {
     await page.click('button[type="submit"]')
     await page.waitForURL('/dashboard', { timeout: 10000 })
 
-    // Logout - click the chevron down button in header
-    await page.locator('button').filter({ has: page.locator('svg') }).last().click()
+    // Logout - click the logout button
+    await page.click('[data-testid="logout-button"]')
 
     // Wait for redirect to login
     await page.waitForURL('/', { timeout: 5000 })

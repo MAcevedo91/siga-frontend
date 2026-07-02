@@ -63,7 +63,7 @@ test.describe('Estudiantes', () => {
     // Wait for page load
     await page.waitForLoadState('networkidle')
 
-    // Check for export buttons
-    await expect(page.locator('button', { hasText: 'Excel' }).or(page.locator('svg'))).toBeTruthy()
+    // Check for export button - verify it's actually visible
+    await expect(page.locator('button:has-text("Excel")')).toBeVisible()
   })
 })

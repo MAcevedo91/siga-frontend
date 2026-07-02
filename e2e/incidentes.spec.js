@@ -40,9 +40,8 @@ test.describe('Incidentes', () => {
     // Wait for page load
     await page.waitForLoadState('networkidle')
 
-    // Check for "Registrar Incidente" or "Nuevo Incidente" button
-    const hasButton = await page.locator('button:has-text("Incidente")').count() > 0
-    expect(hasButton).toBeTruthy()
+    // Check for "Registrar Incidente" or "Nuevo Incidente" button - verify it's actually visible
+    await expect(page.locator('button:has-text("Incidente")')).toBeVisible()
   })
 
   test('should filter incidentes by date range', async ({ page }) => {
@@ -65,14 +64,18 @@ test.describe('Incidentes', () => {
     // Check if there are any rows
     const rowCount = await page.locator('table tbody tr').count()
 
-    if (rowCount > 0) {
-      // Click on first row or detail button
-      const firstRow = page.locator('table tbody tr').first()
-      await firstRow.click()
-
-      // Should navigate to detail page
-      await page.waitForTimeout(1000)
-      expect(page.url()).toContain('/incidente')
+    // Skip test if no data exists rather than silently passing
+    if (rowCount === 0) {
+      test.skip()
+      return
     }
+
+    // Click on first row detail button
+    const firstDetailButton = page.locator('table tbody tr').first().locator('button:has-text("Ver Detalle")')
+    await firstDetailButton.click()
+
+    // Should navigate to detail page
+    await page.waitForURL(/\/incidentes\/\d+/, { timeout: 5000 })
+    expect(page.url()).toContain('/incidentes/')
   })
 })

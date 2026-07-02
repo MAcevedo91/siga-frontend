@@ -128,7 +128,7 @@ const Header = ({ setIsOpen, unreadCount, onNotificationClick }) => {
             <p className="font-semibold text-gray-700 dark:text-gray-200">{user?.nombre} {user?.apellido}</p>
             <p className="text-xs text-gray-500 dark:text-gray-400">{user?.rol}</p>
           </div>
-          <button onClick={handleLogout} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
+          <button onClick={handleLogout} data-testid="logout-button" className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
             <ChevronDown className="w-4 h-4" />
           </button>
         </div>
