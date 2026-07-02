@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getEstudianteById } from '@/services/estudiantesService'
+import DownloadPDFButton from '../components/reports/DownloadPDFButton'
 
 export default function EstudiantePerfilPage() {
   const { id } = useParams()
@@ -71,10 +72,18 @@ export default function EstudiantePerfilPage() {
         <div className="space-y-6">
           <div className="overflow-hidden rounded-lg bg-white shadow">
             <div className="bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-8">
-              <h1 className="text-3xl font-bold text-white">
-                {estudiante.nombre} {estudiante.apellido}
-              </h1>
-              <p className="mt-1 font-mono text-blue-100">{estudiante.rut}</p>
+              <div className="flex items-start justify-between">
+                <div>
+                  <h1 className="text-3xl font-bold text-white">
+                    {estudiante.nombre} {estudiante.apellido}
+                  </h1>
+                  <p className="mt-1 font-mono text-blue-100">{estudiante.rut}</p>
+                </div>
+                <DownloadPDFButton
+                  estudianteId={estudiante.id}
+                  estudianteNombre={`${estudiante.nombre}-${estudiante.apellido}`}
+                />
+              </div>
             </div>
 
             <div className="grid gap-6 p-6 sm:grid-cols-2">
