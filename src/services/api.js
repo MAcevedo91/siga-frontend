@@ -10,6 +10,8 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
+  // Add API version header for tracking
+  config.headers['X-API-Version'] = 'v1'
   return config
 })
 
