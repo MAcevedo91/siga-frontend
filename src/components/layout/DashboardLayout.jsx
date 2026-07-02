@@ -141,7 +141,7 @@ export default function DashboardLayout({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [notificationCenterOpen, setNotificationCenterOpen] = useState(false)
   const { token } = useAuth()
-  const { notificaciones, unreadCount, marcarLeida, refresh } = useNotifications()
+  const { notificaciones, unreadCount, marcarLeida, marcarTodasLeidas } = useNotifications()
 
   // Initialize socket on mount
   useEffect(() => {
@@ -176,7 +176,7 @@ export default function DashboardLayout({ children }) {
         onClose={() => setNotificationCenterOpen(false)}
         notificaciones={notificaciones}
         onMarcarLeida={marcarLeida}
-        onRefresh={refresh}
+        onMarcarTodasLeidas={marcarTodasLeidas}
       />
     </div>
   )
