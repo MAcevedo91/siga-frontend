@@ -22,23 +22,23 @@ import {
 } from '@/services/dashboardService'
 
 const KpiCard = ({ title, value, trend, icon: Icon, trendUp, colorClasses }) => (
-  <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+  <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
     <div className="flex justify-between items-start mb-4">
       <div className="flex-1">
-        <p className="text-sm font-semibold text-gray-600 mb-2 uppercase tracking-wide">{title}</p>
-        <h3 className="text-3xl font-bold text-gray-900">{value}</h3>
+        <p className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2 uppercase tracking-wide">{title}</p>
+        <h3 className="text-3xl font-bold text-gray-900 dark:text-white">{value}</h3>
       </div>
       <div className={`p-3 rounded-xl shadow-lg ${colorClasses}`}>
         <Icon className="w-6 h-6" />
       </div>
     </div>
     {trend && (
-      <div className="pt-3 border-t border-gray-100 flex items-center gap-1.5">
+      <div className="pt-3 border-t border-gray-100 dark:border-gray-700 flex items-center gap-1.5">
         <span className={`text-sm font-bold flex items-center ${trendUp ? 'text-red-600' : 'text-emerald-600'}`}>
           <TrendingUp className={`w-4 h-4 mr-1 ${!trendUp && 'rotate-180'}`} />
           {trend}
         </span>
-        <span className="text-sm text-gray-500">vs mes anterior</span>
+        <span className="text-sm text-gray-500 dark:text-gray-400">vs mes anterior</span>
       </div>
     )}
   </div>
@@ -57,8 +57,8 @@ const GRAVEDAD_CONFIG = {
 const GraficoBarrasCurso = ({ data }) => {
   if (!data || data.length === 0) {
     return (
-      <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-md flex items-center justify-center h-full">
-        <p className="text-gray-400 text-sm">Sin datos de incidentes por curso</p>
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-md flex items-center justify-center h-full">
+        <p className="text-gray-400 dark:text-gray-500 text-sm">Sin datos de incidentes por curso</p>
       </div>
     )
   }
@@ -69,8 +69,8 @@ const GraficoBarrasCurso = ({ data }) => {
   }))
 
   return (
-    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-md h-full hover:shadow-xl transition-shadow">
-      <h3 className="text-lg font-bold text-gray-900 mb-6">Frecuencia de Incidentes por Curso</h3>
+    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-md h-full hover:shadow-xl transition-shadow">
+      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Frecuencia de Incidentes por Curso</h3>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
@@ -90,8 +90,8 @@ const GraficoBarrasCurso = ({ data }) => {
 const GraficoTortaGravedad = ({ data }) => {
   if (!data || data.length === 0) {
     return (
-      <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-md flex items-center justify-center h-full">
-        <p className="text-gray-400 text-sm">Sin datos de distribución por gravedad</p>
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-md flex items-center justify-center h-full">
+        <p className="text-gray-400 dark:text-gray-500 text-sm">Sin datos de distribución por gravedad</p>
       </div>
     )
   }
@@ -105,8 +105,8 @@ const GraficoTortaGravedad = ({ data }) => {
   const COLORS_ARRAY = chartData.map(item => GRAVEDAD_CONFIG[item.name]?.color || '#94a3b8')
 
   return (
-    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-md h-full hover:shadow-xl transition-shadow">
-      <h3 className="text-lg font-bold text-gray-900 mb-6">Distribución por Gravedad</h3>
+    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-md h-full hover:shadow-xl transition-shadow">
+      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Distribución por Gravedad</h3>
       <ResponsiveContainer width="100%" height={300}>
         <PieChart>
           <Pie
@@ -141,8 +141,8 @@ const GraficoTortaGravedad = ({ data }) => {
 const GraficoTendenciaMensual = ({ data }) => {
   if (!data || data.length === 0) {
     return (
-      <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-md flex items-center justify-center h-full">
-        <p className="text-gray-400 text-sm">Sin datos de tendencia mensual</p>
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-md flex items-center justify-center h-full">
+        <p className="text-gray-400 dark:text-gray-500 text-sm">Sin datos de tendencia mensual</p>
       </div>
     )
   }
@@ -153,8 +153,8 @@ const GraficoTendenciaMensual = ({ data }) => {
   }))
 
   return (
-    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-md h-full hover:shadow-xl transition-shadow">
-      <h3 className="text-lg font-bold text-gray-900 mb-6">Tendencia Mensual de Incidentes</h3>
+    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-md h-full hover:shadow-xl transition-shadow">
+      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Tendencia Mensual de Incidentes</h3>
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
@@ -215,10 +215,10 @@ const AccionesRapidas = () => {
 }
 
 const EstadoVacio = () => (
-  <div className="bg-white rounded-xl border-2 border-dashed border-gray-300 p-12 text-center">
-    <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-    <h3 className="text-lg font-semibold text-gray-700 mb-2">No hay datos disponibles</h3>
-    <p className="text-sm text-gray-500 mb-6">
+  <div className="bg-white dark:bg-gray-800 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 p-12 text-center">
+    <FileText className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+    <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">No hay datos disponibles</h3>
+    <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
       Aún no se han registrado incidentes en el sistema. Comienza registrando el primer incidente para ver las estadísticas.
     </p>
     <button
@@ -268,7 +268,7 @@ export default function DashboardPage() {
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Cargando dashboard...</p>
+            <p className="text-gray-600 dark:text-gray-400">Cargando dashboard...</p>
           </div>
         </div>
       </DashboardLayout>
@@ -281,8 +281,8 @@ export default function DashboardPage() {
     <DashboardLayout>
       <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Panel de Convivencia Escolar</h1>
-          <p className="text-sm text-gray-500 mt-1 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Panel de Convivencia Escolar</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-2">
             <Calendar className="w-4 h-4" />
             Visión general institucional • Escuela Coeducacional N°1
           </p>
