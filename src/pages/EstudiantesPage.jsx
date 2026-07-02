@@ -64,19 +64,15 @@ export default function EstudiantesPageMejorada() {
   const loadRiskScores = async (estudiantesList) => {
     try {
       setLoadingRisks(true)
-      const scores = {}
 
-      // Load risks in parallel
-      await Promise.all(
-        estudiantesList.map(async (est) => {
-          try {
-            const { data: riesgo } = await api.get(`/riesgo/estudiante/${est.id}`)
-            scores[est.id] = riesgo
-          } catch (error) {
-            console.error(`Error fetching risk for ${est.id}:`, error)
-          }
-        })
-      )
+      // OPTIMIZATION: Use batch endpoint to fetch all risk scores in ONE request
+      const { data: estudiantesConRiesgo } = await api.get('/riesgo/estudiantes')
+
+      // Map risk scores by student ID
+      const scores = {}
+      for (const estudiante of estudiantesConRiesgo) {
+        scores[estudiante.id] = estudiante.riesgo
+      }
 
       setRiskScores(scores)
     } catch (error) {
