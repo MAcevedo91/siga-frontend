@@ -11,12 +11,18 @@
   },
   "dependencies": {
     "axios": "^1.7.2",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
     "lucide-react": "^1.21.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-dropzone": "^15.0.0",
     "react-hook-form": "^7.52.1",
+    "react-hot-toast": "^2.6.0",
     "react-router-dom": "^6.24.1",
     "recharts": "^3.9.0",
+    "socket.io-client": "^4.8.3",
+    "xlsx": "^0.18.5",
     "zustand": "^4.5.4"
   },
   "devDependencies": {

@@ -1,12 +1,15 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/store/useAuthStore'
+import { initSocket, disconnectSocket } from '@/services/socketService'
+import { useNotifications } from '@/hooks/useNotifications'
+import NotificationBadge from '@/components/notifications/NotificationBadge'
+import NotificationCenter from '@/components/notifications/NotificationCenter'
 import {
   LayoutDashboard,
   Users,
   AlertTriangle,
   ShieldAlert,
-  Bell,
   Search,
   Menu,
   ChevronDown,
@@ -76,7 +79,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   )
 }
 
-const Header = ({ setIsOpen }) => {
+const Header = ({ setIsOpen, unreadCount, onNotificationClick }) => {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
 
@@ -109,10 +112,10 @@ const Header = ({ setIsOpen }) => {
       </div>
 
       <div className="flex items-center gap-4">
-        <button className="relative p-2 text-gray-400 hover:text-gray-600">
-          <Bell className="w-5 h-5" />
-          <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
-        </button>
+        <NotificationBadge
+          count={unreadCount}
+          onClick={onNotificationClick}
+        />
         <div className="flex items-center gap-3 border-l border-gray-200 pl-4">
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
             {getInitials(user?.nombre, user?.apellido)}
@@ -132,18 +135,45 @@ const Header = ({ setIsOpen }) => {
 
 export default function DashboardLayout({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [notificationCenterOpen, setNotificationCenterOpen] = useState(false)
+  const { token } = useAuth()
+  const { notificaciones, unreadCount, marcarLeida, refresh } = useNotifications()
+
+  // Initialize socket on mount
+  useEffect(() => {
+    if (token) {
+      initSocket(token)
+    }
+
+    return () => {
+      disconnectSocket()
+    }
+  }, [token])
 
   return (
     <div className="flex h-screen bg-slate-50 font-sans overflow-hidden text-gray-900">
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header setIsOpen={setIsSidebarOpen} />
+        <Header
+          setIsOpen={setIsSidebarOpen}
+          unreadCount={unreadCount}
+          onNotificationClick={() => setNotificationCenterOpen(true)}
+        />
 
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50">
           {children}
         </main>
       </div>
+
+      {/* Notification Center Drawer */}
+      <NotificationCenter
+        isOpen={notificationCenterOpen}
+        onClose={() => setNotificationCenterOpen(false)}
+        notificaciones={notificaciones}
+        onMarcarLeida={marcarLeida}
+        onRefresh={refresh}
+      />
     </div>
   )
 }
