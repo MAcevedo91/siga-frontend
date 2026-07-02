@@ -5,8 +5,13 @@ export const ThemeContext = createContext()
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(() => {
     // Check localStorage first
-    const stored = localStorage.getItem('theme')
-    if (stored) return stored
+    try {
+      const stored = localStorage.getItem('theme')
+      if (stored) return stored
+    } catch (error) {
+      // localStorage can throw in private browsing mode
+      console.warn('Failed to read theme from localStorage:', error)
+    }
 
     // Check system preference
     if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -25,7 +30,12 @@ export function ThemeProvider({ children }) {
       root.classList.remove('dark')
     }
 
-    localStorage.setItem('theme', theme)
+    try {
+      localStorage.setItem('theme', theme)
+    } catch (error) {
+      // localStorage can throw in private browsing mode
+      console.warn('Failed to save theme to localStorage:', error)
+    }
   }, [theme])
 
   const toggleTheme = () => {
