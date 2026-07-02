@@ -50,19 +50,23 @@ export function useNotifications() {
   }, [loadNotificaciones])
 
   const marcarLeida = useCallback(async (notificacionId) => {
-    // Capture current state for potential rollback
-    const oldNotificaciones = [...notificaciones]
-    const oldUnreadCount = unreadCount
+    // Capture state at update time to avoid stale closures
+    let oldNotificaciones
+    let oldUnreadCount
 
     await optimisticUpdate({
       updateFn: () => {
         // Optimistic: mark as read immediately in UI
-        setNotificaciones(prev =>
-          prev.map(n =>
+        setNotificaciones(prev => {
+          oldNotificaciones = [...prev]  // Capture at update time
+          return prev.map(n =>
             n.id === notificacionId ? { ...n, leida: true } : n
           )
-        )
-        setUnreadCount(prev => Math.max(0, prev - 1))
+        })
+        setUnreadCount(prev => {
+          oldUnreadCount = prev
+          return Math.max(0, prev - 1)
+        })
       },
       apiFn: () => marcarComoLeida(notificacionId),
       rollbackFn: () => {
@@ -72,20 +76,24 @@ export function useNotifications() {
       },
       errorMessage: 'Error al marcar como leída'
     })
-  }, [notificaciones, unreadCount, optimisticUpdate])
+  }, [optimisticUpdate])
 
   const marcarTodasLeidas = useCallback(async () => {
-    // Capture current state for potential rollback
-    const oldNotificaciones = [...notificaciones]
-    const oldUnreadCount = unreadCount
+    // Capture state at update time to avoid stale closures
+    let oldNotificaciones
+    let oldUnreadCount
 
     await optimisticUpdate({
       updateFn: () => {
         // Optimistic: mark all as read immediately in UI
-        setNotificaciones(prev =>
-          prev.map(n => ({ ...n, leida: true }))
-        )
-        setUnreadCount(0)
+        setNotificaciones(prev => {
+          oldNotificaciones = [...prev]  // Capture at update time
+          return prev.map(n => ({ ...n, leida: true }))
+        })
+        setUnreadCount(prev => {
+          oldUnreadCount = prev
+          return 0
+        })
       },
       apiFn: () => marcarTodasComoLeidas(),
       rollbackFn: () => {
@@ -96,7 +104,7 @@ export function useNotifications() {
       successMessage: 'Todas las notificaciones marcadas como leídas',
       errorMessage: 'Error al marcar todas como leídas'
     })
-  }, [notificaciones, unreadCount, optimisticUpdate])
+  }, [optimisticUpdate])
 
   return {
     notificaciones,
