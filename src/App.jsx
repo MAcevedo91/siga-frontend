@@ -2,11 +2,13 @@ import { BrowserRouter } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import AppRouter from '@/router/AppRouter'
 import PWAUpdatePrompt from '@/components/PWAUpdatePrompt'
+import OfflineIndicator from '@/components/OfflineIndicator'
 
 export default function App() {
   return (
     <BrowserRouter>
       <PWAUpdatePrompt />
+      <OfflineIndicator />
       <Toaster
         position="top-right"
         toastOptions={{
