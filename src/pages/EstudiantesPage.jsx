@@ -10,8 +10,10 @@ import DashboardLayout from '@/components/layout/DashboardLayout'
 import TableSkeleton from '@/components/shared/TableSkeleton'
 import Breadcrumbs from '@/components/shared/Breadcrumbs'
 import SearchBar from '@/components/search/SearchBar'
+import RiskBadge from '@/components/risk/RiskBadge'
 import { Search, Upload, FileDown, FileText, X, Filter } from 'lucide-react'
 import { exportEstudiantesToExcel, exportEstudiantesToPDF } from '@/utils/exportUtils'
+import api from '@/services/api'
 
 export default function EstudiantesPageMejorada() {
   const [estudiantes, setEstudiantes] = useState([])
@@ -24,6 +26,8 @@ export default function EstudiantesPageMejorada() {
   const [showFilters, setShowFilters] = useState(false)
   const [searchResults, setSearchResults] = useState(null)
   const [searching, setSearching] = useState(false)
+  const [riskScores, setRiskScores] = useState({})
+  const [loadingRisks, setLoadingRisks] = useState(false)
   const { user } = useAuth()
   const navigate = useNavigate()
 
@@ -46,11 +50,39 @@ export default function EstudiantesPageMejorada() {
       const data = await getEstudiantes()
       setEstudiantes(data)
       toast.success(`${data.length} estudiantes cargados`)
+
+      // Load risk scores
+      loadRiskScores(data)
     } catch (err) {
       setError('Error al cargar estudiantes')
       toast.error('Error al cargar estudiantes')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadRiskScores = async (estudiantesList) => {
+    try {
+      setLoadingRisks(true)
+      const scores = {}
+
+      // Load risks in parallel
+      await Promise.all(
+        estudiantesList.map(async (est) => {
+          try {
+            const { data: riesgo } = await api.get(`/riesgo/estudiante/${est.id}`)
+            scores[est.id] = riesgo
+          } catch (error) {
+            console.error(`Error fetching risk for ${est.id}:`, error)
+          }
+        })
+      )
+
+      setRiskScores(scores)
+    } catch (error) {
+      console.error('Error loading risk scores:', error)
+    } finally {
+      setLoadingRisks(false)
     }
   }
 
@@ -307,6 +339,9 @@ export default function EstudiantesPageMejorada() {
                       Curso
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                      Riesgo
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                       Apoderado
                     </th>
                     <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
@@ -327,6 +362,18 @@ export default function EstudiantesPageMejorada() {
                       </td>
                       <td className="whitespace-nowrap px-6 py-4">
                         <div className="text-sm text-gray-600">{estudiante.curso?.nombre || 'Sin curso'}</div>
+                      </td>
+                      <td className="whitespace-nowrap px-6 py-4">
+                        {loadingRisks ? (
+                          <div className="w-20 h-5 bg-gray-200 rounded animate-pulse"></div>
+                        ) : riskScores[estudiante.id] ? (
+                          <RiskBadge
+                            level={riskScores[estudiante.id].level}
+                            score={riskScores[estudiante.id].score}
+                          />
+                        ) : (
+                          <span className="text-xs text-gray-400">-</span>
+                        )}
                       </td>
                       <td className="whitespace-nowrap px-6 py-4">
                         <div className="text-sm text-gray-600">{estudiante.apoderado?.nombre || 'Sin apoderado'}</div>
