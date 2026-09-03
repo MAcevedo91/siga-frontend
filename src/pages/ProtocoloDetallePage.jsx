@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getProtocoloById, avanzarEstadoProtocolo } from '@/services/protocolosService'
 import { useAuth } from '@/store/useAuthStore'
+import { formatDate } from '@/utils/formatDate'
 
 const ESTADOS = ['En Investigación', 'Derivado', 'Cerrado']
 
@@ -127,7 +128,7 @@ export default function ProtocoloDetallePage() {
                 <div>
                   <h2 className="mb-2 text-sm font-medium text-gray-500">Fecha de Apertura</h2>
                   <p className="text-lg font-semibold text-gray-900">
-                    {new Date(protocolo.fecha_apertura).toLocaleDateString('es-CL')}
+                    {formatDate(protocolo.fecha_apertura)}
                   </p>
                 </div>
               </div>
@@ -137,7 +138,7 @@ export default function ProtocoloDetallePage() {
                   <h2 className="mb-2 text-sm font-medium text-gray-500">Incidente Relacionado</h2>
                   <div className="rounded-lg border border-gray-200 p-4">
                     <p className="text-sm text-gray-900">
-                      {new Date(protocolo.incidente.fecha).toLocaleDateString('es-CL')} - {protocolo.incidente.tipo_abordaje}
+                      {formatDate(protocolo.incidente.fecha)} - {protocolo.incidente.tipo_abordaje}
                     </p>
                     <span className="mt-2 inline-flex rounded-full bg-yellow-100 px-2 py-1 text-xs font-semibold text-yellow-800">
                       {protocolo.incidente.gravedad}

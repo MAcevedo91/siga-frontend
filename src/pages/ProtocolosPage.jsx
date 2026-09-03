@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getProtocolos, getTiposProtocolo } from '@/services/protocolosService'
 import DashboardLayout from '@/components/layout/DashboardLayout'
+import { formatDate } from '@/utils/formatDate'
 import { ShieldAlert, Clock, CheckCircle, AlertTriangle, Calendar, User, FileText, Plus, Filter, X } from 'lucide-react'
 
 export default function ProtocolosPage() {
@@ -209,7 +210,7 @@ export default function ProtocolosPage() {
                   <tr key={protocolo.id} className="hover:bg-gray-50">
                     <td className="whitespace-nowrap px-6 py-4">
                       <div className="text-sm text-gray-900">
-                        {new Date(protocolo.fecha_apertura).toLocaleDateString('es-CL')}
+                        {formatDate(protocolo.fecha_apertura)}
                       </div>
                     </td>
                     <td className="px-6 py-4">

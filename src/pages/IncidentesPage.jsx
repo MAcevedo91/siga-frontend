@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { getIncidentes } from '@/services/incidentesService'
 import { useAuth } from '@/store/useAuthStore'
 import DashboardLayout from '@/components/layout/DashboardLayout'
+import { formatDate } from '@/utils/formatDate'
 
 export default function IncidentesPage() {
   const navigate = useNavigate()
@@ -245,7 +246,7 @@ export default function IncidentesPage() {
                         <svg className="h-5 w-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
-                        {new Date(incidente.fecha).toLocaleDateString('es-CL')}
+                        {formatDate(incidente.fecha)}
                       </p>
                     </div>
 
