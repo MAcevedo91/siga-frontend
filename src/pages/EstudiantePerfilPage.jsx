@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getEstudianteById } from '@/services/estudiantesService'
 import DownloadPDFButton from '../components/reports/DownloadPDFButton'
+import { formatDate } from '@/utils/formatDate'
 
 export default function EstudiantePerfilPage() {
   const { id } = useParams()
@@ -93,7 +94,7 @@ export default function EstudiantePerfilPage() {
                   <div>
                     <dt className="text-sm font-medium text-gray-500">Fecha de Nacimiento</dt>
                     <dd className="mt-1 text-sm text-gray-900">
-                      {new Date(estudiante.fecha_nacimiento).toLocaleDateString('es-CL')}
+                      {formatDate(estudiante.fecha_nacimiento)}
                     </dd>
                   </div>
                   <div>
@@ -162,7 +163,7 @@ export default function EstudiantePerfilPage() {
                                 {incidente.gravedad}
                               </span>
                               <span className="text-sm text-gray-500">
-                                {new Date(incidente.fecha).toLocaleDateString('es-CL')}
+                                {formatDate(incidente.fecha)}
                               </span>
                             </div>
                             <p className="mt-2 text-sm text-gray-900">{incidente.tipo_abordaje}</p>

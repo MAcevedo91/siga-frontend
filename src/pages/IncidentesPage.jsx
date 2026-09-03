@@ -11,6 +11,7 @@ import Pagination from '@/components/shared/Pagination'
 import SearchBar from '@/components/search/SearchBar'
 import { AlertTriangle, Plus, FileDown, FileText, Filter, X, Calendar } from 'lucide-react'
 import { exportIncidentesToExcel, exportIncidentesToPDF } from '@/utils/exportUtils'
+import { formatDate } from '@/utils/formatDate'
 
 export default function IncidentesPageMejorada() {
   const navigate = useNavigate()
@@ -355,7 +356,7 @@ export default function IncidentesPageMejorada() {
                         <td className="whitespace-nowrap px-6 py-4">
                           <div className="text-sm text-gray-900 flex items-center gap-1">
                             <Calendar className="w-3 h-3 text-gray-400" />
-                            {new Date(incidente.fecha).toLocaleDateString('es-CL')}
+                            {formatDate(incidente.fecha)}
                           </div>
                         </td>
                         <td className="whitespace-nowrap px-6 py-4">

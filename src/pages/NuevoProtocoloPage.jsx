@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import { createProtocolo, getTiposProtocolo, getIncidentesByEstudiante } from '@/services/protocolosService'
 import { buscarEstudiantes } from '@/services/incidentesService'
 import { useDebounce } from '@/hooks/useDebounce'
+import { formatDate } from '@/utils/formatDate'
 
 export default function NuevoProtocoloPage() {
   const navigate = useNavigate()
@@ -236,7 +237,7 @@ export default function NuevoProtocoloPage() {
                     <option value="">Sin incidente relacionado</option>
                     {incidentesRelacionados.map((inc) => (
                       <option key={inc.id} value={inc.id}>
-                        {new Date(inc.fecha).toLocaleDateString('es-CL')} - {inc.tipo_abordaje} ({inc.gravedad})
+                        {formatDate(inc.fecha)} - {inc.tipo_abordaje} ({inc.gravedad})
                       </option>
                     ))}
                   </select>
