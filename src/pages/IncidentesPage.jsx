@@ -1,11 +1,19 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import toast from 'react-hot-toast'
 import { getIncidentes } from '@/services/incidentesService'
+import { searchIncidentes } from '@/services/searchService'
 import { useAuth } from '@/store/useAuthStore'
 import DashboardLayout from '@/components/layout/DashboardLayout'
+import TableSkeleton from '@/components/shared/TableSkeleton'
+import Breadcrumbs from '@/components/shared/Breadcrumbs'
+import Pagination from '@/components/shared/Pagination'
+import SearchBar from '@/components/search/SearchBar'
+import { AlertTriangle, Plus, FileDown, FileText, Filter, X, Calendar } from 'lucide-react'
+import { exportIncidentesToExcel, exportIncidentesToPDF } from '@/utils/exportUtils'
 import { formatDate } from '@/utils/formatDate'
 
-export default function IncidentesPage() {
+export default function IncidentesPageMejorada() {
   const navigate = useNavigate()
   const [incidentes, setIncidentes] = useState([])
   const [loading, setLoading] = useState(true)
@@ -14,6 +22,11 @@ export default function IncidentesPage() {
   const [gravedadFilter, setGravedadFilter] = useState('')
   const [fechaDesde, setFechaDesde] = useState('')
   const [fechaHasta, setFechaHasta] = useState('')
+  const [showFilters, setShowFilters] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [searchResults, setSearchResults] = useState(null)
+  const [searching, setSearching] = useState(false)
+  const itemsPerPage = 20
   const { user } = useAuth()
 
   const canCreate = ['Administrador', 'Equipo de Formación', 'Inspector'].includes(user?.rol)
@@ -22,9 +35,32 @@ export default function IncidentesPage() {
     loadIncidentes()
   }, [estadoFilter, gravedadFilter, fechaDesde, fechaHasta])
 
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [estadoFilter, gravedadFilter, fechaDesde, fechaHasta])
+
+  const handleSearch = async (query) => {
+    if (!query) {
+      setSearchResults(null)
+      return
+    }
+
+    try {
+      setSearching(true)
+      const results = await searchIncidentes(query)
+      setSearchResults(results)
+    } catch (error) {
+      toast.error('Error en búsqueda')
+      console.error('Search error:', error)
+    } finally {
+      setSearching(false)
+    }
+  }
+
   const loadIncidentes = async () => {
     try {
       setLoading(true)
+      setError(null)
       const params = {}
       if (estadoFilter) params.estado = estadoFilter
       if (gravedadFilter) params.gravedad = gravedadFilter
@@ -32,20 +68,22 @@ export default function IncidentesPage() {
       if (fechaHasta) params.fecha_hasta = fechaHasta
       const data = await getIncidentes(params)
       setIncidentes(data)
+      toast.success(`${data.length} incidentes cargados`)
     } catch (err) {
       setError('Error al cargar incidentes')
+      toast.error('Error al cargar incidentes')
     } finally {
       setLoading(false)
     }
   }
 
-  const getCardGradient = (gravedad) => {
-    const gradients = {
-      Leve: 'from-cyan-50 via-cyan-100/50 to-white',
-      Grave: 'from-orange-50 via-orange-100/50 to-white',
-      Gravísima: 'from-red-50 via-purple-100/50 to-white',
+  const getGravedadBadge = (gravedad) => {
+    const styles = {
+      Leve: 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg shadow-cyan-500/30',
+      Grave: 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/30',
+      Gravísima: 'bg-gradient-to-r from-red-600 to-purple-600 text-white shadow-lg shadow-red-600/40',
     }
-    return gradients[gravedad] || 'from-gray-50 to-white'
+    return styles[gravedad] || 'bg-gray-100 text-gray-800'
   }
 
   const getEstadoBadge = (estado) => {
@@ -58,40 +96,44 @@ export default function IncidentesPage() {
     return styles[estado] || 'bg-gray-100 text-gray-800'
   }
 
-  const getGravedadBadge = (gravedad) => {
-    const styles = {
-      Leve: 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg shadow-cyan-500/30',
-      Grave: 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/30',
-      Gravísima: 'bg-gradient-to-r from-red-600 to-purple-600 text-white shadow-lg shadow-red-600/40',
-    }
-    return styles[gravedad] || 'bg-gray-100 text-gray-800'
+  const handleExportExcel = () => {
+    exportIncidentesToExcel(paginatedIncidentes)
+    toast.success('Exportado a Excel exitosamente')
   }
 
-  if (loading && incidentes.length === 0) {
-    return (
-      <DashboardLayout>
-        <div className="flex min-h-screen items-center justify-center">
-          <div className="text-center">
-            <svg className="mx-auto h-12 w-12 animate-spin text-blue-600" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-            </svg>
-            <p className="mt-2 text-gray-600">Cargando incidentes...</p>
-          </div>
-        </div>
-      </DashboardLayout>
-    )
+  const handleExportPDF = () => {
+    exportIncidentesToPDF(paginatedIncidentes)
+    toast.success('Exportado a PDF exitosamente')
   }
+
+  const clearFilters = () => {
+    setEstadoFilter('')
+    setGravedadFilter('')
+    setFechaDesde('')
+    setFechaHasta('')
+    setSearchResults(null)
+    toast.success('Filtros limpiados')
+  }
+
+  const hasActiveFilters = estadoFilter || gravedadFilter || fechaDesde || fechaHasta
+  const filterCount = [estadoFilter, gravedadFilter, fechaDesde, fechaHasta].filter(Boolean).length
+
+  const displayIncidentes = searchResults || incidentes
+  const totalPages = Math.ceil(displayIncidentes.length / itemsPerPage)
+  const paginatedIncidentes = displayIncidentes.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  )
 
   if (error) {
     return (
       <DashboardLayout>
         <div className="flex min-h-screen items-center justify-center">
           <div className="rounded-lg bg-red-50 p-6 text-center">
-            <p className="text-red-800">{error}</p>
+            <p className="text-red-800 mb-4">{error}</p>
             <button
               onClick={loadIncidentes}
-              className="mt-4 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+              className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
             >
               Reintentar
             </button>
@@ -103,194 +145,265 @@ export default function IncidentesPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-4 sm:p-6 lg:p-8">
-        <div className="mx-auto max-w-7xl">
-          {/* Header */}
-          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="bg-gradient-to-r from-cyan-600 via-purple-600 to-orange-600 bg-clip-text text-3xl font-bold text-transparent">
-                Gestión de Incidentes
-              </h1>
-              <p className="mt-2 text-sm text-gray-600">
-                {incidentes.length} caso{incidentes.length !== 1 ? 's' : ''} registrado{incidentes.length !== 1 ? 's' : ''}
-              </p>
-            </div>
+      <div className="p-6 max-w-7xl mx-auto">
+        <Breadcrumbs items={[{ label: 'Incidentes' }]} />
+
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Registro de Incidentes</h1>
+            <p className="mt-1 text-sm text-gray-600">
+              {loading ? (
+                <span className="inline-block w-20 h-4 bg-gray-200 rounded animate-pulse"></span>
+              ) : (
+                <>
+                  {displayIncidentes.length} incidente{displayIncidentes.length !== 1 ? 's' : ''}
+                  {(hasActiveFilters || searchResults) && ` (${incidentes.length} total)`}
+                </>
+              )}
+            </p>
+          </div>
+
+          <div className="flex gap-2 flex-wrap">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center gap-2 rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+            >
+              <Filter className="w-4 h-4" />
+              Filtros
+              {hasActiveFilters && (
+                <span className="ml-1 px-2 py-0.5 bg-blue-600 text-white text-xs rounded-full">
+                  {filterCount}
+                </span>
+              )}
+            </button>
+
+            {displayIncidentes.length > 0 && (
+              <>
+                <button
+                  onClick={handleExportExcel}
+                  className="flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 transition-colors"
+                  disabled={loading}
+                >
+                  <FileDown className="w-4 h-4" />
+                  Excel
+                </button>
+                <button
+                  onClick={handleExportPDF}
+                  className="flex items-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors"
+                  disabled={loading}
+                >
+                  <FileText className="w-4 h-4" />
+                  PDF
+                </button>
+              </>
+            )}
+
             {canCreate && (
               <button
                 onClick={() => navigate('/incidentes/nuevo')}
-                className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 via-purple-600 to-cyan-600 px-6 py-3 text-sm font-semibold text-white shadow-xl shadow-purple-500/30 transition-all hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/40"
+                data-testid="nuevo-incidente-button"
+                className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
               >
-                <svg className="h-5 w-5 transition-transform group-hover:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
+                <Plus className="w-4 h-4" />
                 Nuevo Incidente
               </button>
             )}
           </div>
+        </div>
 
-          {/* Filtros */}
-          <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="group">
-              <label htmlFor="estado" className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-700">
-                <svg className="h-4 w-4 text-cyan-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Estado
-              </label>
-              <select
-                id="estado"
-                value={estadoFilter}
-                onChange={(e) => setEstadoFilter(e.target.value)}
-                className="block w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 shadow-sm transition-all focus:border-cyan-500 focus:outline-none focus:ring-4 focus:ring-cyan-500/20 group-hover:border-cyan-300"
-              >
-                <option value="">Todos</option>
-                <option value="Abierto">Abierto</option>
-                <option value="En Investigación">En Investigación</option>
-                <option value="Resuelto">Resuelto</option>
-                <option value="Cerrado">Cerrado</option>
-              </select>
+        {showFilters && (
+          <div className="mb-6 bg-white rounded-lg border border-gray-200 p-4 shadow-sm animate-in slide-in-from-top duration-200">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <Filter className="w-4 h-4" />
+                Filtros avanzados
+              </h3>
+              {hasActiveFilters && (
+                <button
+                  onClick={clearFilters}
+                  className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                >
+                  <X className="w-3 h-3" />
+                  Limpiar filtros
+                </button>
+              )}
             </div>
 
-            <div className="group">
-              <label htmlFor="gravedad" className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-700">
-                <svg className="h-4 w-4 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                Gravedad
+            <div className="mb-4">
+              <label className="block text-xs font-medium text-gray-600 mb-2">
+                Búsqueda de texto completo
               </label>
-              <select
-                id="gravedad"
-                value={gravedadFilter}
-                onChange={(e) => setGravedadFilter(e.target.value)}
-                className="block w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 shadow-sm transition-all focus:border-orange-500 focus:outline-none focus:ring-4 focus:ring-orange-500/20 group-hover:border-orange-300"
-              >
-                <option value="">Todas</option>
-                <option value="Leve">Leve</option>
-                <option value="Grave">Grave</option>
-                <option value="Gravísima">Gravísima</option>
-              </select>
-            </div>
-
-            <div className="group">
-              <label htmlFor="fecha_desde" className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-700">
-                <svg className="h-4 w-4 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                Desde
-              </label>
-              <input
-                type="date"
-                id="fecha_desde"
-                value={fechaDesde}
-                onChange={(e) => setFechaDesde(e.target.value)}
-                className="block w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 shadow-sm transition-all focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/20 group-hover:border-purple-300"
+              <SearchBar
+                onSearch={handleSearch}
+                placeholder="Buscar incidente (descripción, estudiante, testigos)..."
               />
+              {searching && (
+                <p className="text-xs text-gray-500 mt-1">Buscando...</p>
+              )}
+              {searchResults && (
+                <p className="text-xs text-blue-600 mt-1">
+                  {searchResults.length} resultado{searchResults.length !== 1 ? 's' : ''} encontrado{searchResults.length !== 1 ? 's' : ''}
+                </p>
+              )}
             </div>
 
-            <div className="group">
-              <label htmlFor="fecha_hasta" className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-700">
-                <svg className="h-4 w-4 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                Hasta
-              </label>
-              <input
-                type="date"
-                id="fecha_hasta"
-                value={fechaHasta}
-                onChange={(e) => setFechaHasta(e.target.value)}
-                className="block w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 shadow-sm transition-all focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/20 group-hover:border-purple-300"
-              />
-            </div>
-          </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-2">Estado</label>
+                <select
+                  value={estadoFilter}
+                  onChange={(e) => setEstadoFilter(e.target.value)}
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="">Todos</option>
+                  <option value="Abierto">Abierto</option>
+                  <option value="En Investigación">En Investigación</option>
+                  <option value="Resuelto">Resuelto</option>
+                  <option value="Cerrado">Cerrado</option>
+                </select>
+              </div>
 
-          {/* Grid de Cards */}
-          {incidentes.length === 0 ? (
-            <div className="flex min-h-[300px] items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50">
-              <div className="text-center">
-                <svg className="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <h3 className="mt-4 text-lg font-semibold text-gray-900">No hay incidentes registrados</h3>
-                <p className="mt-2 text-sm text-gray-600">Los incidentes aparecerán aquí cuando se registren</p>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-2">Gravedad</label>
+                <select
+                  value={gravedadFilter}
+                  onChange={(e) => setGravedadFilter(e.target.value)}
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="">Todas</option>
+                  <option value="Leve">Leve</option>
+                  <option value="Grave">Grave</option>
+                  <option value="Gravísima">Gravísima</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-2">Fecha desde</label>
+                <input
+                  type="date"
+                  value={fechaDesde}
+                  onChange={(e) => setFechaDesde(e.target.value)}
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-2">Fecha hasta</label>
+                <input
+                  type="date"
+                  value={fechaHasta}
+                  onChange={(e) => setFechaHasta(e.target.value)}
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
               </div>
             </div>
-          ) : (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {incidentes.map((incidente) => (
-                <div
-                  key={incidente.id}
-                  className={`group relative overflow-hidden rounded-2xl border-2 border-gray-200 bg-gradient-to-br ${getCardGradient(incidente.gravedad)} p-6 shadow-lg transition-all hover:scale-[1.02] hover:border-gray-300 hover:shadow-2xl`}
-                >
-                  {/* Badges superiores */}
-                  <div className="mb-4 flex items-center justify-between gap-2">
-                    <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wide ${getGravedadBadge(incidente.gravedad)}`}>
-                      <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                      {incidente.gravedad}
-                    </span>
-                    <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wide ${getEstadoBadge(incidente.estado)}`}>
-                      <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                      {incidente.estado}
-                    </span>
-                  </div>
+          </div>
+        )}
 
-                  {/* Contenido */}
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Fecha del Incidente</p>
-                      <p className="mt-1 flex items-center gap-2 text-lg font-bold text-gray-900">
-                        <svg className="h-5 w-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        {formatDate(incidente.fecha)}
-                      </p>
-                    </div>
-
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Tipo de Abordaje</p>
-                      <p className="mt-1 flex items-center gap-2 text-base font-semibold text-gray-900">
-                        <svg className="h-5 w-5 text-cyan-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        {incidente.tipo_abordaje}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-2 rounded-xl bg-white/70 px-4 py-3 backdrop-blur-sm">
-                      <svg className="h-5 w-5 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                      </svg>
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Estudiantes Involucrados</p>
-                        <p className="text-lg font-bold text-gray-900">
-                          {incidente.estudiantes_count || 0} estudiante{incidente.estudiantes_count !== 1 ? 's' : ''}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Botón de acción */}
-                  <button
-                    onClick={() => navigate(`/incidentes/${incidente.id}`)}
-                    className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-gray-800 to-gray-900 px-4 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:from-gray-900 hover:to-black hover:shadow-xl"
-                  >
-                    Ver Detalle
-                    <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-
-                  {/* Efecto decorativo */}
-                  <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-gradient-to-br from-white/20 to-transparent blur-2xl transition-transform group-hover:scale-150" />
-                </div>
-              ))}
+        {loading ? (
+          <TableSkeleton rows={10} columns={6} />
+        ) : displayIncidentes.length === 0 ? (
+          <div className="bg-white rounded-lg border-2 border-dashed border-gray-300 p-12 text-center">
+            <AlertTriangle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-700 mb-2">
+              {hasActiveFilters ? 'No se encontraron incidentes' : 'No hay incidentes registrados'}
+            </h3>
+            <p className="text-sm text-gray-500 mb-6">
+              {hasActiveFilters
+                ? 'Intenta ajustar los filtros de búsqueda'
+                : 'Comienza registrando el primer incidente del sistema'}
+            </p>
+            {canCreate && !hasActiveFilters && (
+              <button
+                onClick={() => navigate('/incidentes/nuevo')}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                Registrar Primer Incidente
+              </button>
+            )}
+          </div>
+        ) : (
+          <>
+            <div className="overflow-hidden rounded-lg bg-white shadow">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                        Fecha
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                        Estudiante
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                        Gravedad
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                        Estado
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                        Descripción
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
+                        Acciones
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 bg-white">
+                    {paginatedIncidentes.map((incidente) => (
+                      <tr key={incidente.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="whitespace-nowrap px-6 py-4">
+                          <div className="text-sm text-gray-900 flex items-center gap-1">
+                            <Calendar className="w-3 h-3 text-gray-400" />
+                            {formatDate(incidente.fecha)}
+                          </div>
+                        </td>
+                        <td className="whitespace-nowrap px-6 py-4">
+                          <div className="text-sm font-medium text-gray-900">
+                            {incidente.estudiante?.nombre || ''} {incidente.estudiante?.apellido || ''}
+                          </div>
+                          <div className="text-xs text-gray-500">{incidente.estudiante?.rut || ''}</div>
+                        </td>
+                        <td className="whitespace-nowrap px-6 py-4">
+                          <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${getGravedadBadge(incidente.gravedad)}`}>
+                            {incidente.gravedad}
+                          </span>
+                        </td>
+                        <td className="whitespace-nowrap px-6 py-4">
+                          <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${getEstadoBadge(incidente.estado)}`}>
+                            {incidente.estado}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 max-w-xs">
+                          <div className="text-sm text-gray-600 truncate">{incidente.descripcion}</div>
+                        </td>
+                        <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
+                          <button
+                            onClick={() => navigate(`/incidentes/${incidente.id}`)}
+                            className="text-blue-600 hover:text-blue-900 transition-colors font-medium"
+                          >
+                            Ver Detalle
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          )}
-        </div>
+
+            {totalPages > 1 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+                itemsPerPage={itemsPerPage}
+                totalItems={incidentes.length}
+              />
+            )}
+          </>
+        )}
       </div>
     </DashboardLayout>
   )

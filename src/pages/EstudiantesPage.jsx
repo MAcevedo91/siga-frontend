@@ -1,20 +1,33 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import toast, { Toaster } from 'react-hot-toast'
 import { getEstudiantes } from '@/services/estudiantesService'
+import { searchEstudiantes } from '@/services/searchService'
 import { useDebounce } from '@/hooks/useDebounce'
 import ImportarEstudiantesModal from '@/components/estudiantes/ImportarEstudiantesModal'
 import { useAuth } from '@/store/useAuthStore'
 import DashboardLayout from '@/components/layout/DashboardLayout'
-import { Search, Upload, User } from 'lucide-react'
+import TableSkeleton from '@/components/shared/TableSkeleton'
+import Breadcrumbs from '@/components/shared/Breadcrumbs'
+import SearchBar from '@/components/search/SearchBar'
+import RiskBadge from '@/components/risk/RiskBadge'
+import { Search, Upload, FileDown, FileText, X, Filter } from 'lucide-react'
+import { exportEstudiantesToExcel, exportEstudiantesToPDF } from '@/utils/exportUtils'
+import api from '@/services/api'
 
-export default function EstudiantesPage() {
+export default function EstudiantesPageMejorada() {
   const [estudiantes, setEstudiantes] = useState([])
+  const [filteredEstudiantes, setFilteredEstudiantes] = useState([])
   const [loading, setLoading] = useState(true)
-  const [initialLoad, setInitialLoad] = useState(true)
   const [error, setError] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [cursoFilter, setCursoFilter] = useState('')
   const [showImportModal, setShowImportModal] = useState(false)
+  const [showFilters, setShowFilters] = useState(false)
+  const [searchResults, setSearchResults] = useState(null)
+  const [searching, setSearching] = useState(false)
+  const [riskScores, setRiskScores] = useState({})
+  const [loadingRisks, setLoadingRisks] = useState(false)
   const { user } = useAuth()
   const navigate = useNavigate()
 
@@ -24,198 +37,358 @@ export default function EstudiantesPage() {
 
   useEffect(() => {
     loadEstudiantes()
-  }, [debouncedSearch, cursoFilter])
+  }, [])
+
+  useEffect(() => {
+    filterEstudiantes()
+  }, [debouncedSearch, cursoFilter, estudiantes])
 
   const loadEstudiantes = async () => {
     try {
       setLoading(true)
-      const params = {}
-      if (debouncedSearch) params.search = debouncedSearch
-      if (cursoFilter) params.curso_id = cursoFilter
-      const data = await getEstudiantes(params)
+      setError(null)
+      const data = await getEstudiantes()
       setEstudiantes(data)
+      toast.success(`${data.length} estudiantes cargados`)
+
+      // Load risk scores
+      loadRiskScores(data)
     } catch (err) {
       setError('Error al cargar estudiantes')
+      toast.error('Error al cargar estudiantes')
     } finally {
       setLoading(false)
-      setInitialLoad(false)
     }
+  }
+
+  const loadRiskScores = async (estudiantesList) => {
+    try {
+      setLoadingRisks(true)
+
+      // OPTIMIZATION: Use batch endpoint to fetch all risk scores in ONE request
+      const { data: estudiantesConRiesgo } = await api.get('/riesgo/estudiantes')
+
+      // Map risk scores by student ID
+      const scores = {}
+      for (const estudiante of estudiantesConRiesgo) {
+        scores[estudiante.id] = estudiante.riesgo
+      }
+
+      setRiskScores(scores)
+    } catch (error) {
+      console.error('Error loading risk scores:', error)
+    } finally {
+      setLoadingRisks(false)
+    }
+  }
+
+  const handleSearch = async (query) => {
+    if (!query) {
+      setSearchResults(null)
+      return
+    }
+
+    try {
+      setSearching(true)
+      const results = await searchEstudiantes(query)
+      setSearchResults(results)
+    } catch (error) {
+      toast.error('Error en búsqueda')
+      console.error('Search error:', error)
+    } finally {
+      setSearching(false)
+    }
+  }
+
+  const filterEstudiantes = () => {
+    let filtered = [...estudiantes]
+
+    if (debouncedSearch) {
+      const searchLower = debouncedSearch.toLowerCase()
+      filtered = filtered.filter(
+        (e) =>
+          e.nombre?.toLowerCase().includes(searchLower) ||
+          e.apellido?.toLowerCase().includes(searchLower) ||
+          e.rut?.toLowerCase().includes(searchLower)
+      )
+    }
+
+    if (cursoFilter) {
+      filtered = filtered.filter((e) => e.curso_id === parseInt(cursoFilter))
+    }
+
+    setFilteredEstudiantes(filtered)
   }
 
   const handleImportSuccess = (resumen) => {
     loadEstudiantes()
-    alert(`Importación completada:\n${resumen.importados} importados\n${resumen.actualizados} actualizados\n${resumen.errores} errores`)
+    toast.success(
+      `Importación completada: ${resumen.importados} importados, ${resumen.actualizados} actualizados`,
+      { duration: 5000 }
+    )
+    if (resumen.errores > 0) {
+      toast.error(`${resumen.errores} registros con errores`, { duration: 5000 })
+    }
   }
 
   const handleVerPerfil = (id) => {
     navigate(`/estudiantes/${id}`)
   }
 
-  const getInitials = (nombre, apellido) => {
-    return `${nombre?.[0] || ''}${apellido?.[0] || ''}`.toUpperCase()
+  const handleExportExcel = () => {
+    exportEstudiantesToExcel(filteredEstudiantes)
+    toast.success('Exportado a Excel exitosamente')
   }
 
-  const getCursoColor = (curso) => {
-    const colors = [
-      'from-cyan-400 to-blue-500',
-      'from-blue-400 to-indigo-500',
-      'from-indigo-400 to-purple-500',
-      'from-purple-400 to-pink-500',
-      'from-pink-400 to-rose-500',
-      'from-rose-400 to-red-500',
-      'from-orange-400 to-amber-500',
-      'from-teal-400 to-emerald-500',
-    ]
-    const hash = (curso || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
-    return colors[hash % colors.length]
+  const handleExportPDF = () => {
+    exportEstudiantesToPDF(filteredEstudiantes)
+    toast.success('Exportado a PDF exitosamente')
   }
 
-  if (loading && estudiantes.length === 0) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <svg className="mx-auto h-12 w-12 animate-spin text-blue-600" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-          </svg>
-          <p className="mt-2 text-gray-600">Cargando estudiantes...</p>
-        </div>
-      </div>
-    )
+  const clearFilters = () => {
+    setSearchTerm('')
+    setCursoFilter('')
+    setSearchResults(null)
+    toast.success('Filtros limpiados')
   }
+
+  const hasActiveFilters = searchTerm || cursoFilter
+  const displayEstudiantes = searchResults || filteredEstudiantes
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="rounded-lg bg-red-50 p-6 text-center">
-          <p className="text-red-800">{error}</p>
-          <button
-            onClick={loadEstudiantes}
-            className="mt-4 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
-          >
-            Reintentar
-          </button>
+      <DashboardLayout>
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="rounded-lg bg-red-50 p-6 text-center">
+            <p className="text-red-800 mb-4">{error}</p>
+            <button
+              onClick={loadEstudiantes}
+              className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+            >
+              Reintentar
+            </button>
+          </div>
         </div>
-      </div>
+      </DashboardLayout>
     )
   }
 
   return (
     <DashboardLayout>
+      <Toaster position="top-right" />
       <div className="p-6 max-w-7xl mx-auto">
+        <Breadcrumbs items={[{ label: 'Estudiantes' }]} />
+
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Estudiantes</h1>
             <p className="mt-1 text-sm text-gray-600">
-              {estudiantes.length} estudiante{estudiantes.length !== 1 ? 's' : ''} registrado{estudiantes.length !== 1 ? 's' : ''}
+              {loading ? (
+                <span className="inline-block w-20 h-4 bg-gray-200 rounded animate-pulse"></span>
+              ) : (
+                <>
+                  {displayEstudiantes.length} estudiante{displayEstudiantes.length !== 1 ? 's' : ''}
+                  {(hasActiveFilters || searchResults) && ` (${estudiantes.length} total)`}
+                </>
+              )}
             </p>
           </div>
-          {canWrite && (
+
+          <div className="flex gap-2 flex-wrap">
             <button
-              onClick={() => setShowImportModal(true)}
-              className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center gap-2 rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
             >
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-              </svg>
-              Importar Estudiantes
+              <Filter className="w-4 h-4" />
+              Filtros
+              {hasActiveFilters && (
+                <span className="ml-1 px-2 py-0.5 bg-blue-600 text-white text-xs rounded-full">
+                  {(searchTerm ? 1 : 0) + (cursoFilter ? 1 : 0)}
+                </span>
+              )}
             </button>
-          )}
+
+            {displayEstudiantes.length > 0 && (
+              <>
+                <button
+                  onClick={handleExportExcel}
+                  data-testid="export-excel-button"
+                  className="flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 transition-colors"
+                  disabled={loading}
+                >
+                  <FileDown className="w-4 h-4" />
+                  Excel
+                </button>
+                <button
+                  onClick={handleExportPDF}
+                  className="flex items-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors"
+                  disabled={loading}
+                >
+                  <FileText className="w-4 h-4" />
+                  PDF
+                </button>
+              </>
+            )}
+
+            {canWrite && (
+              <button
+                onClick={() => setShowImportModal(true)}
+                className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+              >
+                <Upload className="w-4 h-4" />
+                Importar
+              </button>
+            )}
+          </div>
         </div>
 
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row">
-          <div className="flex-1">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Buscar por nombre o RUT..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full rounded-md border border-gray-300 py-2 pl-10 pr-4 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
-              <svg
-                className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
+        {showFilters && (
+          <div className="mb-6 bg-white rounded-lg border border-gray-200 p-4 shadow-sm animate-in slide-in-from-top duration-200">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <Filter className="w-4 h-4" />
+                Filtros de búsqueda
+              </h3>
+              {hasActiveFilters && (
+                <button
+                  onClick={clearFilters}
+                  className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                >
+                  <X className="w-3 h-3" />
+                  Limpiar filtros
+                </button>
+              )}
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-2">
+                  Búsqueda de texto completo
+                </label>
+                <SearchBar
+                  onSearch={handleSearch}
+                  placeholder="Buscar estudiante (nombre, RUT, apoderado)..."
+                />
+                {searching && (
+                  <p className="text-xs text-gray-500 mt-1">Buscando...</p>
+                )}
+                {searchResults && (
+                  <p className="text-xs text-blue-600 mt-1">
+                    {searchResults.length} resultado{searchResults.length !== 1 ? 's' : ''} encontrado{searchResults.length !== 1 ? 's' : ''}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-2">Filtrar por curso</label>
+                <select
+                  value={cursoFilter}
+                  onChange={(e) => setCursoFilter(e.target.value)}
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="">Todos los cursos</option>
+                  <option value="1">1° Básico</option>
+                  <option value="2">2° Básico</option>
+                  <option value="3">3° Básico</option>
+                  <option value="4">4° Básico</option>
+                  <option value="5">5° Básico</option>
+                  <option value="6">6° Básico</option>
+                  <option value="7">7° Básico</option>
+                  <option value="8">8° Básico</option>
+                </select>
+              </div>
             </div>
           </div>
-          <div className="sm:w-64">
-            <select
-              value={cursoFilter}
-              onChange={(e) => setCursoFilter(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            >
-              <option value="">Todos los cursos</option>
-              <option value="1">1° Básico</option>
-              <option value="2">2° Básico</option>
-              <option value="3">3° Básico</option>
-              <option value="4">4° Básico</option>
-              <option value="5">5° Básico</option>
-              <option value="6">6° Básico</option>
-              <option value="7">7° Básico</option>
-              <option value="8">8° Básico</option>
-            </select>
-          </div>
-        </div>
+        )}
 
-        <div className={`overflow-hidden rounded-lg bg-white shadow transition-opacity duration-200 ${loading ? 'opacity-50' : 'opacity-100'}`}>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    RUT
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Nombre Completo
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Curso
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Apoderado
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Acciones
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 bg-white">
-                {estudiantes.map((estudiante) => (
-                  <tr key={estudiante.id} className="hover:bg-gray-50">
-                    <td className="whitespace-nowrap px-6 py-4">
-                      <div className="text-sm font-mono text-gray-900">{estudiante.rut}</div>
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">
-                        {estudiante.nombre} {estudiante.apellido}
-                      </div>
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-4">
-                      <div className="text-sm text-gray-600">{estudiante.curso?.nombre || 'Sin curso'}</div>
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-4">
-                      <div className="text-sm text-gray-600">{estudiante.apoderado?.nombre || 'Sin apoderado'}</div>
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-                      <button
-                        onClick={() => handleVerPerfil(estudiante.id)}
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        Ver Perfil
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {loading ? (
+          <TableSkeleton rows={8} columns={5} />
+        ) : displayEstudiantes.length === 0 ? (
+          <div className="bg-white rounded-lg border-2 border-dashed border-gray-300 p-12 text-center">
+            <Search className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-700 mb-2">
+              {hasActiveFilters ? 'No se encontraron resultados' : 'No hay estudiantes registrados'}
+            </h3>
+            <p className="text-sm text-gray-500">
+              {hasActiveFilters
+                ? 'Intenta ajustar los filtros de búsqueda'
+                : 'Comienza importando estudiantes desde un archivo Excel o CSV'}
+            </p>
           </div>
-        </div>
-      </div>
+        ) : (
+          <div
+            className={`overflow-hidden rounded-lg bg-white shadow transition-opacity duration-200 ${
+              loading ? 'opacity-50' : 'opacity-100'
+            }`}
+          >
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                      RUT
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                      Nombre Completo
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                      Curso
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                      Riesgo
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                      Apoderado
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
+                      Acciones
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200 bg-white">
+                  {displayEstudiantes.map((estudiante) => (
+                    <tr key={estudiante.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="whitespace-nowrap px-6 py-4">
+                        <div className="text-sm font-mono text-gray-900">{estudiante.rut}</div>
+                      </td>
+                      <td className="whitespace-nowrap px-6 py-4">
+                        <div className="text-sm font-medium text-gray-900">
+                          {estudiante.nombre} {estudiante.apellido}
+                        </div>
+                      </td>
+                      <td className="whitespace-nowrap px-6 py-4">
+                        <div className="text-sm text-gray-600">{estudiante.curso?.nombre || 'Sin curso'}</div>
+                      </td>
+                      <td className="whitespace-nowrap px-6 py-4">
+                        {loadingRisks ? (
+                          <div className="w-20 h-5 bg-gray-200 rounded animate-pulse"></div>
+                        ) : riskScores[estudiante.id] ? (
+                          <RiskBadge
+                            level={riskScores[estudiante.id].level}
+                            score={riskScores[estudiante.id].score}
+                          />
+                        ) : (
+                          <span className="text-xs text-gray-400">-</span>
+                        )}
+                      </td>
+                      <td className="whitespace-nowrap px-6 py-4">
+                        <div className="text-sm text-gray-600">{estudiante.apoderado?.nombre || 'Sin apoderado'}</div>
+                      </td>
+                      <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
+                        <button
+                          onClick={() => handleVerPerfil(estudiante.id)}
+                          className="text-blue-600 hover:text-blue-900 transition-colors font-medium"
+                        >
+                          Ver Perfil
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
         {canWrite && (
           <ImportarEstudiantesModal
@@ -224,6 +397,7 @@ export default function EstudiantesPage() {
             onSuccess={handleImportSuccess}
           />
         )}
+      </div>
     </DashboardLayout>
   )
 }

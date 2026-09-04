@@ -13,6 +13,8 @@ import IncidenteDetallePage from '@/pages/IncidenteDetallePage'
 import ProtocolosPage from '@/pages/ProtocolosPage'
 import NuevoProtocoloPage from '@/pages/NuevoProtocoloPage'
 import ProtocoloDetallePage from '@/pages/ProtocoloDetallePage'
+import AnalyticsDashboard from '@/pages/AnalyticsDashboard'
+import AsistenciaPage from '@/pages/AsistenciaPage'
 import { useAuth } from '@/store/useAuthStore'
 
 export default function AppRouter() {
@@ -25,9 +27,9 @@ export default function AppRouter() {
       <Route
         path="/dashboard"
         element={
-          <PrivateRoute>
+          <RoleRoute allowedRoles={['Administrador', 'Equipo de Formación', 'Directivo']}>
             <DashboardPage />
-          </PrivateRoute>
+          </RoleRoute>
         }
       />
       <Route
@@ -100,6 +102,22 @@ export default function AppRouter() {
           <RoleRoute allowedRoles={['Administrador', 'Equipo de Formación']}>
             <ProtocoloDetallePage />
           </RoleRoute>
+        }
+      />
+      <Route
+        path="/analytics"
+        element={
+          <RoleRoute allowedRoles={['Administrador', 'Equipo de Formación', 'Directivo']}>
+            <AnalyticsDashboard />
+          </RoleRoute>
+        }
+      />
+      <Route
+        path="/asistencia"
+        element={
+          <PrivateRoute>
+            <AsistenciaPage />
+          </PrivateRoute>
         }
       />
       <Route
