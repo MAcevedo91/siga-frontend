@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getProtocolos, getTiposProtocolo } from '@/services/protocolosService'
+import { useAuth } from '@/store/useAuthStore'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { formatDate } from '@/utils/formatDate'
 import { ShieldAlert, Clock, CheckCircle, AlertTriangle, Calendar, User, FileText, Plus, Filter, X } from 'lucide-react'
 
 export default function ProtocolosPage() {
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const canCreate = ['Administrador', 'Equipo de Formación'].includes(user?.rol)
   const [protocolos, setProtocolos] = useState([])
   const [tiposProtocolo, setTiposProtocolo] = useState([])
   const [loading, setLoading] = useState(true)
@@ -95,7 +98,7 @@ export default function ProtocolosPage() {
               {protocolos.length} protocolo{protocolos.length !== 1 ? 's' : ''} activo{protocolos.length !== 1 ? 's' : ''}
             </p>
           </div>
-          <button
+          {canCreate && <button
             onClick={() => navigate('/protocolos/nuevo')}
             className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
           >
@@ -103,7 +106,7 @@ export default function ProtocolosPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
             Nuevo Protocolo
-          </button>
+          </button>}
         </div>
 
         <div className="mb-6 bg-white rounded-xl border border-gray-200 p-4 shadow-sm">

@@ -19,3 +19,13 @@ export const getTendenciaMensual = async () => {
   const response = await api.get('/dashboard/tendencia-mensual')
   return response.data.data
 }
+
+export const getEstudiantesEnRiesgo = async () => {
+  const response = await api.get('/dashboard/estudiantes-en-riesgo')
+  return response.data.data
+}
+
+export const getAccionesPendientes = async () => {
+  const response = await api.get('/protocolos/acciones-pendientes')
+  return response.data.data
+}

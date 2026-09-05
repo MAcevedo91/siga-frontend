@@ -83,7 +83,7 @@ export default function AppRouter() {
       <Route
         path="/protocolos"
         element={
-          <RoleRoute allowedRoles={['Administrador', 'Equipo de Formación']}>
+          <RoleRoute allowedRoles={['Administrador', 'Equipo de Formación', 'Directivo']}>
             <ProtocolosPage />
           </RoleRoute>
         }
@@ -99,7 +99,7 @@ export default function AppRouter() {
       <Route
         path="/protocolos/:id"
         element={
-          <RoleRoute allowedRoles={['Administrador', 'Equipo de Formación']}>
+          <RoleRoute allowedRoles={['Administrador', 'Equipo de Formación', 'Directivo']}>
             <ProtocoloDetallePage />
           </RoleRoute>
         }

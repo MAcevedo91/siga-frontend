@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/store/useAuthStore'
+import AccionesPendientesWidget from '@/components/dashboard/AccionesPendientesWidget'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import {
   BarChart, Bar, PieChart, Pie, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell
@@ -18,7 +19,8 @@ import {
   getDashboardResumen,
   getIncidentesPorCurso,
   getIncidentesPorGravedad,
-  getTendenciaMensual
+  getTendenciaMensual,
+  getAccionesPendientes
 } from '@/services/dashboardService'
 
 const KpiCard = ({ title, value, trend, icon: Icon, trendUp, colorClasses }) => (
@@ -239,20 +241,30 @@ export default function DashboardPage() {
   const [porGravedad, setPorGravedad] = useState([])
   const [tendencia, setTendencia] = useState([])
 
+  const [accionesPendientes, setAccionesPendientes] = useState([])
+  const [errorAcciones, setErrorAcciones] = useState(false)
+  const puedeVerAcciones = ['Administrador', 'Equipo de Formación', 'Directivo'].includes(user?.rol)
+
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
         setLoading(true)
-        const [resumenData, cursoData, gravedadData, tendenciaData] = await Promise.all([
+        setErrorAcciones(false)
+        const [resumenData, cursoData, gravedadData, tendenciaData, accionesData] = await Promise.all([
           getDashboardResumen(),
           getIncidentesPorCurso(),
           getIncidentesPorGravedad(),
-          getTendenciaMensual()
+          getTendenciaMensual(),
+          puedeVerAcciones ? getAccionesPendientes().catch(() => {
+            setErrorAcciones(true)
+            return []
+          }) : Promise.resolve([])
         ])
         setResumen(resumenData)
         setPorCurso(cursoData)
         setPorGravedad(gravedadData)
         setTendencia(tendenciaData)
+        setAccionesPendientes(accionesData)
       } catch (err) {
         console.error('Error cargando dashboard:', err)
       } finally {
@@ -260,7 +272,7 @@ export default function DashboardPage() {
       }
     }
     fetchDashboard()
-  }, [])
+  }, [puedeVerAcciones])
 
   if (loading) {
     return (
@@ -287,6 +299,8 @@ export default function DashboardPage() {
             Visión general institucional • Escuela Coeducacional N°1
           </p>
         </div>
+
+        {puedeVerAcciones && <AccionesPendientesWidget acciones={accionesPendientes} error={errorAcciones} />}
 
         {sinDatos ? (
           <EstadoVacio />

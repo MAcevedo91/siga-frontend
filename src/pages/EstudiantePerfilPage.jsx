@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getEstudianteById } from '@/services/estudiantesService'
+import { getEstudiantesEnRiesgo } from '@/services/dashboardService'
 import DownloadPDFButton from '../components/reports/DownloadPDFButton'
 import { formatDate } from '@/utils/formatDate'
 
@@ -11,21 +12,39 @@ export default function EstudiantePerfilPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  useEffect(() => {
-    loadEstudiante()
-  }, [id])
+  const [riesgoEstudianteId, setRiesgoEstudianteId] = useState(null)
 
-  const loadEstudiante = async () => {
-    try {
-      setLoading(true)
-      const data = await getEstudianteById(id)
-      setEstudiante(data)
-    } catch (err) {
-      setError('Error al cargar perfil del estudiante')
-    } finally {
-      setLoading(false)
-    }
-  }
+  useEffect(() => {
+    let active = true
+    setLoading(true)
+    setError(null)
+    setRiesgoEstudianteId(null)
+
+    getEstudianteById(id)
+      .then((data) => {
+        if (active) setEstudiante(data)
+      })
+      .catch(() => {
+        if (active) setError('Error al cargar perfil del estudiante')
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+
+    getEstudiantesEnRiesgo()
+      .then((estudiantesEnRiesgo) => {
+        // El backend filtra los scores >= 6 de los últimos 30 días.
+        if (active && estudiantesEnRiesgo.some((estudiante) => String(estudiante.id) === id)) {
+          setRiesgoEstudianteId(id)
+        }
+      })
+      .catch(() => {
+        // Una falla de esta consulta no debe impedir consultar el perfil o su PDF.
+        if (active) setRiesgoEstudianteId(null)
+      })
+
+    return () => { active = false }
+  }, [id])
 
   if (loading) {
     return (
@@ -86,6 +105,13 @@ export default function EstudiantePerfilPage() {
                 />
               </div>
             </div>
+
+            {riesgoEstudianteId === id && (
+              <div role="status" className="mx-6 mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800">
+                <span aria-hidden="true">⚠️</span>{' '}
+                Este estudiante acumula múltiples incidentes recientes. Evalúe si corresponde activar o escalar el protocolo vigente.
+              </div>
+            )}
 
             <div className="grid gap-6 p-6 sm:grid-cols-2">
               <div>
