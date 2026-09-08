@@ -15,6 +15,7 @@ import NuevoProtocoloPage from '@/pages/NuevoProtocoloPage'
 import ProtocoloDetallePage from '@/pages/ProtocoloDetallePage'
 import AnalyticsDashboard from '@/pages/AnalyticsDashboard'
 import AsistenciaPage from '@/pages/AsistenciaPage'
+import ConfiguracionPage from '@/pages/ConfiguracionPage'
 import { useAuth, getDefaultRouteByRole } from '@/store/useAuthStore'
 
 export default function AppRouter() {
@@ -37,6 +38,14 @@ export default function AppRouter() {
         element={
           <RoleRoute allowedRoles={['Administrador']}>
             <UsuariosPage />
+          </RoleRoute>
+        }
+      />
+      <Route
+        path="/configuracion"
+        element={
+          <RoleRoute allowedRoles={['Administrador']}>
+            <ConfiguracionPage />
           </RoleRoute>
         }
       />

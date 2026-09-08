@@ -16,6 +16,7 @@ import {
   ChevronDown,
   BarChart3,
   ClipboardCheck,
+  Settings,
 } from 'lucide-react'
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
@@ -32,6 +33,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     { icon: ClipboardCheck, label: 'Asistencia Escolar', path: '/asistencia' },
     { icon: ShieldAlert, label: 'Protocolos RICE', path: '/protocolos', roles: ['Administrador', 'Equipo de Formación', 'Directivo'] },
     { icon: Users, label: 'Gestión de Usuarios', path: '/usuarios', roles: ['Administrador'] },
+    { icon: Settings, label: 'Configuración', path: '/configuracion', roles: ['Administrador'] },
   ]
 
   const navItems = allNavItems.filter((item) => !item.roles || item.roles.includes(user?.rol))
