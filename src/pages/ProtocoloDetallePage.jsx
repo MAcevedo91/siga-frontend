@@ -1,8 +1,18 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getProtocoloById, avanzarEstadoProtocolo } from '@/services/protocolosService'
+import {
+  getProtocoloById,
+  avanzarEstadoProtocolo,
+  getPasosProtocolo,
+  actualizarPasoProtocolo,
+} from '@/services/protocolosService'
+import { getAntecedentesEscalada } from '@/services/estudiantesService'
+import ChecklistProtocolo from '@/components/protocolos/ChecklistProtocolo'
+import AlertaEscaladaBanner from '@/components/shared/AlertaEscaladaBanner'
 import { useAuth } from '@/store/useAuthStore'
 import { formatDate } from '@/utils/formatDate'
+import toast from 'react-hot-toast'
+import { Lock } from 'lucide-react'
 
 const ESTADOS = ['En Investigación', 'Derivado', 'Cerrado']
 
@@ -15,6 +25,12 @@ export default function ProtocoloDetallePage() {
   const [showAvanzarForm, setShowAvanzarForm] = useState(false)
   const [observacion, setObservacion] = useState('')
   const [updatingEstado, setUpdatingEstado] = useState(false)
+
+  // Estados para checklist y alerta de escalada
+  const [pasos, setPasos] = useState([])
+  const [loadingPasos, setLoadingPasos] = useState(false)
+  const [alertaEscalada, setAlertaEscalada] = useState(null)
+
   const { user } = useAuth()
 
   const canEdit = ['Administrador', 'Equipo de Formación'].includes(user?.rol)
@@ -28,6 +44,17 @@ export default function ProtocoloDetallePage() {
       setLoading(true)
       const data = await getProtocoloById(id)
       setProtocolo(data)
+
+      // Cargar pasos normativos del protocolo
+      loadPasos()
+
+      // Cargar antecedentes preventivos del estudiante
+      const estId = data?.estudiante_id || data?.estudiante?.id
+      if (estId) {
+        getAntecedentesEscalada(estId)
+          .then((diag) => setAlertaEscalada(diag))
+          .catch((err) => console.error('Error al cargar antecedentes:', err))
+      }
     } catch (err) {
       setError('Error al cargar protocolo')
     } finally {
@@ -35,15 +62,57 @@ export default function ProtocoloDetallePage() {
     }
   }
 
+  const loadPasos = async () => {
+    try {
+      setLoadingPasos(true)
+      const data = await getPasosProtocolo(id)
+      setPasos(Array.isArray(data) ? data : [])
+    } catch (err) {
+      console.error('Error al cargar pasos del protocolo:', err)
+      setPasos([])
+    } finally {
+      setLoadingPasos(false)
+    }
+  }
+
+  const handleCompletarPaso = async (pasoId, observacionPaso) => {
+    try {
+      const updatedPaso = await actualizarPasoProtocolo(id, pasoId, {
+        completado: true,
+        observacion: observacionPaso,
+      })
+      // Actualización reactiva instantánea sin recargar la página
+      setPasos((prev) =>
+        prev.map((p) =>
+          p.id === pasoId
+            ? {
+                ...p,
+                ...updatedPaso,
+                completado: true,
+                observacion: observacionPaso,
+                fecha_completado: updatedPaso?.fecha_completado || new Date().toISOString(),
+              }
+            : p
+        )
+      )
+      toast.success('Paso normativo completado exitosamente')
+    } catch (err) {
+      console.error('Error al certificar paso:', err)
+      const msg = err.response?.data?.message || 'Error al completar el paso normativo'
+      toast.error(msg)
+      throw err
+    }
+  }
+
   const handleAvanzarEstado = async () => {
     if (!observacion.trim()) {
-      alert('La observación es obligatoria para avanzar el estado')
+      toast.error('La observación es obligatoria para avanzar el estado')
       return
     }
 
     const estadoActualIndex = ESTADOS.indexOf(protocolo.estado)
     if (estadoActualIndex === ESTADOS.length - 1) {
-      alert('El protocolo ya está en el estado final')
+      toast.error('El protocolo ya está en el estado final')
       return
     }
 
@@ -55,8 +124,9 @@ export default function ProtocoloDetallePage() {
       setProtocolo(updated)
       setObservacion('')
       setShowAvanzarForm(false)
+      toast.success(`Protocolo avanzado a "${nuevoEstado}" exitosamente`)
     } catch (err) {
-      alert('Error al avanzar estado')
+      toast.error('Error al avanzar estado del protocolo')
     } finally {
       setUpdatingEstado(false)
     }
@@ -94,6 +164,7 @@ export default function ProtocoloDetallePage() {
 
   const estadoActualIndex = ESTADOS.indexOf(protocolo.estado)
   const puedeAvanzar = canEdit && estadoActualIndex < ESTADOS.length - 1
+  const tienePasosPendientes = pasos.length > 0 && pasos.some((p) => !p.completado)
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
@@ -109,6 +180,11 @@ export default function ProtocoloDetallePage() {
         </button>
 
         <div className="space-y-6">
+          {/* Banner de alerta preventiva de antecedentes RICE si corresponde */}
+          {alertaEscalada?.tiene_alerta && (
+            <AlertaEscaladaBanner diagnostico={alertaEscalada} />
+          )}
+
           <div className="overflow-hidden rounded-lg bg-white shadow">
             <div className="bg-gradient-to-r from-purple-600 to-purple-800 px-6 py-8">
               <h1 className="text-3xl font-bold text-white">Protocolo RICE #{protocolo.id}</h1>
@@ -122,7 +198,11 @@ export default function ProtocoloDetallePage() {
                   <p className="text-lg font-semibold text-gray-900">
                     {protocolo.estudiante?.nombre} {protocolo.estudiante?.apellido}
                   </p>
-                  <p className="text-sm text-gray-600">{protocolo.estudiante?.curso}</p>
+                  <p className="text-sm text-gray-600">
+                    {typeof protocolo.estudiante?.curso === 'object'
+                      ? protocolo.estudiante?.curso?.nombre
+                      : protocolo.estudiante?.curso}
+                  </p>
                 </div>
 
                 <div>
@@ -155,6 +235,15 @@ export default function ProtocoloDetallePage() {
               )}
             </div>
           </div>
+
+          {/* Checklist de Pasos Normativos RICE */}
+          <ChecklistProtocolo
+            pasos={pasos}
+            loading={loadingPasos}
+            canEdit={canEdit}
+            onCompletarPaso={handleCompletarPaso}
+            protocoloCerrado={protocolo.estado === 'Cerrado'}
+          />
 
           <div className="overflow-hidden rounded-lg bg-white shadow">
             <div className="border-b border-gray-200 px-6 py-4">
@@ -207,12 +296,29 @@ export default function ProtocoloDetallePage() {
                 <h2 className="text-lg font-semibold text-gray-900">Avanzar Estado</h2>
               </div>
               <div className="p-6">
+                {tienePasosPendientes && (
+                  <div
+                    role="alert"
+                    className="mb-4 flex items-center gap-2.5 rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 p-3.5 text-xs text-amber-800 dark:text-amber-200"
+                  >
+                    <Lock className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                    <span className="font-medium">
+                      Debe completar todos los pasos del checklist antes de cambiar de etapa.
+                    </span>
+                  </div>
+                )}
+
                 {!showAvanzarForm ? (
                   <button
+                    disabled={tienePasosPendientes}
                     onClick={() => setShowAvanzarForm(true)}
-                    className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                    className={`rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition ${
+                      tienePasosPendientes
+                        ? 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed opacity-60'
+                        : 'bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/20'
+                    }`}
                   >
-                    Avanzar a "{ESTADOS[estadoActualIndex + 1]}"
+                    Avanzar a &quot;{ESTADOS[estadoActualIndex + 1]}&quot;
                   </button>
                 ) : (
                   <div className="space-y-4">

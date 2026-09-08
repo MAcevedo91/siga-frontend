@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { createProtocolo, getTiposProtocolo, getIncidentesByEstudiante } from '@/services/protocolosService'
-import { buscarEstudiantes } from '@/services/incidentesService'
-import { useDebounce } from '@/hooks/useDebounce'
+import { getAntecedentesEscalada } from '@/services/estudiantesService'
+import SelectorEstudianteCascada from '@/components/shared/SelectorEstudianteCascada'
+import AlertaEscaladaBanner from '@/components/shared/AlertaEscaladaBanner'
 import { formatDate } from '@/utils/formatDate'
 
 export default function NuevoProtocoloPage() {
@@ -11,14 +12,10 @@ export default function NuevoProtocoloPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [tiposProtocolo, setTiposProtocolo] = useState([])
-  const [estudianteSearch, setEstudianteSearch] = useState('')
-  const [estudianteResults, setEstudianteResults] = useState([])
-  const [searchingEstudiantes, setSearchingEstudiantes] = useState(false)
   const [selectedEstudiante, setSelectedEstudiante] = useState(null)
+  const [alertaEscalada, setAlertaEscalada] = useState(null)
   const [incidentesRelacionados, setIncidentesRelacionados] = useState([])
   const [loadingIncidentes, setLoadingIncidentes] = useState(false)
-
-  const debouncedSearch = useDebounce(estudianteSearch, 300)
 
   const {
     register,
@@ -30,14 +27,6 @@ export default function NuevoProtocoloPage() {
   useEffect(() => {
     loadTiposProtocolo()
   }, [])
-
-  useEffect(() => {
-    if (debouncedSearch.length >= 2) {
-      searchEstudiantes()
-    } else {
-      setEstudianteResults([])
-    }
-  }, [debouncedSearch])
 
   useEffect(() => {
     if (selectedEstudiante) {
@@ -54,15 +43,14 @@ export default function NuevoProtocoloPage() {
     }
   }
 
-  const searchEstudiantes = async () => {
+  const handleSelectEstudiante = async (estudiante) => {
+    setSelectedEstudiante(estudiante)
     try {
-      setSearchingEstudiantes(true)
-      const data = await buscarEstudiantes(debouncedSearch)
-      setEstudianteResults(data)
+      const diag = await getAntecedentesEscalada(estudiante.id)
+      setAlertaEscalada(diag)
     } catch (err) {
-      console.error('Error buscando estudiantes', err)
-    } finally {
-      setSearchingEstudiantes(false)
+      console.error('Error al consultar antecedentes:', err)
+      setAlertaEscalada(null)
     }
   }
 
@@ -79,11 +67,6 @@ export default function NuevoProtocoloPage() {
     }
   }
 
-  const handleSelectEstudiante = (estudiante) => {
-    setSelectedEstudiante(estudiante)
-    setEstudianteSearch('')
-    setEstudianteResults([])
-  }
 
   const onSubmit = async (data) => {
     if (!selectedEstudiante) {
@@ -134,6 +117,10 @@ export default function NuevoProtocoloPage() {
           )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {alertaEscalada?.tiene_alerta && (
+              <AlertaEscaladaBanner diagnostico={alertaEscalada} />
+            )}
+
             <div>
               <label htmlFor="tipo_protocolo_id" className="block text-sm font-medium text-gray-700">
                 Tipo de Protocolo <span className="text-red-500">*</span>
@@ -160,58 +147,37 @@ export default function NuevoProtocoloPage() {
                 Estudiante <span className="text-red-500">*</span>
               </label>
               {selectedEstudiante ? (
-                <div className="mt-1 flex items-center justify-between rounded-md border border-gray-300 bg-gray-50 p-3">
-                  <div>
-                    <p className="font-medium text-gray-900">
-                      {selectedEstudiante.nombre} {selectedEstudiante.apellido}
-                    </p>
-                    <p className="text-sm text-gray-600">{selectedEstudiante.rut}</p>
+                <div className="mt-1 flex items-center justify-between rounded-xl border border-blue-200 dark:border-blue-900 bg-blue-50/60 dark:bg-blue-950/20 p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 text-white font-bold flex items-center justify-center shadow-sm">
+                      {selectedEstudiante.apellido?.[0] || selectedEstudiante.nombre?.[0] || 'E'}
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-900 dark:text-white">
+                        {selectedEstudiante.nombre} {selectedEstudiante.apellido}
+                      </p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">
+                        RUT: {selectedEstudiante.rut || 'Sin RUT'} {selectedEstudiante.es_pie && '• Programa PIE'}
+                      </p>
+                    </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => {
                       setSelectedEstudiante(null)
+                      setAlertaEscalada(null)
                       setIncidentesRelacionados([])
                     }}
-                    className="text-red-600 hover:text-red-900"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition border border-red-200 dark:border-red-900/60"
                   >
-                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
+                    <span>Cambiar Estudiante</span>
                   </button>
                 </div>
               ) : (
-                <div className="relative mt-1">
-                  <input
-                    type="text"
-                    placeholder="Buscar estudiante (mínimo 2 caracteres)..."
-                    value={estudianteSearch}
-                    onChange={(e) => setEstudianteSearch(e.target.value)}
-                    className="block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                  {searchingEstudiantes && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <svg className="h-5 w-5 animate-spin text-gray-400" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
-                    </div>
-                  )}
-                  {estudianteResults.length > 0 && (
-                    <div className="absolute z-10 mt-1 w-full rounded-md border border-gray-300 bg-white shadow-lg">
-                      {estudianteResults.map((est) => (
-                        <button
-                          key={est.id}
-                          type="button"
-                          onClick={() => handleSelectEstudiante(est)}
-                          className="block w-full px-4 py-2 text-left hover:bg-gray-100"
-                        >
-                          {est.nombre} {est.apellido} - {est.rut}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <SelectorEstudianteCascada onSelectEstudiante={handleSelectEstudiante} />
               )}
             </div>
 
