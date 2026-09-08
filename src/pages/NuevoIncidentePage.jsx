@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm, useFieldArray } from 'react-hook-form'
-import { createIncidente, getTiposAbordaje, buscarEstudiantes } from '@/services/incidentesService'
+import { createIncidente, getTiposAbordaje } from '@/services/incidentesService'
 import AlertaGrave from '@/components/incidentes/AlertaGrave'
-import { useDebounce } from '@/hooks/useDebounce'
+import SelectorEstudianteCascada from '@/components/shared/SelectorEstudianteCascada'
 
 export default function NuevoIncidentePage() {
   const navigate = useNavigate()
@@ -12,11 +12,6 @@ export default function NuevoIncidentePage() {
   const [tiposAbordaje, setTiposAbordaje] = useState([])
   const [showAlerta, setShowAlerta] = useState(false)
   const [gravedadAlerta, setGravedadAlerta] = useState(null)
-  const [estudianteSearch, setEstudianteSearch] = useState('')
-  const [estudianteResults, setEstudianteResults] = useState([])
-  const [searchingEstudiantes, setSearchingEstudiantes] = useState(false)
-
-  const debouncedSearch = useDebounce(estudianteSearch, 300)
 
   const {
     register,
@@ -41,32 +36,12 @@ export default function NuevoIncidentePage() {
     loadTiposAbordaje()
   }, [])
 
-  useEffect(() => {
-    if (debouncedSearch.length >= 2) {
-      searchEstudiantes()
-    } else {
-      setEstudianteResults([])
-    }
-  }, [debouncedSearch])
-
   const loadTiposAbordaje = async () => {
     try {
       const data = await getTiposAbordaje()
       setTiposAbordaje(data)
     } catch (err) {
       setError('Error al cargar tipos de abordaje')
-    }
-  }
-
-  const searchEstudiantes = async () => {
-    try {
-      setSearchingEstudiantes(true)
-      const data = await buscarEstudiantes(debouncedSearch)
-      setEstudianteResults(data)
-    } catch (err) {
-      console.error('Error buscando estudiantes', err)
-    } finally {
-      setSearchingEstudiantes(false)
     }
   }
 
@@ -80,8 +55,6 @@ export default function NuevoIncidentePage() {
         observacion: '',
       })
     }
-    setEstudianteSearch('')
-    setEstudianteResults([])
   }
 
   const onSubmit = async (data) => {
@@ -200,40 +173,14 @@ export default function NuevoIncidentePage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Estudiantes Involucrados <span className="text-red-500">*</span>
               </label>
-              <div className="relative mt-1">
-                <input
-                  type="text"
-                  placeholder="Buscar estudiante (mínimo 2 caracteres)..."
-                  value={estudianteSearch}
-                  onChange={(e) => setEstudianteSearch(e.target.value)}
-                  className="block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                />
-                {searchingEstudiantes && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <svg className="h-5 w-5 animate-spin text-gray-400" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                  </div>
-                )}
-                {estudianteResults.length > 0 && (
-                  <div className="absolute z-10 mt-1 w-full rounded-md border border-gray-300 bg-white shadow-lg">
-                    {estudianteResults.map((est) => (
-                      <button
-                        key={est.id}
-                        type="button"
-                        onClick={() => handleAddEstudiante(est)}
-                        className="block w-full px-4 py-2 text-left hover:bg-gray-100"
-                      >
-                        {est.nombre} {est.apellido} - {est.rut}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <SelectorEstudianteCascada
+                onSelectEstudiante={handleAddEstudiante}
+                selectedEstudiantesIds={fields.map((f) => f.estudiante_id)}
+                allowMultiple={true}
+              />
 
               {fields.length > 0 && (
                 <div className="mt-4 space-y-3">
