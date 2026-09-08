@@ -34,3 +34,13 @@ export const getIncidentesByEstudiante = async (estudianteId) => {
   })
   return response.data.data
 }
+
+export const getPasosProtocolo = async (id) => {
+  const response = await api.get(`/protocolos/${id}/pasos`)
+  return response.data.data
+}
+
+export const actualizarPasoProtocolo = async (id, pasoId, data) => {
+  const response = await api.patch(`/protocolos/${id}/pasos/${pasoId}`, data)
+  return response.data.data
+}
