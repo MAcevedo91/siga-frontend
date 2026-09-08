@@ -87,4 +87,58 @@ describe('Alerta contextual del perfil', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Volver a Estudiantes' }))
     expect(await screen.findByText('Listado de estudiantes')).toBeInTheDocument()
   })
+
+  it('muestra el badge PIE y las direcciones de domicilio cuando están disponibles', async () => {
+    api.get.mockImplementation((url) => {
+      if (url === '/dashboard/estudiantes-en-riesgo') return Promise.resolve(respuesta([]))
+      if (url.match(/^\/estudiantes\/(\d+)\/perfil$/)) {
+        return Promise.resolve(
+          respuesta({
+            id: 1,
+            nombre: 'Camila',
+            apellido: 'González',
+            rut: '22.333.444-5',
+            fecha_nacimiento: '2012-05-15',
+            genero: 'F',
+            curso: { nombre: '6° Básico B' },
+            pie: true,
+            direccion: 'Avenida Siempre Viva 742',
+            apoderado: {
+              nombre: 'Homero',
+              apellido: 'González',
+              relacion: 'Padre',
+              telefono: '+56912345678',
+              email: 'homero@springfield.cl',
+              direccion: 'Avenida Siempreviva 742',
+            },
+            incidentes: [],
+          })
+        )
+      }
+      throw new Error(`URL inesperada: ${url}`)
+    })
+
+    const router = createMemoryRouter(
+      [
+        { path: '/estudiantes/:id', element: <EstudiantePerfilPage /> },
+        { path: '/estudiantes', element: <h1>Listado de estudiantes</h1> },
+      ],
+      { initialEntries: ['/estudiantes/1'] }
+    )
+    render(<RouterProvider router={router} />)
+
+    await screen.findByText('Datos Personales')
+
+    // Badge PIE
+    const badgePie = screen.getByText('PIE')
+    expect(badgePie).toBeInTheDocument()
+    expect(badgePie).toHaveClass('bg-purple-100', 'text-purple-800')
+
+    // Domicilio del estudiante
+    expect(screen.getByText('Avenida Siempre Viva 742')).toBeInTheDocument()
+
+    // Domicilio del apoderado
+    expect(screen.getByText('Avenida Siempreviva 742')).toBeInTheDocument()
+  })
 })
+

@@ -98,8 +98,9 @@ export default function ImportarEstudiantesModal({ isOpen, onClose, onSuccess })
           </div>
         )}
 
-        <div className="mb-4">
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <button
+            type="button"
             onClick={descargarPlantilla}
             className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800"
           >
@@ -108,6 +109,17 @@ export default function ImportarEstudiantesModal({ isOpen, onClose, onSuccess })
             </svg>
             Descargar plantilla CSV de ejemplo
           </button>
+          <span className="text-xs text-gray-500">Incluye columnas: pie y direccion</span>
+        </div>
+
+        <div className="mb-4 rounded-md bg-blue-50/60 p-3 text-xs text-gray-700 border border-blue-100">
+          <p className="font-semibold text-blue-900 mb-1">Columnas soportadas en el archivo:</p>
+          <p className="text-gray-600 mb-1">
+            <span className="font-medium text-gray-800">Principales:</span> rut*, nombre*, apellido*, curso* | <span className="font-medium text-gray-800">Apoderado:</span> apoderado_nombre, apoderado_apellido, apoderado_telefono, apoderado_email
+          </p>
+          <p className="text-gray-600">
+            <span className="font-medium text-purple-800">Nuevos campos:</span> <code className="bg-purple-100 text-purple-800 px-1 py-0.5 rounded text-[11px] font-mono">pie</code> (SI/NO o true/false) y <code className="bg-blue-100 text-blue-800 px-1 py-0.5 rounded text-[11px] font-mono">direccion</code> (domicilio del alumno).
+          </p>
         </div>
 
         <div

@@ -4,6 +4,7 @@ import { getEstudianteById } from '@/services/estudiantesService'
 import { getEstudiantesEnRiesgo } from '@/services/dashboardService'
 import DownloadPDFButton from '../components/reports/DownloadPDFButton'
 import { formatDate } from '@/utils/formatDate'
+import { MapPin } from 'lucide-react'
 
 export default function EstudiantePerfilPage() {
   const { id } = useParams()
@@ -94,9 +95,19 @@ export default function EstudiantePerfilPage() {
             <div className="bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-8">
               <div className="flex items-start justify-between">
                 <div>
-                  <h1 className="text-3xl font-bold text-white">
-                    {estudiante.nombre} {estudiante.apellido}
-                  </h1>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <h1 className="text-3xl font-bold text-white">
+                      {estudiante.nombre} {estudiante.apellido}
+                    </h1>
+                    {(estudiante.es_pie || estudiante.pie) && (
+                      <span
+                        className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800 border border-purple-200 shadow-sm"
+                        title="Estudiante del Programa de Integración Escolar (PIE)"
+                      >
+                        PIE
+                      </span>
+                    )}
+                  </div>
                   <p className="mt-1 font-mono text-blue-100">{estudiante.rut}</p>
                 </div>
                 <DownloadPDFButton
@@ -133,6 +144,15 @@ export default function EstudiantePerfilPage() {
                     <dt className="text-sm font-medium text-gray-500">Curso</dt>
                     <dd className="mt-1 text-sm text-gray-900">{estudiante.curso?.nombre || 'Sin curso'}</dd>
                   </div>
+                  <div>
+                    <dt className="flex items-center gap-1.5 text-sm font-medium text-gray-500">
+                      <MapPin className="w-4 h-4 text-gray-400 shrink-0" />
+                      <span>Domicilio</span>
+                    </dt>
+                    <dd className="mt-1 text-sm text-gray-900">
+                      {estudiante.direccion || 'Sin domicilio registrado'}
+                    </dd>
+                  </div>
                 </dl>
               </div>
 
@@ -151,6 +171,15 @@ export default function EstudiantePerfilPage() {
                     <div>
                       <dt className="text-sm font-medium text-gray-500">Teléfono</dt>
                       <dd className="mt-1 text-sm text-gray-900">{estudiante.apoderado.telefono}</dd>
+                    </div>
+                    <div>
+                      <dt className="flex items-center gap-1.5 text-sm font-medium text-gray-500">
+                        <MapPin className="w-4 h-4 text-gray-400 shrink-0" />
+                        <span>Domicilio</span>
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {estudiante.apoderado.direccion || estudiante.direccion || 'Sin domicilio registrado'}
+                      </dd>
                     </div>
                   </dl>
                 ) : (

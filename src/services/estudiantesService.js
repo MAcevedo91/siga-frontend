@@ -43,8 +43,13 @@ export const descargarPDF = async (id, nombreArchivo) => {
   window.URL.revokeObjectURL(url)
 }
 
+export const getAntecedentesEscalada = async (id) => {
+  const response = await api.get(`/estudiantes/${id}/antecedentes-escalada`)
+  return response.data.data
+}
+
 export const descargarPlantilla = () => {
-  const csvContent = 'rut,nombre,apellido,curso,apoderado_nombre,apoderado_apellido,apoderado_telefono,apoderado_email\n11111111-1,Juan,Pérez,7° Básico A,María,González,+56912345678,maria@example.com'
+  const csvContent = 'rut,nombre,apellido,curso,apoderado_nombre,apoderado_apellido,apoderado_telefono,apoderado_email,pie,direccion\n11111111-1,Juan,Pérez,7° Básico A,María,González,+56912345678,maria@example.com,true,"Av. Principal 123, El Salvador"'
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
   const link = document.createElement('a')
   const url = URL.createObjectURL(blob)
@@ -55,3 +60,4 @@ export const descargarPlantilla = () => {
   link.click()
   document.body.removeChild(link)
 }
+
