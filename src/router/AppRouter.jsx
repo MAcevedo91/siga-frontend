@@ -15,10 +15,10 @@ import NuevoProtocoloPage from '@/pages/NuevoProtocoloPage'
 import ProtocoloDetallePage from '@/pages/ProtocoloDetallePage'
 import AnalyticsDashboard from '@/pages/AnalyticsDashboard'
 import AsistenciaPage from '@/pages/AsistenciaPage'
-import { useAuth } from '@/store/useAuthStore'
+import { useAuth, getDefaultRouteByRole } from '@/store/useAuthStore'
 
 export default function AppRouter() {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
 
   return (
     <Routes>
@@ -122,7 +122,7 @@ export default function AppRouter() {
       />
       <Route
         path="*"
-        element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />}
+        element={<Navigate to={isAuthenticated ? getDefaultRouteByRole(user?.rol) : '/login'} replace />}
       />
     </Routes>
   )

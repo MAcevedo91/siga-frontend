@@ -1,9 +1,10 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'
 
 const COLORS = {
-  'Leve': '#10b981',
-  'Grave': '#f59e0b',
-  'Gravísimo': '#ef4444'
+  Leve: '#10b981',
+  Grave: '#f59e0b',
+  Gravísima: '#ef4444',
+  Gravísimo: '#ef4444',
 }
 
 export default function GravedadDonutChart({ data, loading }) {
@@ -13,7 +14,7 @@ export default function GravedadDonutChart({ data, loading }) {
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
-      <h3 className="text-lg font-semibold mb-4">Distribucion por Gravedad</h3>
+      <h3 className="text-lg font-semibold mb-4">Distribución por Gravedad</h3>
       <ResponsiveContainer width="100%" height={300}>
         <PieChart>
           <Pie
@@ -27,7 +28,7 @@ export default function GravedadDonutChart({ data, loading }) {
             label={({ gravedad, porcentaje }) => `${gravedad}: ${porcentaje}%`}
           >
             {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[entry.gravedad]} />
+              <Cell key={`cell-${index}`} fill={COLORS[entry.gravedad] || '#6b7280'} />
             ))}
           </Pie>
           <Tooltip />

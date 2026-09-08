@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/store/useAuthStore'
 import { initSocket, disconnectSocket } from '@/services/socketService'
 import { useNotifications } from '@/hooks/useNotifications'
@@ -15,20 +15,26 @@ import {
   Menu,
   ChevronDown,
   BarChart3,
+  ClipboardCheck,
 } from 'lucide-react'
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const navigate = useNavigate()
-  const currentPath = window.location.pathname
+  const location = useLocation()
+  const { user } = useAuth()
+  const currentPath = location.pathname
 
-  const navItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-    { icon: BarChart3, label: 'Analytics', path: '/analytics' },
+  const allNavItems = [
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard', roles: ['Administrador', 'Equipo de Formación', 'Directivo'] },
+    { icon: BarChart3, label: 'Analytics', path: '/analytics', roles: ['Administrador', 'Equipo de Formación', 'Directivo'] },
     { icon: Users, label: 'Directorio Estudiantes', path: '/estudiantes' },
     { icon: AlertTriangle, label: 'Registro Incidentes', path: '/incidentes' },
-    { icon: ShieldAlert, label: 'Protocolos RICE', path: '/protocolos' },
-    { icon: Users, label: 'Gestión de Usuarios', path: '/usuarios' },
+    { icon: ClipboardCheck, label: 'Asistencia Escolar', path: '/asistencia' },
+    { icon: ShieldAlert, label: 'Protocolos RICE', path: '/protocolos', roles: ['Administrador', 'Equipo de Formación', 'Directivo'] },
+    { icon: Users, label: 'Gestión de Usuarios', path: '/usuarios', roles: ['Administrador'] },
   ]
+
+  const navItems = allNavItems.filter((item) => !item.roles || item.roles.includes(user?.rol))
 
   return (
     <>
@@ -85,8 +91,10 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 const Header = ({ setIsOpen, unreadCount, onNotificationClick }) => {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const [searchQuery, setSearchQuery] = useState('')
 
   const handleLogout = () => {
+    disconnectSocket()
     logout()
     navigate('/login')
   }
@@ -104,14 +112,24 @@ const Header = ({ setIsOpen, unreadCount, onNotificationClick }) => {
         >
           <Menu className="w-6 h-6" />
         </button>
-        <div className="hidden sm:flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-1.5 w-64">
-          <Search className="w-4 h-4 text-gray-400 dark:text-gray-500 mr-2" />
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            if (searchQuery.trim()) {
+              navigate(`/estudiantes?search=${encodeURIComponent(searchQuery.trim())}`)
+            }
+          }}
+          className="hidden sm:flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-1.5 w-64"
+        >
+          <Search className="w-4 h-4 text-gray-400 dark:text-gray-500 mr-2 shrink-0" />
           <input
             type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar estudiante (RUT o Nombre)..."
             className="bg-transparent border-none focus:outline-none text-sm w-full text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400"
           />
-        </div>
+        </form>
       </div>
 
       <div className="flex items-center gap-4">
@@ -147,10 +165,6 @@ export default function DashboardLayout({ children }) {
   useEffect(() => {
     if (token) {
       initSocket(token)
-    }
-
-    return () => {
-      disconnectSocket()
     }
   }, [token])
 

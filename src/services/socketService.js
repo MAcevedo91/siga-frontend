@@ -3,11 +3,16 @@ import { io } from 'socket.io-client'
 let socket = null
 
 export function initSocket(token) {
+  if (socket && socket.connected) {
+    return socket
+  }
   if (socket) {
     socket.disconnect()
   }
 
-  socket = io(import.meta.env.VITE_SOCKET_URL, {
+  const socketUrl = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001'
+
+  socket = io(socketUrl, {
     auth: {
       token
     },

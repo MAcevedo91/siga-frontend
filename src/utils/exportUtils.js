@@ -1,16 +1,25 @@
 import * as XLSX from 'xlsx'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { formatDate } from './formatDate'
 
 export function exportIncidentesToExcel(incidentes = []) {
-  const data = incidentes.map((inc) => ({
-    Fecha: inc.fecha ? new Date(inc.fecha).toLocaleDateString('es-CL') : '',
-    Estudiante: `${inc.estudiante?.nombre || ''} ${inc.estudiante?.apellido || ''}`.trim(),
-    RUT: inc.estudiante?.rut || '',
-    Gravedad: inc.gravedad || '',
-    Estado: inc.estado || '',
-    Descripción: inc.descripcion || '',
-  }))
+  const data = incidentes.map((inc) => {
+    const estudianteTexto = inc.estudiante
+      ? `${inc.estudiante.nombre || ''} ${inc.estudiante.apellido || ''}`.trim()
+      : inc.estudiantes_count !== undefined
+      ? `${inc.estudiantes_count} involucrado(s)`
+      : inc.estudiante_nombre || ''
+
+    return {
+      Fecha: inc.fecha ? formatDate(inc.fecha) : '',
+      Estudiante: estudianteTexto,
+      RUT: inc.estudiante?.rut || '',
+      Gravedad: inc.gravedad || '',
+      Estado: inc.estado || '',
+      'Relato / Descripción': inc.relato || inc.descripcion || '',
+    }
+  })
 
   const worksheet = XLSX.utils.json_to_sheet(data)
   const workbook = XLSX.utils.book_new()
@@ -22,15 +31,23 @@ export function exportIncidentesToPDF(incidentes = []) {
   const doc = new jsPDF()
   doc.text('Reporte de Incidentes', 14, 15)
 
-  const head = [['Fecha', 'Estudiante', 'RUT', 'Gravedad', 'Estado', 'Descripción']]
-  const body = incidentes.map((inc) => [
-    inc.fecha ? new Date(inc.fecha).toLocaleDateString('es-CL') : '',
-    `${inc.estudiante?.nombre || ''} ${inc.estudiante?.apellido || ''}`.trim(),
-    inc.estudiante?.rut || '',
-    inc.gravedad || '',
-    inc.estado || '',
-    (inc.descripcion || '').slice(0, 50),
-  ])
+  const head = [['Fecha', 'Estudiante', 'RUT', 'Gravedad', 'Estado', 'Relato / Descripción']]
+  const body = incidentes.map((inc) => {
+    const estudianteTexto = inc.estudiante
+      ? `${inc.estudiante.nombre || ''} ${inc.estudiante.apellido || ''}`.trim()
+      : inc.estudiantes_count !== undefined
+      ? `${inc.estudiantes_count} involucrado(s)`
+      : inc.estudiante_nombre || ''
+
+    return [
+      inc.fecha ? formatDate(inc.fecha) : '',
+      estudianteTexto,
+      inc.estudiante?.rut || '',
+      inc.gravedad || '',
+      inc.estado || '',
+      (inc.relato || inc.descripcion || '').slice(0, 50),
+    ]
+  })
 
   autoTable(doc, {
     head,
@@ -46,9 +63,13 @@ export function exportEstudiantesToExcel(estudiantes = []) {
   const data = estudiantes.map((est) => ({
     RUT: est.rut || '',
     Nombre: `${est.nombre || ''} ${est.apellido || ''}`.trim(),
-    Curso: est.curso || '',
-    'Estado Matrícula': est.estado_matricula || '',
-    Apoderado: est.apoderado?.nombre || 'Sin apoderado',
+    Curso: (typeof est.curso === 'object' ? est.curso?.nombre : est.curso) || est.curso_nombre || 'Sin curso',
+    'Estado Matrícula': est.estado_matricula || (est.activo !== undefined ? (est.activo ? 'Activo' : 'Inactivo') : 'Activo'),
+    Apoderado: est.apoderado?.nombre
+      ? `${est.apoderado.nombre} ${est.apoderado.apellido || ''}`.trim()
+      : typeof est.apoderado === 'string'
+      ? est.apoderado
+      : 'Sin apoderado',
   }))
 
   const worksheet = XLSX.utils.json_to_sheet(data)
@@ -65,9 +86,13 @@ export function exportEstudiantesToPDF(estudiantes = []) {
   const body = estudiantes.map((est) => [
     est.rut || '',
     `${est.nombre || ''} ${est.apellido || ''}`.trim(),
-    est.curso || '',
-    est.estado_matricula || '',
-    est.apoderado?.nombre || 'Sin apoderado',
+    (typeof est.curso === 'object' ? est.curso?.nombre : est.curso) || est.curso_nombre || 'Sin curso',
+    est.estado_matricula || (est.activo !== undefined ? (est.activo ? 'Activo' : 'Inactivo') : 'Activo'),
+    est.apoderado?.nombre
+      ? `${est.apoderado.nombre} ${est.apoderado.apellido || ''}`.trim()
+      : typeof est.apoderado === 'string'
+      ? est.apoderado
+      : 'Sin apoderado',
   ])
 
   autoTable(doc, {

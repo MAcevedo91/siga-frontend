@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
-import { getSocket } from '@/services/socketService'
+import { getSocket, initSocket } from '@/services/socketService'
 import { getNotificaciones, marcarComoLeida, getContadorNoLeidas, marcarTodasComoLeidas } from '@/services/notificacionesService'
 import { useOptimisticUpdate } from './useOptimisticUpdate'
+import { useAuth } from '@/store/useAuthStore'
 import toast from 'react-hot-toast'
 
 export function useNotifications() {
@@ -9,6 +10,7 @@ export function useNotifications() {
   const [unreadCount, setUnreadCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const optimisticUpdate = useOptimisticUpdate()
+  const { token } = useAuth()
 
   const loadNotificaciones = useCallback(async () => {
     try {
@@ -28,14 +30,16 @@ export function useNotifications() {
     loadNotificaciones()
 
     // Listen for real-time notifications
-    const socket = getSocket()
+    let socket = getSocket()
+    if (!socket && token) {
+      socket = initSocket(token)
+    }
 
     if (!socket) {
-      console.warn('Socket not available, real-time notifications disabled')
       return
     }
 
-    socket.on('notificacion:nueva', (notificacion) => {
+    const handleNuevaNotificacion = (notificacion) => {
       console.log('Nueva notificación recibida:', notificacion)
 
       // Add to list
@@ -47,14 +51,16 @@ export function useNotifications() {
         duration: 4000,
         icon: '🔔'
       })
-    })
+    }
+
+    socket.on('notificacion:nueva', handleNuevaNotificacion)
 
     return () => {
       if (socket) {
         socket.off('notificacion:nueva')
       }
     }
-  }, [loadNotificaciones])
+  }, [loadNotificaciones, token])
 
   const marcarLeida = useCallback(async (notificacionId) => {
     // Capture state at update time to avoid stale closures

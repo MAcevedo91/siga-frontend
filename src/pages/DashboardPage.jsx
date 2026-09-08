@@ -183,6 +183,10 @@ const GraficoTendenciaMensual = ({ data }) => {
 
 const AccionesRapidas = () => {
   const navigate = useNavigate()
+  const { user } = useAuth()
+
+  const canCreateIncidente = ['Administrador', 'Equipo de Formación', 'Inspector'].includes(user?.rol)
+  const canCreateProtocolo = ['Administrador', 'Equipo de Formación'].includes(user?.rol)
 
   return (
     <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-xl shadow-xl p-6 text-white flex flex-col justify-center relative overflow-hidden h-full">
@@ -192,46 +196,69 @@ const AccionesRapidas = () => {
       <div className="relative z-10">
         <h3 className="text-2xl font-bold mb-2">Acciones Rápidas</h3>
         <p className="text-purple-100 text-sm mb-6">
-          Registra una intervención o activa un protocolo inmediatamente desde tu dispositivo.
+          {canCreateIncidente || canCreateProtocolo
+            ? 'Registra una intervención o activa un protocolo inmediatamente desde tu dispositivo.'
+            : 'Accesos rápidos a las funciones de visualización del sistema.'}
         </p>
 
         <div className="space-y-3">
-          <button
-            onClick={() => navigate('/incidentes/nuevo')}
-            className="w-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/30 transition-all py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 font-semibold hover:scale-105 transform shadow-lg"
-          >
-            <AlertTriangle className="w-5 h-5" />
-            Registrar Incidente
-          </button>
-          <button
-            onClick={() => navigate('/protocolos/nuevo')}
-            className="w-full bg-white text-purple-700 hover:bg-purple-50 transition-all py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 font-bold shadow-lg hover:scale-105 transform"
-          >
-            <ShieldAlert className="w-5 h-5 text-rose-600" />
-            Activar Protocolo RICE
-          </button>
+          {canCreateIncidente && (
+            <button
+              onClick={() => navigate('/incidentes/nuevo')}
+              className="w-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/30 transition-all py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 font-semibold hover:scale-105 transform shadow-lg"
+            >
+              <AlertTriangle className="w-5 h-5" />
+              Registrar Incidente
+            </button>
+          )}
+          {canCreateProtocolo && (
+            <button
+              onClick={() => navigate('/protocolos/nuevo')}
+              className="w-full bg-white text-purple-700 hover:bg-purple-50 transition-all py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 font-bold shadow-lg hover:scale-105 transform"
+            >
+              <ShieldAlert className="w-5 h-5 text-rose-600" />
+              Activar Protocolo RICE
+            </button>
+          )}
+          {!canCreateIncidente && !canCreateProtocolo && (
+            <button
+              onClick={() => navigate('/incidentes')}
+              className="w-full bg-white text-purple-700 hover:bg-purple-50 transition-all py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 font-bold shadow-lg hover:scale-105 transform"
+            >
+              <FileText className="w-5 h-5 text-purple-600" />
+              Ver Registro de Incidentes
+            </button>
+          )}
         </div>
       </div>
     </div>
   )
 }
 
-const EstadoVacio = () => (
-  <div className="bg-white dark:bg-gray-800 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 p-12 text-center">
-    <FileText className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-    <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">No hay datos disponibles</h3>
-    <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-      Aún no se han registrado incidentes en el sistema. Comienza registrando el primer incidente para ver las estadísticas.
-    </p>
-    <button
-      onClick={() => window.location.href = '/incidentes/nuevo'}
-      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-    >
-      <AlertTriangle className="w-4 h-4" />
-      Registrar Primer Incidente
-    </button>
-  </div>
-)
+const EstadoVacio = () => {
+  const navigate = useNavigate()
+  const { user } = useAuth()
+  const canCreate = ['Administrador', 'Equipo de Formación', 'Inspector'].includes(user?.rol)
+
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 p-12 text-center">
+      <FileText className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+      <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">No hay datos disponibles</h3>
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+        Aún no se han registrado incidentes en el sistema. Comienza registrando el primer incidente para ver las estadísticas.
+      </p>
+      {canCreate && (
+        <button
+          onClick={() => navigate('/incidentes/nuevo')}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          <AlertTriangle className="w-4 h-4" />
+          Registrar Primer Incidente
+        </button>
+      )}
+    </div>
+  )
+}
 
 export default function DashboardPage() {
   const { user } = useAuth()

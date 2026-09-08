@@ -40,6 +40,7 @@ export default function IncidentesPageMejorada() {
   }, [estadoFilter, gravedadFilter, fechaDesde, fechaHasta])
 
   const handleSearch = async (query) => {
+    setCurrentPage(1)
     if (!query) {
       setSearchResults(null)
       return
@@ -88,21 +89,20 @@ export default function IncidentesPageMejorada() {
 
   const getEstadoBadge = (estado) => {
     const styles = {
-      Abierto: 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/30',
       'En Investigación': 'bg-gradient-to-r from-yellow-500 to-orange-400 text-white shadow-lg shadow-yellow-500/30',
-      Resuelto: 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg shadow-green-500/30',
+      Derivado: 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg shadow-blue-500/30',
       Cerrado: 'bg-gradient-to-r from-gray-400 to-gray-500 text-white shadow-lg shadow-gray-400/30',
     }
     return styles[estado] || 'bg-gray-100 text-gray-800'
   }
 
   const handleExportExcel = () => {
-    exportIncidentesToExcel(paginatedIncidentes)
+    exportIncidentesToExcel(displayIncidentes)
     toast.success('Exportado a Excel exitosamente')
   }
 
   const handleExportPDF = () => {
-    exportIncidentesToPDF(paginatedIncidentes)
+    exportIncidentesToPDF(displayIncidentes)
     toast.success('Exportado a PDF exitosamente')
   }
 
@@ -256,9 +256,8 @@ export default function IncidentesPageMejorada() {
                   className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 >
                   <option value="">Todos</option>
-                  <option value="Abierto">Abierto</option>
                   <option value="En Investigación">En Investigación</option>
-                  <option value="Resuelto">Resuelto</option>
+                  <option value="Derivado">Derivado</option>
                   <option value="Cerrado">Cerrado</option>
                 </select>
               </div>
@@ -334,7 +333,7 @@ export default function IncidentesPageMejorada() {
                         Fecha
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                        Estudiante
+                        Estudiante / Involucrados
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                         Gravedad
@@ -343,7 +342,7 @@ export default function IncidentesPageMejorada() {
                         Estado
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                        Descripción
+                        Relato / Descripción
                       </th>
                       <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
                         Acciones
@@ -360,10 +359,20 @@ export default function IncidentesPageMejorada() {
                           </div>
                         </td>
                         <td className="whitespace-nowrap px-6 py-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {incidente.estudiante?.nombre || ''} {incidente.estudiante?.apellido || ''}
-                          </div>
-                          <div className="text-xs text-gray-500">{incidente.estudiante?.rut || ''}</div>
+                          {incidente.estudiante ? (
+                            <>
+                              <div className="text-sm font-medium text-gray-900">
+                                {incidente.estudiante.nombre || ''} {incidente.estudiante.apellido || ''}
+                              </div>
+                              <div className="text-xs text-gray-500">{incidente.estudiante.rut || ''}</div>
+                            </>
+                          ) : incidente.estudiantes_count !== undefined ? (
+                            <div className="text-sm font-medium text-gray-900">
+                              {incidente.estudiantes_count} estudiante(s)
+                            </div>
+                          ) : (
+                            <div className="text-sm text-gray-500">-</div>
+                          )}
                         </td>
                         <td className="whitespace-nowrap px-6 py-4">
                           <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${getGravedadBadge(incidente.gravedad)}`}>
@@ -376,7 +385,9 @@ export default function IncidentesPageMejorada() {
                           </span>
                         </td>
                         <td className="px-6 py-4 max-w-xs">
-                          <div className="text-sm text-gray-600 truncate">{incidente.descripcion}</div>
+                          <div className="text-sm text-gray-600 truncate" title={incidente.relato || incidente.descripcion}>
+                            {incidente.relato || incidente.descripcion || '-'}
+                          </div>
                         </td>
                         <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
                           <button
@@ -399,7 +410,7 @@ export default function IncidentesPageMejorada() {
                 totalPages={totalPages}
                 onPageChange={setCurrentPage}
                 itemsPerPage={itemsPerPage}
-                totalItems={incidentes.length}
+                totalItems={displayIncidentes.length}
               />
             )}
           </>

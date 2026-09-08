@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '@/store/useAuthStore'
+import { useAuth, getDefaultRouteByRole } from '@/store/useAuthStore'
 import { loginRequest } from '@/services/authService'
 
 export default function LoginPage() {
@@ -25,7 +25,7 @@ export default function LoginPage() {
     try {
       const { token, user } = await loginRequest(email, password)
       login(token, user)
-      navigate('/dashboard')
+      navigate(getDefaultRouteByRole(user?.rol))
     } catch (err) {
       const status = err.response?.status
       if (status === 403) {

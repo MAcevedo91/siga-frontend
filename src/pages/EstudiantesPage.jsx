@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import toast, { Toaster } from 'react-hot-toast'
+import toast from 'react-hot-toast'
 import { getEstudiantes } from '@/services/estudiantesService'
 import { searchEstudiantes } from '@/services/searchService'
 import { useDebounce } from '@/hooks/useDebounce'
@@ -18,6 +18,7 @@ import api from '@/services/api'
 export default function EstudiantesPageMejorada() {
   const [estudiantes, setEstudiantes] = useState([])
   const [filteredEstudiantes, setFilteredEstudiantes] = useState([])
+  const [cursos, setCursos] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
@@ -37,11 +38,23 @@ export default function EstudiantesPageMejorada() {
 
   useEffect(() => {
     loadEstudiantes()
+    loadCursos()
   }, [])
 
   useEffect(() => {
     filterEstudiantes()
   }, [debouncedSearch, cursoFilter, estudiantes])
+
+  const loadCursos = async () => {
+    try {
+      const response = await api.get('/cursos')
+      if (response.data?.data) {
+        setCursos(response.data.data)
+      }
+    } catch (err) {
+      console.error('Error cargando cursos:', err)
+    }
+  }
 
   const loadEstudiantes = async () => {
     try {
@@ -114,7 +127,7 @@ export default function EstudiantesPageMejorada() {
     }
 
     if (cursoFilter) {
-      filtered = filtered.filter((e) => e.curso_id === parseInt(cursoFilter))
+      filtered = filtered.filter((e) => e.curso_id === cursoFilter || e.curso?.id === cursoFilter)
     }
 
     setFilteredEstudiantes(filtered)
@@ -155,6 +168,14 @@ export default function EstudiantesPageMejorada() {
   const hasActiveFilters = searchTerm || cursoFilter
   const displayEstudiantes = searchResults || filteredEstudiantes
 
+  const cursosDisponibles = cursos.length > 0 ? cursos : Array.from(
+    new Map(
+      estudiantes
+        .filter((e) => (e.curso?.id || e.curso_id) && (e.curso?.nombre || e.curso_nombre))
+        .map((e) => [e.curso?.id || e.curso_id, { id: e.curso?.id || e.curso_id, nombre: e.curso?.nombre || e.curso_nombre }])
+    ).values()
+  )
+
   if (error) {
     return (
       <DashboardLayout>
@@ -175,7 +196,6 @@ export default function EstudiantesPageMejorada() {
 
   return (
     <DashboardLayout>
-      <Toaster position="top-right" />
       <div className="p-6 max-w-7xl mx-auto">
         <Breadcrumbs items={[{ label: 'Estudiantes' }]} />
 
@@ -287,14 +307,11 @@ export default function EstudiantesPageMejorada() {
                   className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 >
                   <option value="">Todos los cursos</option>
-                  <option value="1">1° Básico</option>
-                  <option value="2">2° Básico</option>
-                  <option value="3">3° Básico</option>
-                  <option value="4">4° Básico</option>
-                  <option value="5">5° Básico</option>
-                  <option value="6">6° Básico</option>
-                  <option value="7">7° Básico</option>
-                  <option value="8">8° Básico</option>
+                  {cursosDisponibles.map((curso) => (
+                    <option key={curso.id} value={curso.id}>
+                      {curso.nombre}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
