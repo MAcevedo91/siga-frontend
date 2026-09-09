@@ -158,33 +158,46 @@ export default function EstudiantePerfilPage() {
 
               <div>
                 <h2 className="mb-4 text-lg font-semibold text-gray-900">Apoderado</h2>
-                {estudiante.apoderado ? (
-                  <dl className="space-y-3">
-                    <div>
-                      <dt className="text-sm font-medium text-gray-500">Nombre</dt>
-                      <dd className="mt-1 text-sm text-gray-900">{estudiante.apoderado.nombre}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm font-medium text-gray-500">Email</dt>
-                      <dd className="mt-1 text-sm text-gray-900">{estudiante.apoderado.email}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm font-medium text-gray-500">Teléfono</dt>
-                      <dd className="mt-1 text-sm text-gray-900">{estudiante.apoderado.telefono}</dd>
-                    </div>
-                    <div>
-                      <dt className="flex items-center gap-1.5 text-sm font-medium text-gray-500">
-                        <MapPin className="w-4 h-4 text-gray-400 shrink-0" />
-                        <span>Domicilio</span>
-                      </dt>
-                      <dd className="mt-1 text-sm text-gray-900">
-                        {estudiante.apoderado.direccion || estudiante.direccion || 'Sin domicilio registrado'}
-                      </dd>
-                    </div>
-                  </dl>
-                ) : (
-                  <p className="text-sm text-gray-500">Sin apoderado registrado</p>
-                )}
+                {(() => {
+                  const apoderado = estudiante.apoderado || (Array.isArray(estudiante.apoderados) && (estudiante.apoderados.find(a => a.es_titular) || estudiante.apoderados[0])) || null
+                  if (!apoderado) {
+                    return <p className="text-sm text-gray-500">Sin apoderado registrado</p>
+                  }
+
+                  return (
+                    <dl className="space-y-3">
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">Nombre</dt>
+                        <dd className="mt-1 text-sm text-gray-900 font-medium">
+                          {apoderado.nombre} {apoderado.apellido || ''}
+                        </dd>
+                      </div>
+                      {apoderado.rut && (
+                        <div>
+                          <dt className="text-sm font-medium text-gray-500">RUT</dt>
+                          <dd className="mt-1 text-sm text-gray-900 font-mono">{apoderado.rut}</dd>
+                        </div>
+                      )}
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">Email</dt>
+                        <dd className="mt-1 text-sm text-gray-900">{apoderado.email || 'Sin email registrado'}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">Teléfono</dt>
+                        <dd className="mt-1 text-sm text-gray-900">{apoderado.telefono || 'Sin teléfono registrado'}</dd>
+                      </div>
+                      <div>
+                        <dt className="flex items-center gap-1.5 text-sm font-medium text-gray-500">
+                          <MapPin className="w-4 h-4 text-gray-400 shrink-0" />
+                          <span>Domicilio</span>
+                        </dt>
+                        <dd className="mt-1 text-sm text-gray-900">
+                          {apoderado.direccion || estudiante.direccion || 'Sin domicilio registrado'}
+                        </dd>
+                      </div>
+                    </dl>
+                  )
+                })()}
               </div>
             </div>
           </div>
