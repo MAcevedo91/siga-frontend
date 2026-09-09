@@ -22,3 +22,40 @@
 .animate-shake {
   animation: shake 0.4s ease-in-out;
 }
+
+@keyframes floatSlow {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(25px, -30px) scale(1.08); }
+  66% { transform: translate(-20px, 20px) scale(0.94); }
+}
+
+@keyframes floatMedium {
+  0%, 100% { transform: translate(0px, 0px); }
+  50% { transform: translate(-30px, -45px); }
+}
+
+@keyframes floatFast {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  50% { transform: translate(35px, -50px) scale(1.2); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.2; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(1.18); }
+}
+
+.animate-float-slow {
+  animation: floatSlow 10s ease-in-out infinite;
+}
+
+.animate-float-medium {
+  animation: floatMedium 7s ease-in-out infinite;
+}
+
+.animate-float-fast {
+  animation: floatFast 4.5s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 6s ease-in-out infinite;
+}

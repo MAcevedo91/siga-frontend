@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icons/*.png'],
+      includeAssets: ['icons/*.png', 'favicon.svg'],
       manifest: {
         name: 'SIGA Escolar - Sistema Integral de Gestión y Atención Escolar',
         short_name: 'SIGA Escolar',
