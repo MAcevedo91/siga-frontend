@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import api from '@/services/api'
 import toast from 'react-hot-toast'
+import { CircleCheck, TriangleAlert } from 'lucide-react'
 
 export default function AlertasAusentismoWidget() {
   const [alertas, setAlertas] = useState([])
@@ -26,20 +27,19 @@ export default function AlertasAusentismoWidget() {
 
   if (alertas.length === 0) {
     return (
-      <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-        <p className="text-green-800 dark:text-green-200">
-          ✓ No hay estudiantes con ausentismo crítico
-        </p>
+      <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50 p-4 shadow-sm dark:border-emerald-800 dark:from-emerald-950/50 dark:to-gray-800">
+        <span aria-hidden="true" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white"><CircleCheck size={22} /></span>
+        <p className="font-semibold text-emerald-900 dark:text-emerald-100">No hay estudiantes con ausentismo crítico</p>
       </div>
     )
   }
 
   return (
-    <div className="mb-6">
-      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-        <div className="flex items-center justify-between">
+    <div>
+      <div className="rounded-2xl border border-red-200 bg-gradient-to-r from-red-50 to-rose-50 p-4 shadow-sm dark:border-red-800 dark:from-red-950/50 dark:to-gray-800 sm:p-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-3xl">🚨</span>
+            <span aria-hidden="true" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-red-500 text-white"><TriangleAlert size={23} /></span>
             <div>
               <h3 className="text-lg font-semibold text-red-900 dark:text-red-200">
                 Alerta de Ausentismo
@@ -52,7 +52,7 @@ export default function AlertasAusentismoWidget() {
 
           <button
             onClick={() => setMostrarDetalle(!mostrarDetalle)}
-            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+            className="self-start rounded-xl bg-red-600 px-4 py-2 font-semibold text-white shadow-sm hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-red-500 sm:self-auto"
           >
             {mostrarDetalle ? 'Ocultar' : 'Ver Detalle'}
           </button>
@@ -64,7 +64,7 @@ export default function AlertasAusentismoWidget() {
               {alertas.map((alerta) => (
                 <div
                   key={alerta.estudianteId}
-                  className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded"
+                  className="flex flex-col gap-2 rounded-xl border border-red-100 bg-white p-3 sm:flex-row sm:items-center sm:justify-between dark:border-gray-700 dark:bg-gray-800"
                 >
                   <div>
                     <span className="font-semibold text-gray-900 dark:text-white">
