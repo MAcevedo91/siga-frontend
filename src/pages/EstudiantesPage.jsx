@@ -385,7 +385,18 @@ export default function EstudiantesPageMejorada() {
                         <span className="rounded-full border border-white/80 bg-white/80 px-3 py-1 text-sm font-semibold text-gray-700 shadow-sm dark:border-gray-600 dark:bg-gray-900/70 dark:text-gray-200">{cantidad} {cantidad === 1 ? 'estudiante' : 'estudiantes'}</span>
                       </span>
                       <span className="mt-6 flex items-center gap-3">
-                        <span aria-hidden="true" className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white shadow-md ${estilo.avatar}`}><UserRound size={23} /></span>
+                        <span aria-hidden="true" className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white shadow-md overflow-hidden ${estilo.avatar}`}>
+                          {(typeof profesor === 'object' && profesor?.avatar_url) ? (
+                            <img
+                              src={profesor.avatar_url}
+                              alt={nombreProfesor || 'Profesor jefe'}
+                              className="h-full w-full object-cover"
+                              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                            />
+                          ) : (
+                            <UserRound size={23} />
+                          )}
+                        </span>
                         <span className="min-w-0"><span className="block text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-300">Profesor jefe: </span><span className="block truncate text-base font-bold text-gray-900 dark:text-white">{nombreProfesor || 'Sin asignar'}</span></span>
                       </span>
                     </span>
