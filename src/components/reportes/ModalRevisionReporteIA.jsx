@@ -12,6 +12,9 @@ import {
   Clock,
   ShieldAlert,
   Loader2,
+  ExternalLink,
+  MailCheck,
+  Mail,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import {
@@ -20,6 +23,7 @@ import {
   generarBorradoresReporte,
   descargarReportePdf,
 } from '@/services/reportesService'
+import { formatDate, formatDateTime } from '@/utils/formatDate'
 
 const SECCIONES_CONFIG = [
   {
@@ -70,7 +74,6 @@ export default function ModalRevisionReporteIA({
   const [reportesList, setReportesList] = useState([])
   const [selectedReporteId, setSelectedReporteId] = useState(null)
   // Diccionario para preservar ediciones en vivo por reporteId sin perder cambios al cambiar de tab
-  // { [reporteId]: { contexto: '...', hechos_objetivos: '...', ... } }
   const [edicionesPorReporte, setEdicionesPorReporte] = useState({})
   const [guardando, setGuardando] = useState(false)
   const [aprobando, setAprobando] = useState(false)
@@ -118,6 +121,23 @@ export default function ModalRevisionReporteIA({
   }
 
   const esReporteAprobado = reporteActual?.estado === 'Aprobado'
+
+  // Información del aprobador y fecha
+  const nombreAprobador = reporteActual?.aprobador
+    ? `${reporteActual.aprobador.nombre} ${reporteActual.aprobador.apellido} (${reporteActual.aprobador.rol})`
+    : 'Jefatura Institucional'
+  const fechaAprobacion = reporteActual?.fecha_aprobacion
+    ? formatDate(reporteActual.fecha_aprobacion)
+    : formatDate(new Date().toISOString())
+
+  // Información del apoderado y despacho de correo (HU 6.4.2)
+  const apoderadoTitular =
+    reporteActual?.estudiantes?.apoderados?.find((a) => a.es_titular) ||
+    reporteActual?.estudiantes?.apoderados?.[0] ||
+    null
+  const apoderadoEmail = apoderadoTitular?.email
+  const emailEnviado = !!reporteActual?.email_apoderado_enviado
+  const fechaEnvioEmail = reporteActual?.fecha_envio_email
 
   // Verifica si el texto actual difiere del contenido original de la IA
   const estaEditadoManualmente = () => {
@@ -223,19 +243,26 @@ export default function ModalRevisionReporteIA({
     }
   }
 
-  // Descargar PDF del reporte actual
-  const handleDescargarPdf = async () => {
+  // Descargar o abrir en pestaña PDF del reporte actual (HU 6.3.2)
+  const handleDescargarPdf = async (abrirEnNuevaPestana = false) => {
     if (!reporteActual) return
     try {
       setDescargandoPdf(true)
-      const alumnoNombre = reporteActual.estudiantes
-        ? `${reporteActual.estudiantes.nombre}_${reporteActual.estudiantes.apellido}`.replace(/\s+/g, '_')
-        : 'estudiante'
-      const filename = `informe_oficial_${alumnoNombre}_incidente_${incidente.id}.pdf`
-      await descargarReportePdf(incidente.id, reporteActual.id, filename)
-      toast.success('Documento PDF descargado correctamente')
+      const apellidoLimpio = (reporteActual.estudiantes?.apellido || 'Estudiante')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/\s+/g, '_')
+      const filename = `Informe_Incidente_${incidente.id}_${apellidoLimpio}.pdf`
+
+      await descargarReportePdf(incidente.id, reporteActual.id, filename, abrirEnNuevaPestana)
+
+      if (abrirEnNuevaPestana) {
+        toast.success('Abriendo PDF oficial en nueva pestaña')
+      } else {
+        toast.success(`Descarga iniciada: ${filename}`)
+      }
     } catch (err) {
-      const msg = err.response?.data?.message || 'Error al descargar el archivo PDF'
+      const msg = err.response?.data?.message || 'Error al descargar el archivo PDF oficial'
       toast.error(msg)
     } finally {
       setDescargandoPdf(false)
@@ -362,24 +389,96 @@ export default function ModalRevisionReporteIA({
           </div>
         )}
 
-        {/* ALERTA INFORMATIVA SI EL REPORTE ESTÁ OFICIALIZADO */}
+        {/* SECCIÓN ESPECIAL CUANDO EL REPORTE ESTÁ OFICIALIZADO (HU 6.3.2 & HU 6.4.2) */}
         {esReporteAprobado && (
-          <div className="mx-6 mt-4 flex items-center justify-between rounded-xl bg-emerald-50 border border-emerald-200 p-3.5 text-xs text-emerald-900">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-emerald-600 shrink-0" />
-              <span>
-                Este informe ha sido <strong>aprobado y oficializado</strong> formalmente por Jefatura. Sus contenidos
-                se encuentran protegidos contra modificaciones no autorizadas y el documento PDF oficial está disponible.
-              </span>
+          <div className="mx-6 mt-4 space-y-3">
+            {/* BADGE VERDE CON CHECK Y DATOS DE APROBACIÓN */}
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-emerald-50 border border-emerald-300 p-3.5 text-xs text-emerald-950 shadow-xs">
+              <div className="flex items-center gap-2.5">
+                <CheckCircle className="h-5 w-5 text-emerald-600 shrink-0" />
+                <div>
+                  <p className="font-bold text-emerald-900 text-sm">
+                    Informe Oficial Aprobado por {nombreAprobador} el {fechaAprobacion}
+                  </p>
+                  <p className="text-[11px] text-emerald-700">
+                    El documento formal cuenta con validez legal e institucional conforme a la Circular N° 482 y RICE.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleDescargarPdf(true)}
+                  disabled={descargandoPdf}
+                  title="Abrir PDF oficial en nueva pestaña para lectura o impresión"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-600 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-50 disabled:opacity-50 transition-colors"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  Ver en pestaña
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDescargarPdf(false)}
+                  disabled={descargandoPdf}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-700 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-800 disabled:opacity-50 transition-colors"
+                >
+                  {descargandoPdf ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                  Descargar PDF Oficial
+                </button>
+              </div>
             </div>
-            <button
-              onClick={handleDescargarPdf}
-              disabled={descargandoPdf}
-              className="ml-3 inline-flex items-center gap-1.5 rounded-lg bg-emerald-700 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-800 disabled:opacity-50 transition-colors shrink-0"
-            >
-              {descargandoPdf ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
-              Descargar PDF
-            </button>
+
+            {/* FEEDBACK VISUAL DE DESPACHO DE CORREO AL APODERADO (HU 6.4.2) */}
+            {emailEnviado ? (
+              <div
+                className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-emerald-50/70 border border-emerald-200 px-4 py-3 text-xs text-emerald-900"
+                title="El sistema despachó automáticamente el PDF oficial adjunto al correo electrónico registrado del apoderado titular."
+              >
+                <div className="flex items-center gap-2.5">
+                  <MailCheck className="h-5 w-5 text-emerald-600 shrink-0" />
+                  <div>
+                    <span className="font-bold text-emerald-950">Notificación al Apoderado Titular:</span>{' '}
+                    <span>
+                      Enviado a <strong>{apoderadoEmail || 'apoderado titular'}</strong> el{' '}
+                      {formatDateTime(fechaEnvioEmail) || formatDate(fechaEnvioEmail)}
+                    </span>
+                  </div>
+                </div>
+                <span className="inline-flex items-center gap-1 rounded-md bg-emerald-100 px-2 py-0.5 text-[11px] font-medium text-emerald-800">
+                  <Mail className="h-3 w-3" /> Correo entregado con PDF
+                </span>
+              </div>
+            ) : apoderadoEmail ? (
+              <div
+                className="flex items-center gap-2.5 rounded-xl bg-blue-50 border border-blue-200 px-4 py-2.5 text-xs text-blue-900"
+                title="El informe fue aprobado y se encuentra en la cola de salida para envío al correo del apoderado."
+              >
+                <Clock className="h-4 w-4 text-blue-600 shrink-0" />
+                <span>
+                  Despacho de correo en proceso para el apoderado: <strong>{apoderadoEmail}</strong>
+                </span>
+              </div>
+            ) : (
+              <div
+                className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-amber-50 border border-amber-300 px-4 py-3 text-xs text-amber-900"
+                title="El estudiante no cuenta con un apoderado con correo electrónico registrado. Se debe imprimir el informe físico para firma en inspectoría general."
+              >
+                <div className="flex items-center gap-2.5">
+                  <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
+                  <div>
+                    <span className="font-bold text-amber-950">Atención de entrega:</span>{' '}
+                    <span>Apoderado sin correo registrado. Imprimir copia para citación presencial.</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleDescargarPdf(false)}
+                  className="font-semibold text-amber-900 underline hover:text-amber-950 transition-colors"
+                >
+                  Imprimir copia oficial &rarr;
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -510,15 +609,26 @@ export default function ModalRevisionReporteIA({
             )}
 
             {esReporteAprobado && (
-              <button
-                type="button"
-                onClick={handleDescargarPdf}
-                disabled={descargandoPdf}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white hover:bg-blue-700 shadow-sm transition-colors disabled:opacity-50"
-              >
-                {descargandoPdf ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
-                Descargar Acta Oficial (PDF)
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleDescargarPdf(true)}
+                  disabled={descargandoPdf}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                >
+                  <ExternalLink className="h-3.5 w-3.5 text-gray-500" />
+                  Ver en pestaña
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDescargarPdf(false)}
+                  disabled={descargandoPdf}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-700 px-3.5 py-2 text-xs font-semibold text-white hover:bg-emerald-800 shadow-sm transition-colors disabled:opacity-50"
+                >
+                  {descargandoPdf ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                  Descargar PDF Oficial
+                </button>
+              </div>
             )}
           </div>
 

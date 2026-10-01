@@ -59,18 +59,33 @@ export const aprobarReporte = async (incidenteId, reporteId, contenidoFinal = nu
 }
 
 /**
- * Descarga el archivo PDF oficial con membrete y firmas institucionales.
+ * Descarga o visualiza el archivo PDF oficial con membrete y firmas institucionales.
  * @param {string} incidenteId - UUID del incidente
  * @param {string} reporteId - UUID del reporte
  * @param {string} [nombreSugerido] - Nombre del archivo a descargar
+ * @param {boolean} [abrirEnNuevaPestana] - Si es true, abre el PDF en nueva pestaña para lectura/impresión
  */
-export const descargarReportePdf = async (incidenteId, reporteId, nombreSugerido = 'informe_incidente.pdf') => {
+export const descargarReportePdf = async (
+  incidenteId,
+  reporteId,
+  nombreSugerido = 'informe_incidente.pdf',
+  abrirEnNuevaPestana = false
+) => {
   const response = await api.get(`/incidentes/${incidenteId}/reportes/${reporteId}/pdf`, {
     responseType: 'blob',
   })
 
   const blob = new Blob([response.data], { type: 'application/pdf' })
   const url = window.URL.createObjectURL(blob)
+
+  if (abrirEnNuevaPestana) {
+    window.open(url, '_blank')
+    setTimeout(() => {
+      window.URL.revokeObjectURL(url)
+    }, 10000)
+    return
+  }
+
   const link = document.createElement('a')
   link.href = url
   link.setAttribute('download', nombreSugerido)

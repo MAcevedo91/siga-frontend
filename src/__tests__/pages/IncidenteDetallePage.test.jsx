@@ -31,7 +31,7 @@ vi.mock('react-hot-toast', () => ({
   },
 }))
 
-describe('IncidenteDetallePage con Asistente de Reportes IA (HU 6.2)', () => {
+describe('IncidenteDetallePage con Asistente de Reportes IA (HU 6.2, HU 6.3.2, HU 6.4.2)', () => {
   const dummyIncidente = {
     id: 15,
     fecha: '2026-09-15',
@@ -60,6 +60,28 @@ describe('IncidenteDetallePage con Asistente de Reportes IA (HU 6.2)', () => {
         plan_seguimiento: 'Acompañamiento',
       },
       estudiantes: { id: 'est-1', nombre: 'Juan', apellido: 'Pérez', rut: '21.000.111-2' },
+    },
+  ]
+
+  const dummyReporteAprobadoConEmail = [
+    {
+      id: 'rep-1',
+      incidente_id: 15,
+      estudiante_id: 'est-1',
+      estado: 'Aprobado',
+      fecha_aprobacion: '2026-09-16T11:00:00Z',
+      aprobador: { id: 'usr-1', nombre: 'Roberto', apellido: 'Miranda', rol: 'Directivo' },
+      email_apoderado_enviado: true,
+      fecha_envio_email: '2026-09-16T11:05:00Z',
+      estudiantes: {
+        id: 'est-1',
+        nombre: 'Juan',
+        apellido: 'Pérez',
+        rut: '21.000.111-2',
+        apoderados: [
+          { id: 'apo-1', nombre: 'Carmen', apellido: 'Pérez', email: 'carmen.perez@correo.cl', es_titular: true },
+        ],
+      },
     },
   ]
 
@@ -122,5 +144,45 @@ describe('IncidenteDetallePage con Asistente de Reportes IA (HU 6.2)', () => {
       expect(reportesService.generarBorradoresReporte).toHaveBeenCalledWith('15')
     })
     expect(await screen.findByText(/Asistente de Redacción Normativa RICE/i)).toBeInTheDocument()
+  })
+
+  it('renderiza sección de reportes aprobados con botones de descarga PDF y feedback de correo (HU 6.3.2 y 6.4.2)', async () => {
+    reportesService.getReportesIncidente.mockResolvedValue(dummyReporteAprobadoConEmail)
+    renderComponent('Directivo')
+
+    expect(await screen.findByText(/Informes Normativos Oficiales \(RICE\)/i)).toBeInTheDocument()
+
+    // Badge verde oficial
+    expect(screen.getByText(/Informe Oficial Aprobado por Roberto Miranda \(Directivo\) el 16-09-2026/i)).toBeInTheDocument()
+
+    // Feedback visual correo enviado
+    expect(screen.getByText(/carmen.perez@correo.cl/i)).toBeInTheDocument()
+
+    // Botón descargar PDF
+    const btnDescargar = screen.getByRole('button', { name: /Descargar PDF Oficial/i })
+    expect(btnDescargar).toBeInTheDocument()
+    fireEvent.click(btnDescargar)
+
+    await waitFor(() => {
+      expect(reportesService.descargarReportePdf).toHaveBeenCalledWith(
+        15,
+        'rep-1',
+        'Informe_Incidente_15_Perez.pdf',
+        false
+      )
+    })
+
+    // Botón ver en pestaña
+    const btnPestana = screen.getByRole('button', { name: /Ver en pestaña/i })
+    fireEvent.click(btnPestana)
+
+    await waitFor(() => {
+      expect(reportesService.descargarReportePdf).toHaveBeenCalledWith(
+        15,
+        'rep-1',
+        'Informe_Incidente_15_Perez.pdf',
+        true
+      )
+    })
   })
 })

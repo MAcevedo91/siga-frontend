@@ -17,7 +17,7 @@ vi.mock('@/services/api', () => ({
   },
 }))
 
-describe('reportesService (HU 6.2)', () => {
+describe('reportesService (HU 6.2 & HU 6.3.2)', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -113,23 +113,40 @@ describe('reportesService (HU 6.2)', () => {
   })
 
   describe('descargarReportePdf', () => {
-    it('solicita blob PDF y dispara la descarga en el DOM', async () => {
+    it('solicita blob PDF y dispara la descarga en el DOM por defecto', async () => {
       const mockBlob = new Blob(['pdf-binary-mock'], { type: 'application/pdf' })
       api.get.mockResolvedValueOnce({
         data: mockBlob,
       })
 
-      // Mocks de URL y appendChild
       window.URL.createObjectURL = vi.fn().mockReturnValue('blob:http://localhost/mock-url')
       window.URL.revokeObjectURL = vi.fn()
 
-      await descargarReportePdf('inc-123', 'rep-1', 'test_informe.pdf')
+      await descargarReportePdf('inc-123', 'rep-1', 'Informe_Incidente_123_Gonzalez.pdf')
 
       expect(api.get).toHaveBeenCalledWith('/incidentes/inc-123/reportes/rep-1/pdf', {
         responseType: 'blob',
       })
-      expect(window.URL.createObjectURL).toHaveBeenCalled()
-      expect(window.URL.revokeObjectURL).toHaveBeenCalled()
+      expect(window.URL.createObjectURL).toHaveBeenCalledWith(expect.any(Blob))
+      expect(window.URL.revokeObjectURL).toHaveBeenCalledWith('blob:http://localhost/mock-url')
+    })
+
+    it('abre en nueva pestaña cuando abrirEnNuevaPestana es true', async () => {
+      const mockBlob = new Blob(['pdf-binary-mock'], { type: 'application/pdf' })
+      api.get.mockResolvedValueOnce({
+        data: mockBlob,
+      })
+
+      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:http://localhost/mock-url-tab')
+      window.URL.revokeObjectURL = vi.fn()
+      window.open = vi.fn()
+
+      await descargarReportePdf('inc-123', 'rep-1', 'informe.pdf', true)
+
+      expect(api.get).toHaveBeenCalledWith('/incidentes/inc-123/reportes/rep-1/pdf', {
+        responseType: 'blob',
+      })
+      expect(window.open).toHaveBeenCalledWith('blob:http://localhost/mock-url-tab', '_blank')
     })
   })
 })

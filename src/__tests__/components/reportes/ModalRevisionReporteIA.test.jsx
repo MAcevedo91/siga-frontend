@@ -19,7 +19,7 @@ vi.mock('react-hot-toast', () => ({
   },
 }))
 
-describe('ModalRevisionReporteIA (HU 6.2 - Subtarea 6.2.1 y 6.2.2)', () => {
+describe('ModalRevisionReporteIA (HU 6.2, HU 6.3.2, HU 6.4.2)', () => {
   const dummyIncidente = {
     id: 42,
     fecha: '2026-09-20',
@@ -48,6 +48,9 @@ describe('ModalRevisionReporteIA (HU 6.2 - Subtarea 6.2.1 y 6.2.2)', () => {
         nombre: 'Matías',
         apellido: 'González',
         es_pie: false,
+        apoderados: [
+          { id: 'apo-1', nombre: 'Carlos', apellido: 'González', email: 'carlos.gonzalez@correo.cl', es_titular: true },
+        ],
       },
     },
     {
@@ -69,6 +72,9 @@ describe('ModalRevisionReporteIA (HU 6.2 - Subtarea 6.2.1 y 6.2.2)', () => {
         nombre: 'Lucas',
         apellido: 'Silva',
         es_pie: true,
+        apoderados: [
+          { id: 'apo-2', nombre: 'Patricia', apellido: 'Silva', email: null, es_titular: true },
+        ],
       },
     },
   ]
@@ -204,7 +210,6 @@ describe('ModalRevisionReporteIA (HU 6.2 - Subtarea 6.2.1 y 6.2.2)', () => {
   })
 
   it('restringe la aprobación a roles directivos/coordinación e impide al Inspector aprobar', () => {
-    // Render con usuario Inspector
     render(
       <ModalRevisionReporteIA
         isOpen={true}
@@ -235,15 +240,12 @@ describe('ModalRevisionReporteIA (HU 6.2 - Subtarea 6.2.1 y 6.2.2)', () => {
       />
     )
 
-    // Botón de aprobación visible
     const aprobarBtn = screen.getByRole('button', { name: /Aprobar y Oficializar/i })
     fireEvent.click(aprobarBtn)
 
-    // Modal de confirmación interno visible
     expect(screen.getByText('Oficializar y Aprobar Informe')).toBeInTheDocument()
     expect(screen.getByText(/Al oficializar este informe, adquirirá/i)).toBeInTheDocument()
 
-    // Confirmar aprobación
     const confirmarBtn = screen.getByRole('button', { name: /Confirmar Aprobación/i })
     fireEvent.click(confirmarBtn)
 
@@ -279,5 +281,89 @@ describe('ModalRevisionReporteIA (HU 6.2 - Subtarea 6.2.1 y 6.2.2)', () => {
     await waitFor(() => {
       expect(reportesService.generarBorradoresReporte).toHaveBeenCalledWith(dummyIncidente.id)
     })
+  })
+
+  it('renderiza badge oficial de aprobación y feedback de correo enviado cuando el reporte está aprobado (HU 6.3.2 y 6.4.2)', async () => {
+    const reporteAprobadoConEmail = [
+      {
+        ...dummyReportes[0],
+        estado: 'Aprobado',
+        fecha_aprobacion: '2026-09-21T10:30:00Z',
+        aprobador: { id: 'usr-1', nombre: 'Roberto', apellido: 'Miranda', rol: 'Directivo' },
+        email_apoderado_enviado: true,
+        fecha_envio_email: '2026-09-21T10:35:00Z',
+      },
+    ]
+
+    render(
+      <ModalRevisionReporteIA
+        isOpen={true}
+        onClose={vi.fn()}
+        incidente={dummyIncidente}
+        reportes={reporteAprobadoConEmail}
+        currentUser={userDirectivo}
+      />
+    )
+
+    // Badge oficial de aprobación con check y nombre/fecha
+    expect(screen.getByText(/Informe Oficial Aprobado por Roberto Miranda \(Directivo\) el 21-09-2026/i)).toBeInTheDocument()
+
+    // Feedback visual de despacho de correo al apoderado (HU 6.4.2)
+    expect(screen.getByText(/carlos.gonzalez@correo.cl/i)).toBeInTheDocument()
+    expect(screen.getByText(/Correo entregado con PDF/i)).toBeInTheDocument()
+
+    // Botones de descarga y previsualización (HU 6.3.2)
+    const btnDescargar = screen.getAllByRole('button', { name: /Descargar PDF Oficial/i })[0]
+    expect(btnDescargar).toBeInTheDocument()
+    fireEvent.click(btnDescargar)
+
+    await waitFor(() => {
+      expect(reportesService.descargarReportePdf).toHaveBeenCalledWith(
+        dummyIncidente.id,
+        dummyReportes[0].id,
+        'Informe_Incidente_42_Gonzalez.pdf',
+        false
+      )
+    })
+
+    // Botón ver en pestaña
+    const btnPestana = screen.getAllByRole('button', { name: /Ver en pestaña/i })[0]
+    fireEvent.click(btnPestana)
+
+    await waitFor(() => {
+      expect(reportesService.descargarReportePdf).toHaveBeenCalledWith(
+        dummyIncidente.id,
+        dummyReportes[0].id,
+        'Informe_Incidente_42_Gonzalez.pdf',
+        true
+      )
+    })
+  })
+
+  it('muestra alerta ámbar cuando el apoderado no tiene correo registrado (HU 6.4.2)', () => {
+    const reporteAprobadoSinEmail = [
+      {
+        ...dummyReportes[1],
+        estado: 'Aprobado',
+        fecha_aprobacion: '2026-09-21T10:30:00Z',
+        aprobador: { id: 'usr-1', nombre: 'Roberto', apellido: 'Miranda', rol: 'Directivo' },
+        email_apoderado_enviado: false,
+        fecha_envio_email: null,
+      },
+    ]
+
+    render(
+      <ModalRevisionReporteIA
+        isOpen={true}
+        onClose={vi.fn()}
+        incidente={dummyIncidente}
+        reportes={reporteAprobadoSinEmail}
+        currentUser={userDirectivo}
+      />
+    )
+
+    // Alerta ámbar de apoderado sin correo
+    expect(screen.getByText(/Apoderado sin correo registrado\. Imprimir copia para citación presencial\./i)).toBeInTheDocument()
+    expect(screen.getByText(/Imprimir copia oficial →/i)).toBeInTheDocument()
   })
 })
