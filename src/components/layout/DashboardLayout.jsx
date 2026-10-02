@@ -141,8 +141,19 @@ const Header = ({ setIsOpen, unreadCount, onNotificationClick }) => {
           onClick={onNotificationClick}
         />
         <div className="flex items-center gap-3 border-l border-gray-200 dark:border-gray-700 pl-4">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
-            {getInitials(user?.nombre, user?.apellido)}
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-md overflow-hidden">
+            {user?.avatar_url ? (
+              <img
+                src={user.avatar_url}
+                alt={`${user.nombre || ''} ${user.apellido || ''}`}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none'
+                }}
+              />
+            ) : (
+              getInitials(user?.nombre, user?.apellido)
+            )}
           </div>
           <div className="hidden sm:block text-sm">
             <p className="font-semibold text-gray-700 dark:text-gray-200">{user?.nombre} {user?.apellido}</p>

@@ -1,20 +1,27 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import AvatarUploadInput from './AvatarUploadInput'
 
 export default function CrearUsuarioModal({ isOpen, onClose, onSuccess }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [showPassword, setShowPassword] = useState(false)
+  const [avatarFile, setAvatarFile] = useState(null)
 
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
     reset,
   } = useForm()
 
+  const watchNombre = watch('nombre', '')
+  const watchApellido = watch('apellido', '')
+
   const handleClose = () => {
     reset()
+    setAvatarFile(null)
     setError(null)
     onClose()
   }
@@ -23,8 +30,9 @@ export default function CrearUsuarioModal({ isOpen, onClose, onSuccess }) {
     setLoading(true)
     setError(null)
     try {
-      await onSuccess(data)
+      await onSuccess(data, avatarFile)
       reset()
+      setAvatarFile(null)
       onClose()
     } catch (err) {
       if (err.response?.status === 409) {
@@ -62,6 +70,13 @@ export default function CrearUsuarioModal({ isOpen, onClose, onSuccess }) {
         )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <AvatarUploadInput
+            nombre={watchNombre}
+            apellido={watchApellido}
+            onFileSelect={setAvatarFile}
+            disabled={loading}
+          />
+
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="nombre" className="block text-sm font-medium text-gray-700">

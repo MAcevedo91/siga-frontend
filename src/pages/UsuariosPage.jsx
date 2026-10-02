@@ -1,5 +1,12 @@
 import { useState, useEffect } from 'react'
-import { getUsuarios, createUsuario, updateUsuario, desactivarUsuario } from '@/services/usuariosService'
+import {
+  getUsuarios,
+  createUsuario,
+  updateUsuario,
+  desactivarUsuario,
+  subirAvatarUsuario,
+  eliminarAvatarUsuario,
+} from '@/services/usuariosService'
 import CrearUsuarioModal from '@/components/usuarios/CrearUsuarioModal'
 import EditarUsuarioModal from '@/components/usuarios/EditarUsuarioModal'
 import RolBadge from '@/components/usuarios/RolBadge'
@@ -7,6 +14,7 @@ import EstadoBadge from '@/components/usuarios/EstadoBadge'
 import { useAuth } from '@/store/useAuthStore'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { Users, UserPlus, Edit, UserX, Shield, UserCheck, Activity } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 export default function UsuariosPage() {
   const [usuarios, setUsuarios] = useState([])
@@ -16,7 +24,7 @@ export default function UsuariosPage() {
   const [showEditarModal, setShowEditarModal] = useState(false)
   const [selectedUsuario, setSelectedUsuario] = useState(null)
   const [confirmDelete, setConfirmDelete] = useState(null)
-  const { user: currentUser } = useAuth()
+  const { user: currentUser, updateUser } = useAuth()
 
   useEffect(() => {
     loadUsuarios()
@@ -34,14 +42,54 @@ export default function UsuariosPage() {
     }
   }
 
-  const handleCrearUsuario = async (data) => {
+  const handleCrearUsuario = async (data, avatarFile) => {
     const nuevoUsuario = await createUsuario(data)
-    setUsuarios([...usuarios, nuevoUsuario])
+    let usuarioFinal = nuevoUsuario
+
+    if (avatarFile) {
+      try {
+        const uploadRes = await subirAvatarUsuario(nuevoUsuario.id, avatarFile)
+        usuarioFinal = uploadRes.usuario || { ...nuevoUsuario, avatar_url: uploadRes.avatar_url }
+      } catch (uploadErr) {
+        toast.error('El usuario fue creado, pero ocurrió un error al subir la foto de perfil')
+      }
+    }
+
+    setUsuarios((prev) => [...prev, usuarioFinal])
+    toast.success(`Usuario ${usuarioFinal.nombre} ${usuarioFinal.apellido} creado exitosamente`)
   }
 
-  const handleEditarUsuario = async (id, data) => {
+  const handleEditarUsuario = async (id, data, avatarOptions = {}) => {
     const usuarioActualizado = await updateUsuario(id, data)
-    setUsuarios(usuarios.map((u) => (u.id === id ? usuarioActualizado : u)))
+    let usuarioFinal = usuarioActualizado
+
+    if (avatarOptions.avatarFile) {
+      try {
+        const uploadRes = await subirAvatarUsuario(id, avatarOptions.avatarFile)
+        usuarioFinal = uploadRes.usuario || { ...usuarioActualizado, avatar_url: uploadRes.avatar_url }
+      } catch (uploadErr) {
+        toast.error('Datos actualizados, pero ocurrió un error al subir la foto de perfil')
+      }
+    } else if (avatarOptions.eliminarAvatar) {
+      try {
+        const deleteRes = await eliminarAvatarUsuario(id)
+        usuarioFinal = deleteRes.usuario || { ...usuarioActualizado, avatar_url: null }
+      } catch (delErr) {
+        toast.error('Datos actualizados, pero no se pudo eliminar la foto de perfil')
+      }
+    }
+
+    setUsuarios((prev) => prev.map((u) => (u.id === id ? usuarioFinal : u)))
+
+    if ((currentUser?.id === id || currentUser?.user_id === id) && updateUser) {
+      updateUser({
+        avatar_url: usuarioFinal.avatar_url,
+        nombre: usuarioFinal.nombre,
+        apellido: usuarioFinal.apellido,
+      })
+    }
+
+    toast.success(`Usuario ${usuarioFinal.nombre} ${usuarioFinal.apellido} actualizado exitosamente`)
   }
 
   const handleDesactivar = async (usuario) => {
@@ -230,8 +278,24 @@ export default function UsuariosPage() {
               >
                 <div className={`h-24 bg-gradient-to-br ${getRolGradient(usuario.rol)} relative`}>
                   <div className="absolute -bottom-12 left-6">
-                    <div className={`w-24 h-24 rounded-2xl bg-gradient-to-br ${getRolGradient(usuario.rol)} shadow-xl flex items-center justify-center border-4 border-white`}>
-                      <span className="text-3xl font-bold text-white">
+                    <div className={`w-24 h-24 rounded-2xl bg-gradient-to-br ${getRolGradient(usuario.rol)} shadow-xl flex items-center justify-center border-4 border-white overflow-hidden bg-white`}>
+                      {usuario.avatar_url ? (
+                        <img
+                          src={usuario.avatar_url}
+                          alt={`${usuario.nombre} ${usuario.apellido}`}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none'
+                            const fallback = e.currentTarget.parentElement?.querySelector('.avatar-fallback-initials')
+                            if (fallback) fallback.style.display = 'flex'
+                          }}
+                        />
+                      ) : null}
+                      <span
+                        className={`avatar-fallback-initials text-3xl font-bold text-white w-full h-full flex items-center justify-center bg-gradient-to-br ${getRolGradient(usuario.rol)} ${
+                          usuario.avatar_url ? 'hidden' : ''
+                        }`}
+                      >
                         {getInitials(usuario.nombre, usuario.apellido)}
                       </span>
                     </div>

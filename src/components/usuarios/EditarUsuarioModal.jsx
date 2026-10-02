@@ -1,16 +1,23 @@
 import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
+import AvatarUploadInput from './AvatarUploadInput'
 
 export default function EditarUsuarioModal({ isOpen, onClose, onSuccess, usuario }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [avatarFile, setAvatarFile] = useState(null)
+  const [eliminarAvatarFlag, setEliminarAvatarFlag] = useState(false)
 
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
     reset,
   } = useForm()
+
+  const watchNombre = watch('nombre', usuario?.nombre || '')
+  const watchApellido = watch('apellido', usuario?.apellido || '')
 
   useEffect(() => {
     if (usuario && isOpen) {
@@ -20,21 +27,40 @@ export default function EditarUsuarioModal({ isOpen, onClose, onSuccess, usuario
         email: usuario.email,
         rol: usuario.rol,
       })
+      setAvatarFile(null)
+      setEliminarAvatarFlag(false)
     }
   }, [usuario, isOpen, reset])
 
   const handleClose = () => {
     reset()
+    setAvatarFile(null)
+    setEliminarAvatarFlag(false)
     setError(null)
     onClose()
+  }
+
+  const handleFileSelect = (file) => {
+    setAvatarFile(file)
+    setEliminarAvatarFlag(false)
+  }
+
+  const handleRemoveCurrent = () => {
+    setAvatarFile(null)
+    setEliminarAvatarFlag(true)
   }
 
   const onSubmit = async (data) => {
     setLoading(true)
     setError(null)
     try {
-      await onSuccess(usuario.id, data)
+      await onSuccess(usuario.id, data, {
+        avatarFile,
+        eliminarAvatar: eliminarAvatarFlag,
+      })
       reset()
+      setAvatarFile(null)
+      setEliminarAvatarFlag(false)
       onClose()
     } catch (err) {
       if (err.response?.status === 409) {
@@ -48,6 +74,9 @@ export default function EditarUsuarioModal({ isOpen, onClose, onSuccess, usuario
   }
 
   if (!isOpen || !usuario) return null
+
+  // Calcular URL actual del avatar a mostrar
+  const currentAvatarUrl = eliminarAvatarFlag ? null : usuario.avatar_url
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -72,6 +101,15 @@ export default function EditarUsuarioModal({ isOpen, onClose, onSuccess, usuario
         )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <AvatarUploadInput
+            currentAvatarUrl={currentAvatarUrl}
+            nombre={watchNombre}
+            apellido={watchApellido}
+            onFileSelect={handleFileSelect}
+            onRemoveCurrent={handleRemoveCurrent}
+            disabled={loading}
+          />
+
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="nombre" className="block text-sm font-medium text-gray-700">

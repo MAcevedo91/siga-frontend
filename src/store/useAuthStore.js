@@ -39,6 +39,15 @@ const useAuthStore = create((set) => ({
     localStorage.removeItem('user')
     set({ token: null, user: null, isAuthenticated: false })
   },
+
+  updateUser: (updatedFields) => {
+    set((state) => {
+      if (!state.user) return state
+      const newUser = { ...state.user, ...updatedFields }
+      localStorage.setItem('user', JSON.stringify(newUser))
+      return { user: newUser }
+    })
+  },
 }))
 
 export const useAuth = () => useAuthStore()
