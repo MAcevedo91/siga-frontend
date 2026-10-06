@@ -16,6 +16,7 @@ import ProtocoloDetallePage from '@/pages/ProtocoloDetallePage'
 import AnalyticsDashboard from '@/pages/AnalyticsDashboard'
 import AsistenciaPage from '@/pages/AsistenciaPage'
 import ConfiguracionPage from '@/pages/ConfiguracionPage'
+import CierreAnioPage from '@/pages/CierreAnioPage'
 import { useAuth, getDefaultRouteByRole } from '@/store/useAuthStore'
 
 export default function AppRouter() {
@@ -46,6 +47,14 @@ export default function AppRouter() {
         element={
           <RoleRoute allowedRoles={['Administrador']}>
             <ConfiguracionPage />
+          </RoleRoute>
+        }
+      />
+      <Route
+        path="/cierre-anio"
+        element={
+          <RoleRoute allowedRoles={['Administrador', 'Inspector', 'Equipo de Formación', 'Directivo']}>
+            <CierreAnioPage />
           </RoleRoute>
         }
       />

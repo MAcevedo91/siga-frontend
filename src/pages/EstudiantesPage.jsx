@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { getEstudiantes } from '@/services/estudiantesService'
@@ -13,7 +13,7 @@ import TableSkeleton from '@/components/shared/TableSkeleton'
 import Breadcrumbs from '@/components/shared/Breadcrumbs'
 import SearchBar from '@/components/search/SearchBar'
 import RiskBadge from '@/components/risk/RiskBadge'
-import { Search, Upload, FileDown, FileText, X, Filter, ArrowUpRight, UserRound } from 'lucide-react'
+import { Search, Upload, FileDown, FileText, X, Filter, ArrowUpRight, UserRound, Calendar } from 'lucide-react'
 import { exportEstudiantesToExcel, exportEstudiantesToPDF } from '@/utils/exportUtils'
 import api from '@/services/api'
 
@@ -33,6 +33,7 @@ export default function EstudiantesPageMejorada() {
   const [searching, setSearching] = useState(false)
   const [riskScores, setRiskScores] = useState({})
   const [loadingRisks, setLoadingRisks] = useState(false)
+  const [anioSeleccionado, setAnioSeleccionado] = useState(null)
   const { user } = useAuth()
   const navigate = useNavigate()
 
@@ -40,11 +41,33 @@ export default function EstudiantesPageMejorada() {
 
   const canWrite = ['Administrador', 'Equipo de Formación'].includes(user?.rol)
 
+  // Años lectivos disponibles según la oferta de cursos
+  const aniosDisponibles = useMemo(() => {
+    const aniosSet = new Set()
+    cursos.forEach((c) => {
+      if (c.anio_academico) aniosSet.add(Number(c.anio_academico))
+    })
+    const arr = Array.from(aniosSet).sort((a, b) => b - a)
+    if (arr.length === 0) arr.push(new Date().getFullYear())
+    return arr
+  }, [cursos])
+
+  useEffect(() => {
+    if (aniosDisponibles.length > 0 && !anioSeleccionado) {
+      setAnioSeleccionado(aniosDisponibles[0])
+    }
+  }, [aniosDisponibles, anioSeleccionado])
+
   useEffect(() => {
     loadEstudiantes()
     loadCursos()
-    loadIncidentesCurso()
   }, [])
+
+  useEffect(() => {
+    if (anioSeleccionado) {
+      loadIncidentesCurso(anioSeleccionado)
+    }
+  }, [anioSeleccionado])
 
   useEffect(() => {
     filterEstudiantes()
@@ -61,9 +84,9 @@ export default function EstudiantesPageMejorada() {
     }
   }
 
-  const loadIncidentesCurso = async () => {
+  const loadIncidentesCurso = async (anioObjetivo) => {
     try {
-      const anio = new Date().getFullYear()
+      const anio = anioObjetivo || new Date().getFullYear()
       const data = await getIncidentes({
         fecha_desde: `${anio}-01-01`,
         fecha_hasta: `${anio}-12-31`,
@@ -145,7 +168,11 @@ export default function EstudiantesPageMejorada() {
       )
     }
 
-    if (cursoFilter) {
+    if (cursoFilter === '__EGRESADOS__') {
+      filtered = filtered.filter((e) => e.estado_matricula === 'Egresado')
+    } else if (cursoFilter === '__RETIRADOS__') {
+      filtered = filtered.filter((e) => e.estado_matricula === 'Retirado')
+    } else if (cursoFilter) {
       filtered = filtered.filter((e) => String(e.curso_id || e.curso?.id) === String(cursoFilter))
     }
 
@@ -187,16 +214,22 @@ export default function EstudiantesPageMejorada() {
   const hasActiveFilters = searchTerm || cursoFilter
   const displayEstudiantes = searchResults || filteredEstudiantes
 
-  const anioActual = new Date().getFullYear()
-  const cursosDisponibles = cursos.length > 0 ? cursos.filter((curso) => !curso.anio_academico || Number(curso.anio_academico) === anioActual) : Array.from(
-    new Map(
-      estudiantes
-        .filter((e) => (e.curso?.id || e.curso_id) && (e.curso?.nombre || e.curso_nombre))
-        .map((e) => [e.curso?.id || e.curso_id, { id: e.curso?.id || e.curso_id, nombre: e.curso?.nombre || e.curso_nombre }])
-    ).values()
-  )
+  const anioVigente = anioSeleccionado || aniosDisponibles[0] || new Date().getFullYear()
 
-  const resumenPorCurso = incidentesCurso ? resumirIncidentesPorCurso(estudiantes, incidentesCurso, anioActual) : {}
+  const cursosDisponibles = useMemo(() => {
+    if (cursos.length === 0) {
+      return Array.from(
+        new Map(
+          estudiantes
+            .filter((e) => (e.curso?.id || e.curso_id) && (e.curso?.nombre || e.curso_nombre))
+            .map((e) => [e.curso?.id || e.curso_id, { id: e.curso?.id || e.curso_id, nombre: e.curso?.nombre || e.curso_nombre }])
+        ).values()
+      )
+    }
+    return cursos.filter((curso) => !curso.anio_academico || Number(curso.anio_academico) === Number(anioVigente))
+  }, [cursos, anioVigente, estudiantes])
+
+  const resumenPorCurso = incidentesCurso ? resumirIncidentesPorCurso(estudiantes, incidentesCurso, anioVigente) : {}
   const cursoSeleccionado = cursosDisponibles.find((curso) => String(curso.id) === String(cursoFilter))
 
   if (error) {
@@ -247,7 +280,38 @@ export default function EstudiantesPageMejorada() {
             </p>
           </div>
 
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 flex-wrap items-center">
+            {!cursoSeleccionado ? (
+              aniosDisponibles.length > 0 && (
+                <div className="flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 shadow-sm dark:border-gray-600 dark:bg-gray-800">
+                  <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                  <span className="text-xs font-medium text-gray-600 dark:text-gray-300">Año lectivo:</span>
+                  <select
+                    aria-label="Seleccionar año escolar"
+                    value={anioVigente}
+                    onChange={(e) => {
+                      const nuevo = Number(e.target.value)
+                      setAnioSeleccionado(nuevo)
+                      setCursoFilter('')
+                      setSearchResults(null)
+                    }}
+                    className="bg-transparent text-sm font-bold text-gray-900 dark:text-white focus:outline-none cursor-pointer"
+                  >
+                    {aniosDisponibles.map((a) => (
+                      <option key={a} value={a} className="dark:bg-gray-800 text-gray-900 dark:text-white">
+                        {a} {a === aniosDisponibles[0] ? '(Vigente)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )
+            ) : (
+              <div className="flex items-center gap-1.5 rounded-md bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                <Calendar className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                <span>Año lectivo {cursoSeleccionado.anio_academico || anioVigente}</span>
+              </div>
+            )}
+
             <button
               onClick={() => setShowFilters(!showFilters)}
               className="flex items-center gap-2 rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
@@ -345,6 +409,8 @@ export default function EstudiantesPageMejorada() {
                       {curso.nombre}
                     </option>
                   ))}
+                  <option value="__EGRESADOS__">🎓 Egresados</option>
+                  <option value="__RETIRADOS__">📁 Retirados</option>
                 </select>
               </div>
             </div>
@@ -482,7 +548,19 @@ export default function EstudiantesPageMejorada() {
                         </div>
                       </td>
                       <td className="whitespace-nowrap px-6 py-4">
-                        <div className="text-sm text-gray-600">{estudiante.curso?.nombre || 'Sin curso'}</div>
+                        {estudiante.curso?.nombre ? (
+                          <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{estudiante.curso.nombre}</div>
+                        ) : estudiante.estado_matricula === 'Egresado' ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shadow-sm">
+                            🎓 Egresado
+                          </span>
+                        ) : estudiante.estado_matricula === 'Retirado' ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-200 dark:border-amber-800 shadow-sm">
+                            📁 Retirado
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-400 italic">Sin curso</span>
+                        )}
                       </td>
                       <td className="whitespace-nowrap px-6 py-4">
                         {loadingRisks ? (

@@ -99,6 +99,16 @@ export default function EstudiantePerfilPage() {
                     <h1 className="text-3xl font-bold text-white">
                       {estudiante.nombre} {estudiante.apellido}
                     </h1>
+                    {estudiante.estado_matricula === 'Egresado' && (
+                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800 border border-indigo-200 shadow-sm">
+                        🎓 Egresado (8° Básico)
+                      </span>
+                    )}
+                    {estudiante.estado_matricula === 'Retirado' && (
+                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200 shadow-sm">
+                        📁 Retirado
+                      </span>
+                    )}
                     {(estudiante.es_pie || estudiante.pie) && (
                       <span
                         className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800 border border-purple-200 shadow-sm"
@@ -142,7 +152,9 @@ export default function EstudiantePerfilPage() {
                   </div>
                   <div>
                     <dt className="text-sm font-medium text-gray-500">Curso</dt>
-                    <dd className="mt-1 text-sm text-gray-900">{estudiante.curso?.nombre || 'Sin curso'}</dd>
+                    <dd className="mt-1 text-sm text-gray-900">
+                      {estudiante.curso?.nombre || (estudiante.estado_matricula === 'Egresado' ? '🎓 Egresado' : estudiante.estado_matricula === 'Retirado' ? '📁 Retirado' : 'Sin curso')}
+                    </dd>
                   </div>
                   <div>
                     <dt className="flex items-center gap-1.5 text-sm font-medium text-gray-500">
@@ -201,6 +213,35 @@ export default function EstudiantePerfilPage() {
               </div>
             </div>
           </div>
+
+          {estudiante.trayectoria_escolar && estudiante.trayectoria_escolar.length > 0 && (
+            <div className="overflow-hidden rounded-lg bg-white shadow">
+              <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-gray-900">Trayectoria Escolar</h2>
+                <span className="text-xs text-gray-500 font-medium">Historial por año lectivo</span>
+              </div>
+              <div className="p-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  {estudiante.trayectoria_escolar.map((t) => (
+                    <div key={t.id} className="p-3.5 rounded-xl border border-gray-200 bg-gray-50/70">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-blue-700">Año {t.anio}</span>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                          t.estado_final === 'Promovido' ? 'bg-emerald-100 text-emerald-800' :
+                          t.estado_final === 'Egresado' ? 'bg-indigo-100 text-indigo-800' :
+                          t.estado_final === 'Repitente' ? 'bg-rose-100 text-rose-800' :
+                          t.estado_final === 'Retirado' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'
+                        }`}>
+                          {t.estado_final}
+                        </span>
+                      </div>
+                      <p className="text-sm font-semibold text-gray-900 mt-1">{t.curso_nombre}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="overflow-hidden rounded-lg bg-white shadow">
             <div className="border-b border-gray-200 px-6 py-4">

@@ -17,6 +17,7 @@ import {
   BarChart3,
   ClipboardCheck,
   Settings,
+  GraduationCap,
 } from 'lucide-react'
 
 import logoSidebar from '@/assets/logo_sidebar.png'
@@ -34,6 +35,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     { icon: AlertTriangle, label: 'Incidentes', path: '/incidentes' },
     { icon: ClipboardCheck, label: 'Asistencia', path: '/asistencia' },
     { icon: ShieldAlert, label: 'Protocolos RICE', path: '/protocolos', roles: ['Administrador', 'Equipo de Formación', 'Directivo'] },
+    { icon: GraduationCap, label: 'Cierre de Año', path: '/cierre-anio', roles: ['Administrador', 'Inspector', 'Equipo de Formación', 'Directivo'] },
     { icon: Users, label: 'Usuarios', path: '/usuarios', roles: ['Administrador'] },
     { icon: Settings, label: 'Configuración', path: '/configuracion', roles: ['Administrador'] },
   ]
