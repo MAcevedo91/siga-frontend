@@ -82,7 +82,6 @@ export default function EstudiantesPageMejorada() {
       setError(null)
       const data = await getEstudiantes()
       setEstudiantes(data)
-      toast.success(`${data.length} estudiantes cargados`)
 
       // Load risk scores
       loadRiskScores(data)

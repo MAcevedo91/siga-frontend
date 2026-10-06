@@ -24,3 +24,17 @@ export async function getTiempoResolucion() {
   const { data } = await api.get('/analytics/tiempo-resolucion')
   return data.data
 }
+
+export async function getMapaCalorCursos(anio) {
+  const { data } = await api.get('/analytics/mapa-calor-cursos', {
+    params: anio ? { anio } : {}
+  })
+  return data.data
+}
+
+export async function getDetalleCeldaMapaCalor({ cursoId, mes, anio }) {
+  const { data } = await api.get('/analytics/mapa-calor-cursos/detalle', {
+    params: { curso_id: cursoId, mes, anio }
+  })
+  return data.data
+}

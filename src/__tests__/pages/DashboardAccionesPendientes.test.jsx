@@ -79,7 +79,7 @@ describe('Acciones pendientes integradas al Dashboard', () => {
     montar([], 'Administrador', Promise.reject(new Error('Sin conexión')))
     expect(await screen.findByText(/No se pudieron cargar las acciones pendientes/)).toBeInTheDocument()
     expect(screen.queryByText('Sin acciones pendientes — todo al día ✓')).not.toBeInTheDocument()
-    expect(screen.getByText('Panel de Convivencia Escolar')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'Panel Principal' })).toBeInTheDocument()
   })
 
   it('inicia los cinco endpoints sin esperar la respuesta de acciones pendientes', async () => {
@@ -93,7 +93,7 @@ describe('Acciones pendientes integradas al Dashboard', () => {
 
   it.each(['Docente', 'Inspector'])('no consulta ni muestra el widget para %s', async (rol) => {
     montar([], rol)
-    await screen.findByText('Panel de Convivencia Escolar')
+    await screen.findByRole('heading', { level: 1, name: 'Panel Principal' })
     expect(screen.queryByRole('region', { name: 'Acciones Pendientes' })).not.toBeInTheDocument()
     expect(api.get.mock.calls.map(([url]) => url)).not.toContain('/protocolos/acciones-pendientes')
   })

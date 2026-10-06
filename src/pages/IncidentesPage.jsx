@@ -69,7 +69,6 @@ export default function IncidentesPageMejorada() {
       if (fechaHasta) params.fecha_hasta = fechaHasta
       const data = await getIncidentes(params)
       setIncidentes(data)
-      toast.success(`${data.length} incidentes cargados`)
     } catch (err) {
       setError('Error al cargar incidentes')
       toast.error('Error al cargar incidentes')

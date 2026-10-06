@@ -112,8 +112,7 @@ describe('ConfiguracionPage (HU 5.3)', () => {
       </BrowserRouter>
     )
 
-    expect(screen.getByText(/Configuración y Calibración de Parámetros/i)).toBeInTheDocument()
-    expect(screen.getByText(/Impacto Inmediato en el Motor Analítico/i)).toBeInTheDocument()
+    expect(screen.getByText(/Configuración del Sistema/i)).toBeInTheDocument()
 
     await waitFor(() => {
       expect(screen.getByLabelText(/Umbral de Score de Riesgo/i)).toHaveValue(6)

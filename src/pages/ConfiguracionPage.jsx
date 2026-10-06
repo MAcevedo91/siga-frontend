@@ -236,12 +236,11 @@ export default function ConfiguracionPage() {
                 <Settings className="w-6 h-6" />
               </div>
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-                Configuración y Calibración de Parámetros
+                Configuración del Sistema
               </h1>
             </div>
             <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 max-w-3xl">
-              Calibre los umbrales de detección de riesgo y los plazos legales de los 10 protocolos RICE para
-              adaptar el sistema a actualizaciones normativas sin requerir cambios en el código fuente.
+              Calibración de umbrales de riesgo y plazos normativos RICE.
             </p>
           </div>
 

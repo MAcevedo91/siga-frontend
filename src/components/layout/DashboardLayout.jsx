@@ -19,6 +19,8 @@ import {
   Settings,
 } from 'lucide-react'
 
+import logoSidebar from '@/assets/logo_sidebar.png'
+
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const navigate = useNavigate()
   const location = useLocation()
@@ -26,13 +28,13 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   const currentPath = location.pathname
 
   const allNavItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard', roles: ['Administrador', 'Equipo de Formación', 'Directivo'] },
-    { icon: BarChart3, label: 'Analytics', path: '/analytics', roles: ['Administrador', 'Equipo de Formación', 'Directivo'] },
-    { icon: Users, label: 'Directorio Estudiantes', path: '/estudiantes' },
-    { icon: AlertTriangle, label: 'Registro Incidentes', path: '/incidentes' },
-    { icon: ClipboardCheck, label: 'Asistencia Escolar', path: '/asistencia' },
+    { icon: LayoutDashboard, label: 'Panel Principal', path: '/dashboard', roles: ['Administrador', 'Equipo de Formación', 'Directivo'] },
+    { icon: BarChart3, label: 'Analítica', path: '/analytics', roles: ['Administrador', 'Equipo de Formación', 'Directivo'] },
+    { icon: Users, label: 'Estudiantes', path: '/estudiantes' },
+    { icon: AlertTriangle, label: 'Incidentes', path: '/incidentes' },
+    { icon: ClipboardCheck, label: 'Asistencia', path: '/asistencia' },
     { icon: ShieldAlert, label: 'Protocolos RICE', path: '/protocolos', roles: ['Administrador', 'Equipo de Formación', 'Directivo'] },
-    { icon: Users, label: 'Gestión de Usuarios', path: '/usuarios', roles: ['Administrador'] },
+    { icon: Users, label: 'Usuarios', path: '/usuarios', roles: ['Administrador'] },
     { icon: Settings, label: 'Configuración', path: '/configuracion', roles: ['Administrador'] },
   ]
 
@@ -51,13 +53,12 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         fixed inset-y-0 left-0 z-30 w-64 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-white transition-transform duration-300 ease-in-out shadow-2xl
         ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:static md:flex-shrink-0
       `}>
-        <div className="flex items-center justify-center h-16 border-b border-slate-700/50 dark:border-slate-800/50 bg-slate-900/50 dark:bg-slate-950/50">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg">
-              <ShieldAlert className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-bold tracking-wider">SIGA<span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">escolar</span></span>
-          </div>
+        <div className="flex items-center justify-center h-16 px-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+          <img
+            src={logoSidebar}
+            alt="SIGA Escolar"
+            className="h-11 w-auto object-contain max-w-[210px]"
+          />
         </div>
 
         <div className="p-4">
