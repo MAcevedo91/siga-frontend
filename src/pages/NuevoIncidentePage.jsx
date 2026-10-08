@@ -4,6 +4,7 @@ import { useForm, useFieldArray } from 'react-hook-form'
 import { createIncidente, getTiposAbordaje } from '@/services/incidentesService'
 import AlertaGrave from '@/components/incidentes/AlertaGrave'
 import SelectorEstudianteCascada from '@/components/shared/SelectorEstudianteCascada'
+import DashboardLayout from '@/components/layout/DashboardLayout'
 
 export default function NuevoIncidentePage() {
   const navigate = useNavigate()
@@ -93,8 +94,9 @@ export default function NuevoIncidentePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
-      <div className="mx-auto max-w-4xl">
+    <DashboardLayout>
+      <div className="p-4 sm:p-6 lg:p-8">
+        <div className="mx-auto max-w-4xl">
         <button
           onClick={() => navigate('/incidentes')}
           className="mb-4 flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
@@ -285,8 +287,9 @@ export default function NuevoIncidentePage() {
           </form>
         </div>
       </div>
+      </div>
 
       <AlertaGrave show={showAlerta} gravedad={gravedadAlerta} onClose={() => setShowAlerta(false)} />
-    </div>
+    </DashboardLayout>
   )
 }
