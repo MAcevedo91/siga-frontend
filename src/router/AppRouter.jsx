@@ -14,7 +14,6 @@ import ProtocolosPage from '@/pages/ProtocolosPage'
 import NuevoProtocoloPage from '@/pages/NuevoProtocoloPage'
 import ProtocoloDetallePage from '@/pages/ProtocoloDetallePage'
 import AnalyticsDashboard from '@/pages/AnalyticsDashboard'
-import AsistenciaPage from '@/pages/AsistenciaPage'
 import ConfiguracionPage from '@/pages/ConfiguracionPage'
 import CierreAnioPage from '@/pages/CierreAnioPage'
 import { useAuth, getDefaultRouteByRole } from '@/store/useAuthStore'
@@ -85,7 +84,7 @@ export default function AppRouter() {
       <Route
         path="/incidentes/nuevo"
         element={
-          <RoleRoute allowedRoles={['Administrador', 'Equipo de Formación', 'Inspector']}>
+          <RoleRoute allowedRoles={['Administrador', 'Equipo de Formación', 'Inspector', 'Docente']}>
             <NuevoIncidentePage />
           </RoleRoute>
         }
@@ -128,14 +127,6 @@ export default function AppRouter() {
           <RoleRoute allowedRoles={['Administrador', 'Equipo de Formación', 'Directivo']}>
             <AnalyticsDashboard />
           </RoleRoute>
-        }
-      />
-      <Route
-        path="/asistencia"
-        element={
-          <PrivateRoute>
-            <AsistenciaPage />
-          </PrivateRoute>
         }
       />
       <Route

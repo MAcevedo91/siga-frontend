@@ -21,7 +21,9 @@ import {
   Calendar,
   Check,
   RotateCcw,
+  FileText,
 } from 'lucide-react'
+import GestionRiceModal from '@/components/rice/GestionRiceModal'
 
 const DEFAULT_CONFIG = {
   umbral_riesgo: 6,
@@ -49,6 +51,7 @@ export default function ConfiguracionPage() {
 
   // Feedback temporal por fila al guardar regla individual
   const [savedRowSuccess, setSavedRowSuccess] = useState({})
+  const [isRiceModalOpen, setIsRiceModalOpen] = useState(false)
 
   useEffect(() => {
     cargarConfiguracion()
@@ -244,12 +247,22 @@ export default function ConfiguracionPage() {
             </p>
           </div>
 
-          {lastUpdated && (
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium bg-cyan-50 dark:bg-cyan-950/40 text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800/60 self-start sm:self-center">
-              <Clock className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
-              <span>Última actualización: {lastUpdated}</span>
-            </div>
-          )}
+          <div className="flex flex-wrap items-center gap-3 self-start sm:self-center">
+            {lastUpdated && (
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium bg-cyan-50 dark:bg-cyan-950/40 text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800/60">
+                <Clock className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
+                <span>Última actualización: {lastUpdated}</span>
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={() => setIsRiceModalOpen(true)}
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition-colors"
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>Administrar RICE Oficial</span>
+            </button>
+          </div>
         </div>
 
         {/* Notificaciones y Alertas de Estado */}
@@ -701,6 +714,11 @@ export default function ConfiguracionPage() {
           </div>
         </section>
       </div>
+
+      <GestionRiceModal
+        isOpen={isRiceModalOpen}
+        onClose={() => setIsRiceModalOpen(false)}
+      />
     </DashboardLayout>
   )
 }

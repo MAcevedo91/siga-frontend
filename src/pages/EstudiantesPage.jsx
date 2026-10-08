@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { getEstudiantes } from '@/services/estudiantesService'
 import { getIncidentes } from '@/services/incidentesService'
@@ -18,6 +18,9 @@ import { exportEstudiantesToExcel, exportEstudiantesToPDF } from '@/utils/export
 import api from '@/services/api'
 
 export default function EstudiantesPageMejorada() {
+  const [searchParams] = useSearchParams()
+  const initialSearch = searchParams.get('search') || ''
+
   const [estudiantes, setEstudiantes] = useState([])
   const [filteredEstudiantes, setFilteredEstudiantes] = useState([])
   const [cursos, setCursos] = useState([])
@@ -25,7 +28,7 @@ export default function EstudiantesPageMejorada() {
   const [errorIndicadores, setErrorIndicadores] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [searchTerm, setSearchTerm] = useState('')
+  const [searchTerm, setSearchTerm] = useState(initialSearch)
   const [cursoFilter, setCursoFilter] = useState('')
   const [showImportModal, setShowImportModal] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
@@ -36,6 +39,14 @@ export default function EstudiantesPageMejorada() {
   const [anioSeleccionado, setAnioSeleccionado] = useState(null)
   const { user } = useAuth()
   const navigate = useNavigate()
+
+  // Sincronizar parámetro de búsqueda desde URL (ej. búsqueda global desde navbar)
+  useEffect(() => {
+    const param = searchParams.get('search')
+    if (param !== null) {
+      setSearchTerm(param)
+    }
+  }, [searchParams])
 
   const debouncedSearch = useDebounce(searchTerm, 300)
 

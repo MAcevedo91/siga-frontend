@@ -12,7 +12,7 @@ const getStoredUser = () => {
 export const getDefaultRouteByRole = (rol) => {
   switch (rol) {
     case 'Docente':
-      return '/asistencia'
+      return '/estudiantes'
     case 'Inspector':
       return '/incidentes'
     case 'Administrador':

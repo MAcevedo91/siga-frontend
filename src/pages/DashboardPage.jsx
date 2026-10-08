@@ -185,7 +185,7 @@ const AccionesRapidas = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
 
-  const canCreateIncidente = ['Administrador', 'Equipo de Formación', 'Inspector'].includes(user?.rol)
+  const canCreateIncidente = ['Administrador', 'Equipo de Formación', 'Inspector', 'Docente'].includes(user?.rol)
   const canCreateProtocolo = ['Administrador', 'Equipo de Formación'].includes(user?.rol)
 
   return (
@@ -238,7 +238,7 @@ const AccionesRapidas = () => {
 const EstadoVacio = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const canCreate = ['Administrador', 'Equipo de Formación', 'Inspector'].includes(user?.rol)
+  const canCreate = ['Administrador', 'Equipo de Formación', 'Inspector', 'Docente'].includes(user?.rol)
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 p-12 text-center">

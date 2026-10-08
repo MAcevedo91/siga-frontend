@@ -15,10 +15,12 @@ import {
   Menu,
   ChevronDown,
   BarChart3,
-  ClipboardCheck,
   Settings,
   GraduationCap,
+  Sparkles,
 } from 'lucide-react'
+import AsistenteNormativoModal from '@/components/rice/AsistenteNormativoModal'
+import NavbarStudentSearch from '@/components/layout/NavbarStudentSearch'
 
 import logoSidebar from '@/assets/logo_sidebar.png'
 
@@ -33,7 +35,6 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     { icon: BarChart3, label: 'Analítica', path: '/analytics', roles: ['Administrador', 'Equipo de Formación', 'Directivo'] },
     { icon: Users, label: 'Estudiantes', path: '/estudiantes' },
     { icon: AlertTriangle, label: 'Incidentes', path: '/incidentes' },
-    { icon: ClipboardCheck, label: 'Asistencia', path: '/asistencia' },
     { icon: ShieldAlert, label: 'Protocolos RICE', path: '/protocolos', roles: ['Administrador', 'Equipo de Formación', 'Directivo'] },
     { icon: GraduationCap, label: 'Cierre de Año', path: '/cierre-anio', roles: ['Administrador', 'Inspector', 'Equipo de Formación', 'Directivo'] },
     { icon: Users, label: 'Usuarios', path: '/usuarios', roles: ['Administrador'] },
@@ -93,10 +94,9 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   )
 }
 
-const Header = ({ setIsOpen, unreadCount, onNotificationClick }) => {
+const Header = ({ setIsOpen, unreadCount, onNotificationClick, onOpenAsistenteRice }) => {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
-  const [searchQuery, setSearchQuery] = useState('')
 
   const handleLogout = () => {
     disconnectSocket()
@@ -117,27 +117,19 @@ const Header = ({ setIsOpen, unreadCount, onNotificationClick }) => {
         >
           <Menu className="w-6 h-6" />
         </button>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            if (searchQuery.trim()) {
-              navigate(`/estudiantes?search=${encodeURIComponent(searchQuery.trim())}`)
-            }
-          }}
-          className="hidden sm:flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-1.5 w-64"
-        >
-          <Search className="w-4 h-4 text-gray-400 dark:text-gray-500 mr-2 shrink-0" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Buscar estudiante (RUT o Nombre)..."
-            className="bg-transparent border-none focus:outline-none text-sm w-full text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400"
-          />
-        </form>
+        <NavbarStudentSearch />
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3 sm:gap-4">
+        <button
+          type="button"
+          onClick={onOpenAsistenteRice}
+          title="Consultar Copiloto Normativo RICE"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 transition-colors shadow-sm"
+        >
+          <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+          <span className="hidden md:inline">Copiloto RICE</span>
+        </button>
         <ThemeToggle />
         <NotificationBadge
           count={unreadCount}
@@ -174,6 +166,7 @@ const Header = ({ setIsOpen, unreadCount, onNotificationClick }) => {
 export default function DashboardLayout({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [notificationCenterOpen, setNotificationCenterOpen] = useState(false)
+  const [asistenteRiceOpen, setAsistenteRiceOpen] = useState(false)
   const { token } = useAuth()
   const { notificaciones, unreadCount, marcarLeida, marcarTodasLeidas } = useNotifications()
 
@@ -193,6 +186,7 @@ export default function DashboardLayout({ children }) {
           setIsOpen={setIsSidebarOpen}
           unreadCount={unreadCount}
           onNotificationClick={() => setNotificationCenterOpen(true)}
+          onOpenAsistenteRice={() => setAsistenteRiceOpen(true)}
         />
 
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50 dark:bg-gray-900">
@@ -207,6 +201,12 @@ export default function DashboardLayout({ children }) {
         notificaciones={notificaciones}
         onMarcarLeida={marcarLeida}
         onMarcarTodasLeidas={marcarTodasLeidas}
+      />
+
+      {/* Copiloto Normativo RICE Modal */}
+      <AsistenteNormativoModal
+        isOpen={asistenteRiceOpen}
+        onClose={() => setAsistenteRiceOpen(false)}
       />
     </div>
   )

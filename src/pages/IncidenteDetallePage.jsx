@@ -12,6 +12,7 @@ import {
   MailCheck,
   AlertTriangle,
   CheckCircle,
+  BookOpen,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { getIncidenteById, updateEstadoIncidente } from '@/services/incidentesService'
@@ -21,6 +22,7 @@ import {
   descargarReportePdf,
 } from '@/services/reportesService'
 import ModalRevisionReporteIA from '@/components/reportes/ModalRevisionReporteIA'
+import AsistenteNormativoModal from '@/components/rice/AsistenteNormativoModal'
 import { useAuth } from '@/store/useAuthStore'
 import { formatDate, formatDateTime } from '@/utils/formatDate'
 
@@ -38,6 +40,7 @@ export default function IncidenteDetallePage() {
   const [loadingReportes, setLoadingReportes] = useState(false)
   const [generandoBorradores, setGenerandoBorradores] = useState(false)
   const [modalReporteOpen, setModalReporteOpen] = useState(false)
+  const [modalRiceOpen, setModalRiceOpen] = useState(false)
   const [descargandoPdfId, setDescargandoPdfId] = useState(null)
 
   const { user } = useAuth()
@@ -197,9 +200,18 @@ export default function IncidenteDetallePage() {
             Volver a Incidentes
           </button>
 
-          {/* BOTÓN ASISTENTE DE INFORMES CON IA */}
-          {canManageReportes && (
-            <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setModalRiceOpen(true)}
+              className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold shadow-md bg-emerald-600 hover:bg-emerald-700 text-white transition-all"
+            >
+              <BookOpen className="h-4 w-4" />
+              <span>Consultar RICE</span>
+            </button>
+
+            {/* BOTÓN ASISTENTE DE INFORMES CON IA */}
+            {canManageReportes && (
               <button
                 type="button"
                 onClick={handleAbrirOGenerarReporte}
@@ -223,8 +235,8 @@ export default function IncidenteDetallePage() {
                     : 'Generar Informe Oficial con IA'}
                 </span>
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* OVERLAY MODAL DE ESPERA DURANTE GENERACIÓN CON GEMINI */}
@@ -522,6 +534,18 @@ export default function IncidenteDetallePage() {
         reportes={reportes}
         currentUser={user}
         onReportesActualizados={handleReportesActualizados}
+      />
+
+      {/* MODAL DEL COPILOTO NORMATIVO RICE */}
+      <AsistenteNormativoModal
+        isOpen={modalRiceOpen}
+        onClose={() => setModalRiceOpen(false)}
+        contextoIncidente={incidente}
+        consultaInicial={
+          incidente?.relato
+            ? `¿Qué artículos, procedimientos o medidas del RICE aplican ante este hecho: "${incidente.relato.slice(0, 140)}..."?`
+            : ''
+        }
       />
     </div>
   )

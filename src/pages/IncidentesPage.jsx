@@ -29,7 +29,7 @@ export default function IncidentesPageMejorada() {
   const itemsPerPage = 20
   const { user } = useAuth()
 
-  const canCreate = ['Administrador', 'Equipo de Formación', 'Inspector'].includes(user?.rol)
+  const canCreate = ['Administrador', 'Equipo de Formación', 'Inspector', 'Docente'].includes(user?.rol)
 
   useEffect(() => {
     loadIncidentes()
