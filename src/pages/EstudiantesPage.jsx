@@ -13,7 +13,7 @@ import TableSkeleton from '@/components/shared/TableSkeleton'
 import Breadcrumbs from '@/components/shared/Breadcrumbs'
 import SearchBar from '@/components/search/SearchBar'
 import RiskBadge from '@/components/risk/RiskBadge'
-import { Search, Upload, FileDown, FileText, X, Filter, ArrowUpRight, UserRound, Calendar } from 'lucide-react'
+import { Search, Upload, FileDown, FileText, X, Filter, ArrowUpRight, UserRound, Calendar, GraduationCap, FileSpreadsheet } from 'lucide-react'
 import { exportEstudiantesToExcel, exportEstudiantesToPDF } from '@/utils/exportUtils'
 import api from '@/services/api'
 
@@ -432,8 +432,36 @@ export default function EstudiantesPageMejorada() {
           <TableSkeleton rows={8} columns={5} />
         ) : !cursoFilter && !searchResults ? (
           cursosDisponibles.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-gray-300 bg-white p-8 text-center text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
-              No hay cursos disponibles para este año escolar.
+            <div className="rounded-2xl border-2 border-dashed border-blue-200 bg-gradient-to-b from-blue-50/60 via-white to-gray-50/80 p-8 sm:p-12 text-center shadow-sm dark:border-blue-900/50 dark:from-gray-800 dark:via-gray-850 dark:to-gray-900">
+              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-blue-100 text-blue-600 shadow-inner dark:bg-blue-950/80 dark:text-blue-400">
+                <GraduationCap className="h-10 w-10 animate-bounce duration-1000" />
+              </div>
+
+              <h3 className="mt-5 text-xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-2xl">
+                Aún no hay cursos ni estudiantes registrados
+              </h3>
+
+              <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-gray-600 dark:text-gray-300">
+                Los cursos y sus niveles se reconocen automáticamente al cargar la nómina de estudiantes. No necesitas crearlos manualmente uno a uno.
+              </p>
+
+              <div className="mt-4 inline-flex items-center gap-2 rounded-lg bg-blue-50/80 px-3.5 py-1.5 text-xs font-medium text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">
+                <FileSpreadsheet className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <span>Compatible con archivos Excel (.xlsx) y CSV con el formato oficial</span>
+              </div>
+
+              {canWrite && (
+                <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                  <button
+                    type="button"
+                    onClick={() => setShowImportModal(true)}
+                    className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-500/20 transition-all hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600"
+                  >
+                    <Upload className="h-4 w-4" />
+                    Cargar Nómina de Estudiantes (Excel)
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">

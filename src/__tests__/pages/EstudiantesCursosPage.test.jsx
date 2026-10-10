@@ -83,4 +83,19 @@ describe('Directorio por cursos', () => {
     const tarjeta = await screen.findByRole('button', { name: /8° Básico A/ })
     await waitFor(() => expect(tarjeta).toHaveTextContent('Indicadores no disponibles'))
   })
+
+  it('muestra mensaje atractivo invitando a cargar la nómina cuando no hay cursos', async () => {
+    api.get.mockImplementation((url) => {
+      if (url === '/cursos') return Promise.resolve({ data: { data: [] } })
+      if (url === '/riesgo/estudiantes') return Promise.resolve({ data: [] })
+      throw new Error(`Ruta inesperada: ${url}`)
+    })
+    getEstudiantes.mockResolvedValue([])
+
+    montar()
+
+    expect(await screen.findByText('Aún no hay cursos ni estudiantes registrados')).toBeInTheDocument()
+    expect(screen.getByText(/Los cursos y sus niveles se reconocen automáticamente al cargar la nómina/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Cargar Nómina de Estudiantes \(Excel\)/i })).toBeInTheDocument()
+  })
 })
