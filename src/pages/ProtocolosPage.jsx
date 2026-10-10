@@ -4,7 +4,7 @@ import { getProtocolos, getTiposProtocolo } from '@/services/protocolosService'
 import { useAuth } from '@/store/useAuthStore'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { formatDate } from '@/utils/formatDate'
-import { ShieldAlert, Clock, CheckCircle, AlertTriangle, Calendar, User, FileText, Plus, Filter, X } from 'lucide-react'
+import { ShieldAlert, ShieldCheck, Clock, CheckCircle, AlertTriangle, Calendar, User, FileText, Plus, Filter, X } from 'lucide-react'
 
 export default function ProtocolosPage() {
   const navigate = useNavigate()
@@ -190,63 +190,108 @@ export default function ProtocolosPage() {
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-lg bg-white shadow">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Fecha Apertura
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Tipo
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Estudiante
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Estado
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Acciones
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 bg-white">
-                {protocolos.map((protocolo) => (
-                  <tr key={protocolo.id} className="hover:bg-gray-50">
-                    <td className="whitespace-nowrap px-6 py-4">
-                      <div className="text-sm text-gray-900">
-                        {formatDate(protocolo.fecha_apertura)}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900">{protocolo.tipo_protocolo}</div>
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">
-                        {protocolo.estudiante?.nombre} {protocolo.estudiante?.apellido}
-                      </div>
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-4">
-                      <span className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${getEstadoBadge(protocolo.estado)}`}>
-                        {protocolo.estado}
-                      </span>
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-                      <button
-                        onClick={() => navigate(`/protocolos/${protocolo.id}`)}
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        Ver Detalle
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {protocolos.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 p-12 text-center shadow-sm">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 ring-8 ring-emerald-50/40 dark:ring-emerald-950/20">
+              <ShieldCheck className="h-8 w-8" />
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+              {estadoFilter || tipoFilter
+                ? 'No se encontraron protocolos con los filtros aplicados'
+                : 'No hay protocolos activos'}
+            </h3>
+            <p className="mx-auto mt-2 max-w-md text-sm text-gray-500 dark:text-gray-400">
+              {estadoFilter || tipoFilter
+                ? 'Prueba modificando o limpiando los filtros para ver otros casos normativos.'
+                : 'No se registran casos normativos abiertos en este período. La convivencia escolar se encuentra al día y en orden.'}
+            </p>
+
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+              {(estadoFilter || tipoFilter) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEstadoFilter('')
+                    setTipoFilter('')
+                  }}
+                  className="inline-flex items-center gap-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2.5 text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition"
+                >
+                  <X className="h-4 w-4" />
+                  Limpiar Filtros
+                </button>
+              )}
+
+              {canCreate && (
+                <button
+                  type="button"
+                  onClick={() => navigate('/protocolos/nuevo')}
+                  className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-md hover:bg-blue-700 transition"
+                >
+                  <Plus className="h-4 w-4" />
+                  Activar Protocolo RICE
+                </button>
+              )}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="overflow-hidden rounded-lg bg-white shadow">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                      Fecha Apertura
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                      Tipo
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                      Estudiante
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                      Estado
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
+                      Acciones
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200 bg-white">
+                  {protocolos.map((protocolo) => (
+                    <tr key={protocolo.id} className="hover:bg-gray-50">
+                      <td className="whitespace-nowrap px-6 py-4">
+                        <div className="text-sm text-gray-900">
+                          {formatDate(protocolo.fecha_apertura)}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-gray-900">{protocolo.tipo_protocolo}</div>
+                      </td>
+                      <td className="whitespace-nowrap px-6 py-4">
+                        <div className="text-sm font-medium text-gray-900">
+                          {protocolo.estudiante?.nombre} {protocolo.estudiante?.apellido}
+                        </div>
+                      </td>
+                      <td className="whitespace-nowrap px-6 py-4">
+                        <span className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${getEstadoBadge(protocolo.estado)}`}>
+                          {protocolo.estado}
+                        </span>
+                      </td>
+                      <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
+                        <button
+                          onClick={() => navigate(`/protocolos/${protocolo.id}`)}
+                          className="text-blue-600 hover:text-blue-900"
+                        >
+                          Ver Detalle
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   )
