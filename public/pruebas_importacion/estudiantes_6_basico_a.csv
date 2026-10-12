@@ -1,0 +1,11 @@
+rut,nombre,apellido,curso,pie,direccion,apoderado_nombre,apoderado_apellido,apoderado_rut,apoderado_email,apoderado_telefono,direccion_apoderado
+"24111413-9","Benjamín","Espinoza","6° Básico A","No","Calle Del Sol 100, San Felipe","Rodrigo","Espinoza","16118887-5","apoderado.benjamín.espinoza@gmail.com","+56980006000","Calle Del Sol 100, San Felipe"
+"24111526-7","Isidora","Valenzuela","6° Básico A","No","Pje. Los Quillayes 118, San Felipe","Claudia","Valenzuela","16119074-8","apoderado.isidora.valenzuela@gmail.com","+56980006145","Pje. Los Quillayes 118, San Felipe"
+"24111639-5","Vicente","Castillo","6° Básico A","Sí","Calle Balmaceda 136, San Felipe","Rodrigo","Castillo","16119261-9","apoderado.vicente.castillo@gmail.com","+56980006290","Calle Balmaceda 136, San Felipe"
+"24111752-9","Florencia","Tapia","6° Básico A","No","Pje. El Mañío 154, San Felipe","Claudia","Tapia","16119448-4","apoderado.florencia.tapia@gmail.com","+56980006435","Pje. El Mañío 154, San Felipe"
+"24111865-7","Gaspar","Reyes","6° Básico A","No","Av. Bernardo O Higgins 172, San Felipe","Rodrigo","Reyes","16119635-5","apoderado.gaspar.reyes@gmail.com","+56980006580","Av. Bernardo O Higgins 172, San Felipe"
+"24111978-5","Emilia","Gutiérrez","6° Básico A","No","Calle Esmeralda 190, San Felipe","Claudia","Gutiérrez","16119822-6","apoderado.emilia.gutiérrez@gmail.com","+56980006725","Calle Esmeralda 190, San Felipe"
+"24112091-0","Tomás","González","6° Básico A","No","Av. Independencia 208, San Felipe","Rodrigo","González","16120009-3","apoderado.tomás.gonzález@gmail.com","+56980006870","Av. Independencia 208, San Felipe"
+"24112204-2","Julieta","Muñoz","6° Básico A","Sí","Los Aromos 226, San Felipe","Claudia","Muñoz","16120196-0","apoderado.julieta.muñoz@gmail.com","+56980007015","Los Aromos 226, San Felipe"
+"24112317-0","Joaquín","Rojas","6° Básico A","No","Pje. Las Violetas 244, San Felipe","Rodrigo","Rojas","16120383-1","apoderado.joaquín.rojas@gmail.com","+56980007160","Pje. Las Violetas 244, San Felipe"
+"24112430-4","Martina","Díaz","6° Básico A","No","Av. San Martín 262, San Felipe","Claudia","Díaz","16120570-2","apoderado.martina.díaz@gmail.com","+56980007305","Av. San Martín 262, San Felipe"

@@ -18,6 +18,7 @@ import {
   Settings,
   GraduationCap,
   Sparkles,
+  Calendar,
 } from 'lucide-react'
 import AsistenteNormativoModal from '@/components/rice/AsistenteNormativoModal'
 import NavbarStudentSearch from '@/components/layout/NavbarStudentSearch'
@@ -33,10 +34,10 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   const allNavItems = [
     { icon: LayoutDashboard, label: 'Panel Principal', path: '/dashboard', roles: ['Administrador', 'Equipo de Formación', 'Directivo'] },
     { icon: BarChart3, label: 'Analítica', path: '/analytics', roles: ['Administrador', 'Equipo de Formación', 'Directivo'] },
-    { icon: Users, label: 'Estudiantes', path: '/estudiantes' },
+    { icon: GraduationCap, label: 'Cursos', path: '/estudiantes' },
     { icon: AlertTriangle, label: 'Incidentes', path: '/incidentes' },
     { icon: ShieldAlert, label: 'Protocolos RICE', path: '/protocolos', roles: ['Administrador', 'Equipo de Formación', 'Directivo'] },
-    { icon: GraduationCap, label: 'Cierre de Año', path: '/cierre-anio', roles: ['Administrador', 'Inspector', 'Equipo de Formación', 'Directivo'] },
+    { icon: Calendar, label: 'Cierre de Año', path: '/cierre-anio', roles: ['Administrador', 'Inspector', 'Equipo de Formación', 'Directivo'] },
     { icon: Users, label: 'Usuarios', path: '/usuarios', roles: ['Administrador'] },
     { icon: Settings, label: 'Configuración', path: '/configuracion', roles: ['Administrador'] },
   ]

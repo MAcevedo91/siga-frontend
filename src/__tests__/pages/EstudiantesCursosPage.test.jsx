@@ -98,4 +98,66 @@ describe('Directorio por cursos', () => {
     expect(screen.getByText(/Los cursos y sus niveles se reconocen automáticamente al cargar la nómina/i)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Cargar Nómina de Estudiantes \(Excel\)/i })).toBeInTheDocument()
   })
+
+  it('muestra el hero banner del curso con métricas de matriculados, PIE y permite alternar a vista tarjetas', async () => {
+    montar()
+    // Abrir 8° Básico A
+    fireEvent.click(await screen.findByRole('button', { name: /8° Básico A/ }))
+
+    // Banner de métricas
+    expect(await screen.findByText('Matriculados activos')).toBeInTheDocument()
+    expect(screen.getByText('Estudiantes con apoyo PIE')).toBeInTheDocument()
+    expect(screen.getByText('2')).toBeInTheDocument() // 2 alumnos en 8° Básico A
+    expect(screen.getByText('Profesor Jefe • 8° Básico A')).toBeInTheDocument()
+
+    // Alternar a vista tarjetas
+    const botonTarjetas = screen.getByRole('button', { name: /Tarjetas/i })
+    fireEvent.click(botonTarjetas)
+
+    // Verificar renderizado en tarjetas con botón Ver Ficha
+    expect(await screen.findAllByText('Ver Ficha del Estudiante')).toHaveLength(2)
+  })
+
+  it('muestra breadcrumbs según el flujo: Inicio -> Cursos en directorio, e Inicio -> Cursos -> Estudiantes dentro de un curso', async () => {
+    montar()
+    // En directorio
+    expect(await screen.findByText('Inicio')).toBeInTheDocument()
+    expect(screen.getByText('Cursos')).toBeInTheDocument()
+    expect(screen.queryByText('Estudiantes')).not.toBeInTheDocument()
+
+    // Abrir 8° Básico A
+    fireEvent.click(await screen.findByRole('button', { name: /8° Básico A/ }))
+    expect(await screen.findByText('Estudiantes')).toBeInTheDocument()
+    const botonCursos = screen.getByRole('button', { name: 'Cursos' })
+    expect(botonCursos).toBeInTheDocument()
+
+    // Clic en Cursos para regresar
+    fireEvent.click(botonCursos)
+    expect(await screen.findByRole('button', { name: /7° Básico B/ })).toBeInTheDocument()
+  })
+
+  it('permite abrir directamente un curso desde query param ?curso=8a', async () => {
+    render(
+      <MemoryRouter initialEntries={['/estudiantes?curso=8a']}>
+        <Routes>
+          <Route path="/estudiantes" element={<EstudiantesPage />} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    expect(await screen.findByText('Ana Rojas')).toBeInTheDocument()
+    expect(screen.getByText('Luis Pérez')).toBeInTheDocument()
+    expect(screen.queryByText('Eva Díaz')).not.toBeInTheDocument()
+    expect(screen.getByText('Estudiantes')).toBeInTheDocument()
+  })
+
+  it('aplica la tonalidad visual de la card al Hero Banner del curso seleccionado', async () => {
+    montar()
+    // Abrir 8° Básico A (primer curso -> paleta naranja)
+    fireEvent.click(await screen.findByRole('button', { name: /8° Básico A/ }))
+    const tituloHero = await screen.findByText('Profesor Jefe • 8° Básico A')
+    expect(tituloHero).toHaveClass('text-orange-700')
+    const cardMatriculados = screen.getByText('Matriculados activos').closest('div[class*="shadow-md"]')
+    expect(cardMatriculados).toHaveClass('from-orange-500')
+  })
 })

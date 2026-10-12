@@ -1,0 +1,11 @@
+rut,nombre,apellido,curso,pie,direccion,apoderado_nombre,apoderado_apellido,apoderado_rut,apoderado_email,apoderado_telefono,direccion_apoderado
+"24106893-5","Facundo","López","4° Básico A","No","Camino El Olivo 100, San Felipe","Rodrigo","López","16111407-3","apoderado.facundo.lópez@gmail.com","+56980004000","Camino El Olivo 100, San Felipe"
+"24107006-9","Maite","Fuentes","4° Básico A","No","Av. Central 118, San Felipe","Claudia","Fuentes","16111594-0","apoderado.maite.fuentes@gmail.com","+56980004145","Av. Central 118, San Felipe"
+"24107119-7","Damián","Hernández","4° Básico A","Sí","Calle Del Sol 136, San Felipe","Rodrigo","Hernández","16111781-1","apoderado.damián.hernández@gmail.com","+56980004290","Calle Del Sol 136, San Felipe"
+"24107232-0","Trinidad","Torres","4° Básico A","No","Pje. Los Quillayes 154, San Felipe","Claudia","Torres","16111968-7","apoderado.trinidad.torres@gmail.com","+56980004435","Pje. Los Quillayes 154, San Felipe"
+"24107345-9","Mateo","Araya","4° Básico A","No","Calle Balmaceda 172, San Felipe","Rodrigo","Araya","16112155-K","apoderado.mateo.araya@gmail.com","+56980004580","Calle Balmaceda 172, San Felipe"
+"24107458-7","Agustina","Flores","4° Básico A","No","Pje. El Mañío 190, San Felipe","Claudia","Flores","16112342-0","apoderado.agustina.flores@gmail.com","+56980004725","Pje. El Mañío 190, San Felipe"
+"24107571-0","Santiago","Espinoza","4° Básico A","No","Av. Bernardo O Higgins 208, San Felipe","Rodrigo","Espinoza","16112529-6","apoderado.santiago.espinoza@gmail.com","+56980004870","Av. Bernardo O Higgins 208, San Felipe"
+"24107684-9","Sofía","Valenzuela","4° Básico A","Sí","Calle Esmeralda 226, San Felipe","Claudia","Valenzuela","16112716-7","apoderado.sofía.valenzuela@gmail.com","+56980005015","Calle Esmeralda 226, San Felipe"
+"24107797-7","Lucas","Castillo","4° Básico A","No","Av. Independencia 244, San Felipe","Rodrigo","Castillo","16112903-8","apoderado.lucas.castillo@gmail.com","+56980005160","Av. Independencia 244, San Felipe"
+"24107910-4","Emma","Tapia","4° Básico A","No","Los Aromos 262, San Felipe","Claudia","Tapia","16113090-7","apoderado.emma.tapia@gmail.com","+56980005305","Los Aromos 262, San Felipe"

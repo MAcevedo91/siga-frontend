@@ -1,0 +1,11 @@
+rut,nombre,apellido,curso,pie,direccion,apoderado_nombre,apoderado_apellido,apoderado_rut,apoderado_email,apoderado_telefono,direccion_apoderado
+"24100113-K","Emma","Díaz","1° Básico A","No","Los Aromos 100, San Felipe","Rodrigo","Díaz","16100187-2","apoderado.emma.díaz@gmail.com","+56980001000","Los Aromos 100, San Felipe"
+"24100226-8","Benjamín","Pérez","1° Básico A","No","Pje. Las Violetas 118, San Felipe","Claudia","Pérez","16100374-3","apoderado.benjamín.pérez@gmail.com","+56980001145","Pje. Las Violetas 118, San Felipe"
+"24100339-6","Isidora","Soto","1° Básico A","Sí","Av. San Martín 136, San Felipe","Rodrigo","Soto","16100561-4","apoderado.isidora.soto@gmail.com","+56980001290","Av. San Martín 136, San Felipe"
+"24100452-K","Vicente","Contreras","1° Básico A","No","Camino El Olivo 154, San Felipe","Claudia","Contreras","16100748-K","apoderado.vicente.contreras@gmail.com","+56980001435","Camino El Olivo 154, San Felipe"
+"24100565-8","Florencia","Silva","1° Básico A","No","Av. Central 172, San Felipe","Rodrigo","Silva","16100935-0","apoderado.florencia.silva@gmail.com","+56980001580","Av. Central 172, San Felipe"
+"24100678-6","Gaspar","Martínez","1° Básico A","No","Calle Del Sol 190, San Felipe","Claudia","Martínez","16101122-3","apoderado.gaspar.martínez@gmail.com","+56980001725","Calle Del Sol 190, San Felipe"
+"24100791-K","Emilia","Sepúlveda","1° Básico A","No","Pje. Los Quillayes 208, San Felipe","Rodrigo","Sepúlveda","16101309-9","apoderado.emilia.sepúlveda@gmail.com","+56980001870","Pje. Los Quillayes 208, San Felipe"
+"24100904-1","Tomás","Morales","1° Básico A","Sí","Calle Balmaceda 226, San Felipe","Claudia","Morales","16101496-6","apoderado.tomás.morales@gmail.com","+56980002015","Calle Balmaceda 226, San Felipe"
+"24101017-1","Julieta","Rodríguez","1° Básico A","No","Pje. El Mañío 244, San Felipe","Rodrigo","Rodríguez","16101683-7","apoderado.julieta.rodríguez@gmail.com","+56980002160","Pje. El Mañío 244, San Felipe"
+"24101130-5","Joaquín","López","1° Básico A","No","Av. Bernardo O Higgins 262, San Felipe","Claudia","López","16101870-8","apoderado.joaquín.lópez@gmail.com","+56980002305","Av. Bernardo O Higgins 262, San Felipe"

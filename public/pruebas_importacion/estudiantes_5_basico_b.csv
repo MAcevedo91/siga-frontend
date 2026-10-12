@@ -1,0 +1,11 @@
+rut,nombre,apellido,curso,pie,direccion,apoderado_nombre,apoderado_apellido,apoderado_rut,apoderado_email,apoderado_telefono,direccion_apoderado
+"24110283-1","Vicente","González","5° Básico B","No","Av. Central 100, San Felipe","Rodrigo","González","16117017-8","apoderado.vicente.gonzález@gmail.com","+56980005000","Av. Central 100, San Felipe"
+"24110396-K","Florencia","Muñoz","5° Básico B","No","Calle Del Sol 118, San Felipe","Claudia","Muñoz","16117204-9","apoderado.florencia.muñoz@gmail.com","+56980005145","Calle Del Sol 118, San Felipe"
+"24110509-1","Gaspar","Rojas","5° Básico B","Sí","Pje. Los Quillayes 136, San Felipe","Rodrigo","Rojas","16117391-6","apoderado.gaspar.rojas@gmail.com","+56980005290","Pje. Los Quillayes 136, San Felipe"
+"24110622-5","Emilia","Díaz","5° Básico B","No","Calle Balmaceda 154, San Felipe","Claudia","Díaz","16117578-1","apoderado.emilia.díaz@gmail.com","+56980005435","Calle Balmaceda 154, San Felipe"
+"24110735-3","Tomás","Pérez","5° Básico B","No","Pje. El Mañío 172, San Felipe","Rodrigo","Pérez","16117765-2","apoderado.tomás.pérez@gmail.com","+56980005580","Pje. El Mañío 172, San Felipe"
+"24110848-1","Julieta","Soto","5° Básico B","No","Av. Bernardo O Higgins 190, San Felipe","Claudia","Soto","16117952-3","apoderado.julieta.soto@gmail.com","+56980005725","Av. Bernardo O Higgins 190, San Felipe"
+"24110961-5","Joaquín","Contreras","5° Básico B","No","Calle Esmeralda 208, San Felipe","Rodrigo","Contreras","16118139-0","apoderado.joaquín.contreras@gmail.com","+56980005870","Calle Esmeralda 208, San Felipe"
+"24111074-5","Martina","Silva","5° Básico B","Sí","Av. Independencia 226, San Felipe","Claudia","Silva","16118326-1","apoderado.martina.silva@gmail.com","+56980006015","Av. Independencia 226, San Felipe"
+"24111187-3","Maximiliano","Martínez","5° Básico B","No","Los Aromos 244, San Felipe","Rodrigo","Martínez","16118513-2","apoderado.maximiliano.martínez@gmail.com","+56980006160","Los Aromos 244, San Felipe"
+"24111300-0","Catalina","Sepúlveda","5° Básico B","No","Pje. Las Violetas 262, San Felipe","Claudia","Sepúlveda","16118700-3","apoderado.catalina.sepúlveda@gmail.com","+56980006305","Pje. Las Violetas 262, San Felipe"

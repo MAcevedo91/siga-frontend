@@ -1,0 +1,11 @@
+rut,nombre,apellido,curso,pie,direccion,apoderado_nombre,apoderado_apellido,apoderado_rut,apoderado_email,apoderado_telefono,direccion_apoderado
+"24101243-3","Tomás","López","1° Básico B","No","Los Aromos 100, San Felipe","Rodrigo","López","16102057-5","apoderado.tomás.lópez@gmail.com","+56980001000","Los Aromos 100, San Felipe"
+"24101356-1","Julieta","Fuentes","1° Básico B","No","Pje. Las Violetas 118, San Felipe","Claudia","Fuentes","16102244-6","apoderado.julieta.fuentes@gmail.com","+56980001145","Pje. Las Violetas 118, San Felipe"
+"24101469-K","Joaquín","Hernández","1° Básico B","Sí","Av. San Martín 136, San Felipe","Rodrigo","Hernández","16102431-7","apoderado.joaquín.hernández@gmail.com","+56980001290","Av. San Martín 136, San Felipe"
+"24101582-3","Martina","Torres","1° Básico B","No","Camino El Olivo 154, San Felipe","Claudia","Torres","16102618-2","apoderado.martina.torres@gmail.com","+56980001435","Camino El Olivo 154, San Felipe"
+"24101695-1","Maximiliano","Araya","1° Básico B","No","Av. Central 172, San Felipe","Rodrigo","Araya","16102805-3","apoderado.maximiliano.araya@gmail.com","+56980001580","Av. Central 172, San Felipe"
+"24101808-3","Catalina","Flores","1° Básico B","No","Calle Del Sol 190, San Felipe","Claudia","Flores","16102992-0","apoderado.catalina.flores@gmail.com","+56980001725","Calle Del Sol 190, San Felipe"
+"24101921-7","Alonso","Espinoza","1° Básico B","No","Pje. Los Quillayes 208, San Felipe","Rodrigo","Espinoza","16103179-8","apoderado.alonso.espinoza@gmail.com","+56980001870","Pje. Los Quillayes 208, San Felipe"
+"24102034-7","Antonella","Valenzuela","1° Básico B","Sí","Calle Balmaceda 226, San Felipe","Claudia","Valenzuela","16103366-9","apoderado.antonella.valenzuela@gmail.com","+56980002015","Calle Balmaceda 226, San Felipe"
+"24102147-5","Facundo","Castillo","1° Básico B","No","Pje. El Mañío 244, San Felipe","Rodrigo","Castillo","16103553-K","apoderado.facundo.castillo@gmail.com","+56980002160","Pje. El Mañío 244, San Felipe"
+"24102260-9","Maite","Tapia","1° Básico B","No","Av. Bernardo O Higgins 262, San Felipe","Claudia","Tapia","16103740-0","apoderado.maite.tapia@gmail.com","+56980002305","Av. Bernardo O Higgins 262, San Felipe"

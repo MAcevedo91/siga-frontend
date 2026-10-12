@@ -20,6 +20,7 @@ function montar(riesgo) {
     if (url === '/dashboard/estudiantes-en-riesgo') return riesgo()
     const match = url.match(/^\/estudiantes\/(\d+)\/perfil$/)
     if (match) return Promise.resolve(respuesta(perfil(Number(match[1]))))
+    if (url === '/notificaciones') return Promise.resolve(respuesta([]))
     if (url === '/reportes/estudiante/1/perfil.pdf') return Promise.resolve({ data: new Blob(['pdf']) })
     throw new Error(`URL inesperada: ${url}`)
   })
@@ -139,6 +140,16 @@ describe('Alerta contextual del perfil', () => {
 
     // Domicilio del apoderado
     expect(screen.getByText('Avenida Siempreviva 742')).toBeInTheDocument()
+  })
+
+  it('muestra breadcrumbs con el flujo Inicio -> Cursos -> Estudiantes -> Perfil {nombre}', async () => {
+    montar(() => Promise.resolve(respuesta([])))
+    await screen.findByText('Datos Personales')
+
+    expect(screen.getByText('Inicio')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Cursos' })).toHaveAttribute('href', '/estudiantes')
+    expect(screen.getByRole('button', { name: 'Estudiantes' })).toBeInTheDocument()
+    expect(screen.getByText('Perfil Estudiante Prueba 1')).toBeInTheDocument()
   })
 })
 

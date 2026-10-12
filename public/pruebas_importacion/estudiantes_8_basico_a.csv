@@ -1,0 +1,11 @@
+rut,nombre,apellido,curso,pie,direccion,apoderado_nombre,apoderado_apellido,apoderado_rut,apoderado_email,apoderado_telefono,direccion_apoderado
+"24115933-7","Maximiliano","González","8° Básico A","No","Calle Balmaceda 100, San Felipe","Rodrigo","González","16126367-2","apoderado.maximiliano.gonzález@gmail.com","+56980008000","Calle Balmaceda 100, San Felipe"
+"24116046-7","Catalina","Muñoz","8° Básico A","No","Pje. El Mañío 118, San Felipe","Claudia","Muñoz","16126554-3","apoderado.catalina.muñoz@gmail.com","+56980008145","Pje. El Mañío 118, San Felipe"
+"24116159-5","Alonso","Rojas","8° Básico A","Sí","Av. Bernardo O Higgins 136, San Felipe","Rodrigo","Rojas","16126741-4","apoderado.alonso.rojas@gmail.com","+56980008290","Av. Bernardo O Higgins 136, San Felipe"
+"24116272-9","Antonella","Díaz","8° Básico A","No","Calle Esmeralda 154, San Felipe","Claudia","Díaz","16126928-K","apoderado.antonella.díaz@gmail.com","+56980008435","Calle Esmeralda 154, San Felipe"
+"24116385-7","Facundo","Pérez","8° Básico A","No","Av. Independencia 172, San Felipe","Rodrigo","Pérez","16127115-2","apoderado.facundo.pérez@gmail.com","+56980008580","Av. Independencia 172, San Felipe"
+"24116498-5","Maite","Soto","8° Básico A","No","Los Aromos 190, San Felipe","Claudia","Soto","16127302-3","apoderado.maite.soto@gmail.com","+56980008725","Los Aromos 190, San Felipe"
+"24116611-2","Damián","Contreras","8° Básico A","No","Pje. Las Violetas 208, San Felipe","Rodrigo","Contreras","16127489-5","apoderado.damián.contreras@gmail.com","+56980008870","Pje. Las Violetas 208, San Felipe"
+"24116724-0","Trinidad","Silva","8° Básico A","Sí","Av. San Martín 226, San Felipe","Claudia","Silva","16127676-6","apoderado.trinidad.silva@gmail.com","+56980009015","Av. San Martín 226, San Felipe"
+"24116837-9","Mateo","Martínez","8° Básico A","No","Camino El Olivo 244, San Felipe","Rodrigo","Martínez","16127863-7","apoderado.mateo.martínez@gmail.com","+56980009160","Camino El Olivo 244, San Felipe"
+"24116950-2","Agustina","Sepúlveda","8° Básico A","No","Av. Central 262, San Felipe","Claudia","Sepúlveda","16128050-K","apoderado.agustina.sepúlveda@gmail.com","+56980009305","Av. Central 262, San Felipe"

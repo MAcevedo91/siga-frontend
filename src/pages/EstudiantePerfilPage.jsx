@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { getEstudianteById } from '@/services/estudiantesService'
 import { getEstudiantesEnRiesgo } from '@/services/dashboardService'
 import DownloadPDFButton from '../components/reports/DownloadPDFButton'
 import { formatDate } from '@/utils/formatDate'
 import { MapPin } from 'lucide-react'
 import DashboardLayout from '@/components/layout/DashboardLayout'
+import Breadcrumbs from '@/components/shared/Breadcrumbs'
 
 export default function EstudiantePerfilPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [estudiante, setEstudiante] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -82,19 +84,32 @@ export default function EstudiantePerfilPage() {
     )
   }
 
+  const cursoId = searchParams.get('curso') || estudiante?.curso?.id || estudiante?.curso_id
+  const cursoUrl = cursoId ? `/estudiantes?curso=${cursoId}` : '/estudiantes'
+  const breadcrumbItems = [
+    { label: 'Cursos', href: '/estudiantes' },
+    {
+      label: 'Estudiantes',
+      onClick: () => navigate(cursoUrl),
+    },
+    { label: `Perfil ${estudiante.nombre} ${estudiante.apellido}` },
+  ]
+
   return (
     <DashboardLayout>
       <div className="p-4 sm:p-6 lg:p-8">
-      <div className="mx-auto max-w-5xl">
-        <button
-          onClick={() => navigate('/estudiantes')}
-          className="mb-4 flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
-        >
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          Volver a Estudiantes
-        </button>
+        <div className="mx-auto max-w-5xl">
+          <Breadcrumbs items={breadcrumbItems} />
+
+          <button
+            onClick={() => navigate(cursoUrl)}
+            className="mb-4 flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+          >
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Volver a Estudiantes
+          </button>
 
         <div className="space-y-6">
           <div className="overflow-hidden rounded-lg bg-white shadow">

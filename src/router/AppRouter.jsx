@@ -58,6 +58,10 @@ export default function AppRouter() {
         }
       />
       <Route
+        path="/cursos"
+        element={<Navigate to="/estudiantes" replace />}
+      />
+      <Route
         path="/estudiantes"
         element={
           <PrivateRoute>

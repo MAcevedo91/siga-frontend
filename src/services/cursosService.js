@@ -34,8 +34,21 @@ export const getEstudiantesPorCurso = async (cursoId) => {
   return response.data.data
 }
 
+/**
+ * Asigna o desasigna el profesor jefe de un curso con confirmación de contraseña.
+ * PATCH /api/v1/cursos/:id/profesor-jefe
+ * @param {string} cursoId - UUID del curso
+ * @param {{ profesor_jefe_id: string|null, password_confirmacion: string }} data
+ * @returns {Promise<{ curso_id: string, curso_nombre: string, profesor_jefe: object|null }>}
+ */
+export const asignarProfesorJefe = async (cursoId, data) => {
+  const response = await api.patch(`/cursos/${cursoId}/profesor-jefe`, data)
+  return response.data.data
+}
+
 export default {
   getNiveles,
   getLetrasPorNivel,
   getEstudiantesPorCurso,
+  asignarProfesorJefe,
 }

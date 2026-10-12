@@ -23,7 +23,15 @@ export default function Breadcrumbs({ items = [] }) {
           return (
             <li key={index} className="inline-flex items-center">
               <ChevronRight className="w-4 h-4 text-gray-400 mx-1" />
-              {item.href && !isLast ? (
+              {item.onClick ? (
+                <button
+                  type="button"
+                  onClick={item.onClick}
+                  className="text-gray-500 hover:text-blue-600 transition-colors"
+                >
+                  {item.label}
+                </button>
+              ) : item.href && !isLast ? (
                 <Link
                   to={item.href}
                   className="text-gray-500 hover:text-blue-600 transition-colors"
@@ -31,7 +39,7 @@ export default function Breadcrumbs({ items = [] }) {
                   {item.label}
                 </Link>
               ) : (
-                <span className="font-medium text-gray-800">
+                <span className="font-medium text-gray-800 dark:text-gray-200">
                   {item.label}
                 </span>
               )}

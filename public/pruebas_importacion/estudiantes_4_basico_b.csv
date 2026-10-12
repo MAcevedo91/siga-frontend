@@ -1,0 +1,11 @@
+rut,nombre,apellido,curso,pie,direccion,apoderado_nombre,apoderado_apellido,apoderado_rut,apoderado_email,apoderado_telefono,direccion_apoderado
+"24108023-4","Sofía","Tapia","4° Básico B","No","Camino El Olivo 100, San Felipe","Rodrigo","Tapia","16113277-2","apoderado.sofía.tapia@gmail.com","+56980004000","Camino El Olivo 100, San Felipe"
+"24108136-2","Lucas","Reyes","4° Básico B","No","Av. Central 118, San Felipe","Claudia","Reyes","16113464-3","apoderado.lucas.reyes@gmail.com","+56980004145","Av. Central 118, San Felipe"
+"24108249-0","Emma","Gutiérrez","4° Básico B","Sí","Calle Del Sol 136, San Felipe","Rodrigo","Gutiérrez","16113651-4","apoderado.emma.gutiérrez@gmail.com","+56980004290","Calle Del Sol 136, San Felipe"
+"24108362-4","Benjamín","González","4° Básico B","No","Pje. Los Quillayes 154, San Felipe","Claudia","González","16113838-K","apoderado.benjamín.gonzález@gmail.com","+56980004435","Pje. Los Quillayes 154, San Felipe"
+"24108475-2","Isidora","Muñoz","4° Básico B","No","Calle Balmaceda 172, San Felipe","Rodrigo","Muñoz","16114025-2","apoderado.isidora.muñoz@gmail.com","+56980004580","Calle Balmaceda 172, San Felipe"
+"24108588-0","Vicente","Rojas","4° Básico B","No","Pje. El Mañío 190, San Felipe","Claudia","Rojas","16114212-3","apoderado.vicente.rojas@gmail.com","+56980004725","Pje. El Mañío 190, San Felipe"
+"24108701-8","Florencia","Díaz","4° Básico B","No","Av. Bernardo O Higgins 208, San Felipe","Rodrigo","Díaz","16114399-5","apoderado.florencia.díaz@gmail.com","+56980004870","Av. Bernardo O Higgins 208, San Felipe"
+"24108814-6","Gaspar","Pérez","4° Básico B","Sí","Calle Esmeralda 226, San Felipe","Claudia","Pérez","16114586-6","apoderado.gaspar.pérez@gmail.com","+56980005015","Calle Esmeralda 226, San Felipe"
+"24108927-4","Emilia","Soto","4° Básico B","No","Av. Independencia 244, San Felipe","Rodrigo","Soto","16114773-7","apoderado.emilia.soto@gmail.com","+56980005160","Av. Independencia 244, San Felipe"
+"24109040-K","Tomás","Contreras","4° Básico B","No","Los Aromos 262, San Felipe","Claudia","Contreras","16114960-8","apoderado.tomás.contreras@gmail.com","+56980005305","Los Aromos 262, San Felipe"

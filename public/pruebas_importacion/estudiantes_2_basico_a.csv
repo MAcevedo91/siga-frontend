@@ -1,0 +1,11 @@
+rut,nombre,apellido,curso,pie,direccion,apoderado_nombre,apoderado_apellido,apoderado_rut,apoderado_email,apoderado_telefono,direccion_apoderado
+"24102373-7","Gaspar","Contreras","2° Básico A","No","Pje. Las Violetas 100, San Felipe","Rodrigo","Contreras","16103927-6","apoderado.gaspar.contreras@gmail.com","+56980002000","Pje. Las Violetas 100, San Felipe"
+"24102486-5","Emilia","Silva","2° Básico A","No","Av. San Martín 118, San Felipe","Claudia","Silva","16104114-9","apoderado.emilia.silva@gmail.com","+56980002145","Av. San Martín 118, San Felipe"
+"24102599-3","Tomás","Martínez","2° Básico A","Sí","Camino El Olivo 136, San Felipe","Rodrigo","Martínez","16104301-K","apoderado.tomás.martínez@gmail.com","+56980002290","Camino El Olivo 136, San Felipe"
+"24102712-0","Julieta","Sepúlveda","2° Básico A","No","Av. Central 154, San Felipe","Claudia","Sepúlveda","16104488-1","apoderado.julieta.sepúlveda@gmail.com","+56980002435","Av. Central 154, San Felipe"
+"24102825-9","Joaquín","Morales","2° Básico A","No","Calle Del Sol 172, San Felipe","Rodrigo","Morales","16104675-2","apoderado.joaquín.morales@gmail.com","+56980002580","Calle Del Sol 172, San Felipe"
+"24102938-7","Martina","Rodríguez","2° Básico A","No","Pje. Los Quillayes 190, San Felipe","Claudia","Rodríguez","16104862-3","apoderado.martina.rodríguez@gmail.com","+56980002725","Pje. Los Quillayes 190, San Felipe"
+"24103051-2","Maximiliano","López","2° Básico A","No","Calle Balmaceda 208, San Felipe","Rodrigo","López","16105049-0","apoderado.maximiliano.lópez@gmail.com","+56980002870","Calle Balmaceda 208, San Felipe"
+"24103164-0","Catalina","Fuentes","2° Básico A","Sí","Pje. El Mañío 226, San Felipe","Claudia","Fuentes","16105236-1","apoderado.catalina.fuentes@gmail.com","+56980003015","Pje. El Mañío 226, San Felipe"
+"24103277-9","Alonso","Hernández","2° Básico A","No","Av. Bernardo O Higgins 244, San Felipe","Rodrigo","Hernández","16105423-2","apoderado.alonso.hernández@gmail.com","+56980003160","Av. Bernardo O Higgins 244, San Felipe"
+"24103390-2","Antonella","Torres","2° Básico A","No","Calle Esmeralda 262, San Felipe","Claudia","Torres","16105610-3","apoderado.antonella.torres@gmail.com","+56980003305","Calle Esmeralda 262, San Felipe"
