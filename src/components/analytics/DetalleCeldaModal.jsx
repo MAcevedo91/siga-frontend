@@ -8,7 +8,9 @@ import {
   Info,
   Calendar,
   Layers,
-  HeartHandshake
+  HeartHandshake,
+  Sparkles,
+  BookOpen
 } from 'lucide-react'
 
 export default function DetalleCeldaModal({ data, loading, onClose }) {
@@ -170,15 +172,45 @@ export default function DetalleCeldaModal({ data, loading, onClose }) {
                 )}
               </div>
 
-              {/* Recomendación Pedagógica Orientativa */}
-              <div className="p-4 rounded-xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/50 space-y-2">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-900 dark:text-indigo-200 flex items-center gap-1.5">
-                  <HeartHandshake className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                  Orientación de Convivencia Escolar
-                </h4>
-                <p className="text-sm text-indigo-900/90 dark:text-indigo-100 leading-relaxed">
+              {/* Recomendación Pedagógica Orientativa (IA + RICE) */}
+              <div className="p-4 rounded-xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/50 space-y-2.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-900 dark:text-indigo-200 flex items-center gap-1.5">
+                    <HeartHandshake className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                    Orientación de Convivencia Escolar
+                  </h4>
+                  {diag.es_ia ? (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-900/60 dark:text-indigo-200 border border-indigo-300 dark:border-indigo-700">
+                      <Sparkles className="w-3 h-3 text-indigo-600 dark:text-indigo-400" />
+                      Asesor IA • RICE
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                      Heurística RICE
+                    </span>
+                  )}
+                </div>
+
+                <p className="text-sm text-indigo-950 dark:text-indigo-100 leading-relaxed whitespace-pre-line">
                   {diag.recomendacion_pedagogica || 'Mantener monitoreo regular del curso.'}
                 </p>
+
+                {diag.fuentes_rice && diag.fuentes_rice.length > 0 && (
+                  <div className="pt-2 border-t border-indigo-200/60 dark:border-indigo-800/40 flex flex-wrap items-center gap-1.5 text-xs">
+                    <span className="flex items-center gap-1 text-[11px] font-semibold text-indigo-800 dark:text-indigo-300">
+                      <BookOpen className="w-3 h-3" />
+                      Fundamento RICE:
+                    </span>
+                    {diag.fuentes_rice.map((f, idx) => (
+                      <span
+                        key={idx}
+                        className="inline-block px-2 py-0.5 rounded-md text-[11px] font-medium bg-white dark:bg-gray-800 text-indigo-900 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-700 shadow-xs"
+                      >
+                        {f.articulo ? `${f.articulo}` : f.seccion || 'Reglamento Interno'}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Resguardo Ético y Privacidad */}

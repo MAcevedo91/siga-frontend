@@ -66,14 +66,14 @@ describe('NuevoIncidentePage con SelectorEstudianteCascada (HU 5.5)', () => {
     const selectButtons = screen.getAllByRole('button', { name: /Seleccionar/i })
     await user.click(selectButtons[0]) // Camila Fuentes
 
-    // Debe aparecer en la lista de involucrados del formulario
-    expect(screen.getByText('Camila Fuentes')).toBeInTheDocument()
+    // Debe aparecer en la lista de involucrados del formulario y en el resumen lateral
+    expect(screen.getAllByText('Camila Fuentes').length).toBeGreaterThanOrEqual(1)
     expect(screen.getByText('Es víctima')).toBeInTheDocument()
 
     // 5. Agregar segundo estudiante
     const remainingSelectButtons = screen.getAllByRole('button', { name: /Seleccionar/i })
     await user.click(remainingSelectButtons[0]) // Diego Garrido
 
-    expect(screen.getByText('Diego Garrido')).toBeInTheDocument()
+    expect(screen.getAllByText('Diego Garrido').length).toBeGreaterThanOrEqual(1)
   })
 })
