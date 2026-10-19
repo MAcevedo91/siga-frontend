@@ -20,6 +20,11 @@ export const updateEstudiante = async (id, estudianteData) => {
   return response.data.data
 }
 
+export const cambiarCursoEstudiante = async (id, { curso_id, motivo, observacion }) => {
+  const response = await api.put(`/estudiantes/${id}/cambiar-curso`, { curso_id, motivo, observacion })
+  return response.data.data
+}
+
 export const importarEstudiantes = async (formData) => {
   const response = await api.post('/estudiantes/importar', formData, {
     headers: {

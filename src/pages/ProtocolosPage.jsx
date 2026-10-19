@@ -5,11 +5,12 @@ import { useAuth } from '@/store/useAuthStore'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { formatDate } from '@/utils/formatDate'
 import { ShieldAlert, ShieldCheck, Clock, CheckCircle, AlertTriangle, Calendar, User, FileText, Plus, Filter, X } from 'lucide-react'
+import { ROLES_GESTION_CASOS } from '@/constants/roles'
 
 export default function ProtocolosPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const canCreate = ['Administrador', 'Equipo de Formación'].includes(user?.rol)
+  const canCreate = ROLES_GESTION_CASOS.includes(user?.rol)
   const [protocolos, setProtocolos] = useState([])
   const [tiposProtocolo, setTiposProtocolo] = useState([])
   const [loading, setLoading] = useState(true)

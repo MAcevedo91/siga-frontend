@@ -69,9 +69,11 @@ export const descargarReportePdf = async (
   incidenteId,
   reporteId,
   nombreSugerido = 'informe_incidente.pdf',
-  abrirEnNuevaPestana = false
+  abrirEnNuevaPestana = false,
+  preview = false
 ) => {
-  const response = await api.get(`/incidentes/${incidenteId}/reportes/${reporteId}/pdf`, {
+  const queryParam = preview ? '?preview=true' : ''
+  const response = await api.get(`/incidentes/${incidenteId}/reportes/${reporteId}/pdf${queryParam}`, {
     responseType: 'blob',
   })
 

@@ -22,6 +22,7 @@ import {
 } from 'lucide-react'
 import AsistenteNormativoModal from '@/components/rice/AsistenteNormativoModal'
 import NavbarStudentSearch from '@/components/layout/NavbarStudentSearch'
+import { ROLES_DASHBOARD_ANALYTICS, ROLES_CIERRE_ANIO } from '@/constants/roles'
 
 import logoSidebar from '@/assets/logo_sidebar.png'
 
@@ -32,12 +33,12 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   const currentPath = location.pathname
 
   const allNavItems = [
-    { icon: LayoutDashboard, label: 'Panel Principal', path: '/dashboard', roles: ['Administrador', 'Equipo de Formación', 'Directivo'] },
-    { icon: BarChart3, label: 'Analítica', path: '/analytics', roles: ['Administrador', 'Equipo de Formación', 'Directivo'] },
+    { icon: LayoutDashboard, label: 'Panel Principal', path: '/dashboard', roles: ROLES_DASHBOARD_ANALYTICS },
+    { icon: BarChart3, label: 'Analítica', path: '/analytics', roles: ROLES_DASHBOARD_ANALYTICS },
     { icon: GraduationCap, label: 'Cursos', path: '/estudiantes' },
     { icon: AlertTriangle, label: 'Incidentes', path: '/incidentes' },
-    { icon: ShieldAlert, label: 'Protocolos RICE', path: '/protocolos', roles: ['Administrador', 'Equipo de Formación', 'Directivo'] },
-    { icon: Calendar, label: 'Cierre de Año', path: '/cierre-anio', roles: ['Administrador', 'Inspector', 'Equipo de Formación', 'Directivo'] },
+    { icon: ShieldAlert, label: 'Protocolos RICE', path: '/protocolos', roles: ROLES_DASHBOARD_ANALYTICS },
+    { icon: Calendar, label: 'Cierre de Año', path: '/cierre-anio', roles: ROLES_CIERRE_ANIO },
     { icon: Users, label: 'Usuarios', path: '/usuarios', roles: ['Administrador'] },
     { icon: Settings, label: 'Configuración', path: '/configuracion', roles: ['Administrador'] },
   ]

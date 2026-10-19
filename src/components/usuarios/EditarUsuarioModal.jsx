@@ -174,10 +174,15 @@ export default function EditarUsuarioModal({ isOpen, onClose, onSuccess, usuario
             >
               <option value="">Seleccionar rol</option>
               <option value="Administrador">Administrador</option>
-              <option value="Equipo de Formación">Equipo de Formación</option>
-              <option value="Directivo">Directivo</option>
+              <option value="Coordinador de Convivencia Escolar">Coordinador de Convivencia Escolar</option>
+              <option value="Orientador">Orientador</option>
+              <option value="Psicólogo">Psicólogo</option>
+              <option value="Asistente Social">Asistente Social</option>
+              <option value="Directiva">Directiva</option>
               <option value="Inspector">Inspector</option>
               <option value="Docente">Docente</option>
+              <option value="Equipo de Formación">Equipo de Formación (Legado)</option>
+              <option value="Directivo">Directivo (Legado)</option>
             </select>
             {errors.rol && (
               <p className="mt-1 text-xs text-red-600">{errors.rol.message}</p>

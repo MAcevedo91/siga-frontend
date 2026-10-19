@@ -23,6 +23,7 @@ import {
   generarBorradoresReporte,
   descargarReportePdf,
 } from '@/services/reportesService'
+import { ROLES_APROBACION_REPORTES } from '@/constants/roles'
 import { formatDate, formatDateTime } from '@/utils/formatDate'
 
 const SECCIONES_CONFIG = [
@@ -83,7 +84,7 @@ export default function ModalRevisionReporteIA({
   const [mostrarConfirmRegenerar, setMostrarConfirmRegenerar] = useState(false)
 
   // Roles con permiso para aprobar formalmente (excluye Inspector y Docente)
-  const puedeAprobar = ['Administrador', 'Directivo', 'Equipo de Formación'].includes(currentUser?.rol)
+  const puedeAprobar = ROLES_APROBACION_REPORTES.includes(currentUser?.rol)
 
   // Inicializar o sincronizar reportes al abrir
   useEffect(() => {
@@ -243,7 +244,7 @@ export default function ModalRevisionReporteIA({
     }
   }
 
-  // Descargar o abrir en pestaña PDF del reporte actual (HU 6.3.2)
+  // Descargar o abrir en pestaña PDF del reporte actual (HU 6.3.2 y Hallazgo 4)
   const handleDescargarPdf = async (abrirEnNuevaPestana = false) => {
     if (!reporteActual) return
     try {
@@ -252,17 +253,23 @@ export default function ModalRevisionReporteIA({
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
         .replace(/\s+/g, '_')
-      const filename = `Informe_Incidente_${incidente.id}_${apellidoLimpio}.pdf`
+      const esPreview = !esReporteAprobado
+      const prefix = esPreview ? 'Validacion_Borrador' : 'Informe_Incidente'
+      const filename = `${prefix}_${incidente.id}_${apellidoLimpio}.pdf`
 
-      await descargarReportePdf(incidente.id, reporteActual.id, filename, abrirEnNuevaPestana)
+      if (esPreview) {
+        await descargarReportePdf(incidente.id, reporteActual.id, filename, abrirEnNuevaPestana, true)
+      } else {
+        await descargarReportePdf(incidente.id, reporteActual.id, filename, abrirEnNuevaPestana)
+      }
 
       if (abrirEnNuevaPestana) {
-        toast.success('Abriendo PDF oficial en nueva pestaña')
+        toast.success(esPreview ? 'Abriendo vista previa para validación del documento' : 'Abriendo PDF oficial en nueva pestaña')
       } else {
         toast.success(`Descarga iniciada: ${filename}`)
       }
     } catch (err) {
-      const msg = err.response?.data?.message || 'Error al descargar el archivo PDF oficial'
+      const msg = err.response?.data?.message || 'Error al generar el archivo PDF'
       toast.error(msg)
     } finally {
       setDescargandoPdf(false)
@@ -597,15 +604,31 @@ export default function ModalRevisionReporteIA({
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-200 bg-gray-50 px-6 py-4 rounded-b-2xl">
           <div className="flex items-center gap-2">
             {!esReporteAprobado && (
-              <button
-                type="button"
-                onClick={() => setMostrarConfirmRegenerar(true)}
-                disabled={regenerando || guardando || aprobando}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors disabled:opacity-50"
-              >
-                <RefreshCw className="h-3.5 w-3.5 text-gray-500" />
-                Regenerar Propuesta
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setMostrarConfirmRegenerar(true)}
+                  disabled={regenerando || guardando || aprobando}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors disabled:opacity-50"
+                >
+                  <RefreshCw className="h-3.5 w-3.5 text-gray-500" />
+                  Regenerar Propuesta
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDescargarPdf(true)}
+                  disabled={descargandoPdf}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900 hover:bg-amber-100 transition-colors disabled:opacity-50 shadow-2xs"
+                  title="Ver vista previa del documento para validar redacción antes de firmar"
+                >
+                  {descargandoPdf ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <ExternalLink className="h-3.5 w-3.5 text-amber-700" />
+                  )}
+                  Validar / Previsualizar PDF
+                </button>
+              </div>
             )}
 
             {esReporteAprobado && (
@@ -666,7 +689,7 @@ export default function ModalRevisionReporteIA({
                 ) : (
                   <div
                     className="inline-flex items-center gap-1 rounded-lg bg-gray-100 px-3 py-2 text-[11px] font-medium text-gray-500 border border-gray-200 cursor-not-allowed"
-                    title="Solo Administradores, Directivos y Equipo de Formación pueden oficializar informes"
+                    title="Solo Administradores, Directivos y Equipo de Convivencia Escolar pueden oficializar informes"
                   >
                     <ShieldAlert className="h-3.5 w-3.5 text-gray-400" />
                     Aprobación reservada a Jefatura

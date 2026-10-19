@@ -8,15 +8,17 @@ import { searchEstudiantes } from '@/services/searchService'
 import { useDebounce } from '@/hooks/useDebounce'
 import ImportarEstudiantesModal from '@/components/estudiantes/ImportarEstudiantesModal'
 import AsignarProfesorModal from '@/components/estudiantes/AsignarProfesorModal'
+import ReasignarCursoModal from '@/components/estudiantes/ReasignarCursoModal'
 import { useAuth } from '@/store/useAuthStore'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import TableSkeleton from '@/components/shared/TableSkeleton'
 import Breadcrumbs from '@/components/shared/Breadcrumbs'
 import SearchBar from '@/components/search/SearchBar'
 import RiskBadge from '@/components/risk/RiskBadge'
-import { Search, Upload, FileDown, FileText, X, Filter, ArrowUpRight, UserRound, Calendar, GraduationCap, FileSpreadsheet, Mail, LayoutGrid, List, Puzzle, Users, ShieldAlert } from 'lucide-react'
+import { Search, Upload, FileDown, FileText, X, Filter, ArrowUpRight, UserRound, Calendar, GraduationCap, FileSpreadsheet, Mail, LayoutGrid, List, Puzzle, Users, ShieldAlert, ArrowLeftRight } from 'lucide-react'
 import { exportEstudiantesToExcel, exportEstudiantesToPDF } from '@/utils/exportUtils'
 import api from '@/services/api'
+import { ROLES_GESTION_CASOS } from '@/constants/roles'
 
 const PALETA_CURSOS = [
   {
@@ -76,6 +78,7 @@ export default function EstudiantesPageMejorada() {
   const [cursoFilter, setCursoFilter] = useState(initialCurso)
   const [showImportModal, setShowImportModal] = useState(false)
   const [showAsignarProfesorModal, setShowAsignarProfesorModal] = useState(false)
+  const [estudianteParaReasignar, setEstudianteParaReasignar] = useState(null)
   const [showFilters, setShowFilters] = useState(false)
   const [searchResults, setSearchResults] = useState(null)
   const [searching, setSearching] = useState(false)
@@ -116,7 +119,7 @@ export default function EstudiantesPageMejorada() {
 
   const debouncedSearch = useDebounce(searchTerm, 300)
 
-  const canWrite = ['Administrador', 'Equipo de Formación'].includes(user?.rol)
+  const canWrite = ROLES_GESTION_CASOS.includes(user?.rol)
 
   // Años lectivos disponibles según la oferta de cursos
   const aniosDisponibles = useMemo(() => {
@@ -945,12 +948,22 @@ export default function EstudiantesPageMejorada() {
                     </div>
                   </div>
 
-                  {/* Botón Acción Ver Perfil */}
-                  <div className="mt-5 pt-3 border-t border-gray-100 dark:border-gray-700/60">
+                  {/* Botón Acción Ver Perfil y Reasignar */}
+                  <div className="mt-5 pt-3 border-t border-gray-100 dark:border-gray-700/60 flex items-center gap-2">
+                    {canWrite && estudiante.estado_matricula !== 'Egresado' && estudiante.estado_matricula !== 'Retirado' && (
+                      <button
+                        type="button"
+                        onClick={() => setEstudianteParaReasignar(estudiante)}
+                        className="inline-flex items-center justify-center p-2 rounded-xl border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-950/60 dark:text-amber-300 dark:hover:bg-amber-900 transition-colors shadow-xs"
+                        title="Cambiar de curso / paralelo"
+                      >
+                        <ArrowLeftRight className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => handleVerPerfil(estudiante.id)}
-                      className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-blue-50 py-2 text-xs font-bold text-blue-700 transition-colors hover:bg-blue-600 hover:text-white dark:bg-blue-950/60 dark:text-blue-300 dark:hover:bg-blue-600 dark:hover:text-white"
+                      className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-blue-50 py-2 text-xs font-bold text-blue-700 transition-colors hover:bg-blue-600 hover:text-white dark:bg-blue-950/60 dark:text-blue-300 dark:hover:bg-blue-600 dark:hover:text-white"
                     >
                       <span>Ver Ficha del Estudiante</span>
                       <ArrowUpRight className="w-3.5 h-3.5" />
@@ -1051,13 +1064,26 @@ export default function EstudiantesPageMejorada() {
                           <div className="text-sm text-gray-600 dark:text-gray-300">{estudiante.apoderado?.nombre || 'Sin registrar'}</div>
                         </td>
                         <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-                          <button
-                            onClick={() => handleVerPerfil(estudiante.id)}
-                            className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-900 transition-colors font-bold dark:text-blue-400 dark:hover:text-blue-300"
-                          >
-                            <span>Ver Perfil</span>
-                            <ArrowUpRight className="w-3.5 h-3.5" />
-                          </button>
+                          <div className="flex items-center justify-end gap-2">
+                            {canWrite && estudiante.estado_matricula !== 'Egresado' && estudiante.estado_matricula !== 'Retirado' && (
+                              <button
+                                type="button"
+                                onClick={() => setEstudianteParaReasignar(estudiante)}
+                                className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-950/60 dark:text-amber-300 dark:hover:bg-amber-900 transition-colors shadow-xs"
+                                title="Cambiar de curso o paralelo"
+                              >
+                                <ArrowLeftRight className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                                <span>Cambiar Curso</span>
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleVerPerfil(estudiante.id)}
+                              className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-900 transition-colors font-bold dark:text-blue-400 dark:hover:text-blue-300"
+                            >
+                              <span>Ver Perfil</span>
+                              <ArrowUpRight className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     )
@@ -1090,6 +1116,34 @@ export default function EstudiantesPageMejorada() {
                     : c
                 )
               )
+            }}
+          />
+        )}
+
+        {canWrite && estudianteParaReasignar && (
+          <ReasignarCursoModal
+            isOpen={Boolean(estudianteParaReasignar)}
+            onClose={() => setEstudianteParaReasignar(null)}
+            estudiante={estudianteParaReasignar}
+            cursos={cursosDisponibles}
+            onSuccess={(nuevoCurso) => {
+              setEstudiantes((prev) =>
+                prev.map((est) =>
+                  est.id === estudianteParaReasignar.id
+                    ? { ...est, curso_id: nuevoCurso.id, curso: nuevoCurso }
+                    : est
+                )
+              )
+              if (searchResults) {
+                setSearchResults((prev) =>
+                  prev.map((est) =>
+                    est.id === estudianteParaReasignar.id
+                      ? { ...est, curso_id: nuevoCurso.id, curso: nuevoCurso }
+                      : est
+                  )
+                )
+              }
+              setEstudianteParaReasignar(null)
             }}
           />
         )}

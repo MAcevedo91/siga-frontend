@@ -12,6 +12,7 @@ import SearchBar from '@/components/search/SearchBar'
 import { AlertTriangle, Plus, FileDown, FileText, Filter, X, Calendar } from 'lucide-react'
 import { exportIncidentesToExcel, exportIncidentesToPDF } from '@/utils/exportUtils'
 import { formatDate } from '@/utils/formatDate'
+import { ROLES_CREACION_INCIDENTES } from '@/constants/roles'
 
 export default function IncidentesPageMejorada() {
   const navigate = useNavigate()
@@ -29,7 +30,7 @@ export default function IncidentesPageMejorada() {
   const itemsPerPage = 20
   const { user } = useAuth()
 
-  const canCreate = ['Administrador', 'Equipo de Formación', 'Inspector', 'Docente'].includes(user?.rol)
+  const canCreate = ROLES_CREACION_INCIDENTES.includes(user?.rol)
 
   useEffect(() => {
     loadIncidentes()

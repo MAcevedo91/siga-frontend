@@ -14,6 +14,7 @@ vi.mock('@/store/useAuthStore', () => ({
 vi.mock('@/services/incidentesService', () => ({
   getIncidenteById: vi.fn(),
   updateEstadoIncidente: vi.fn(),
+  updateObservacionEstudiante: vi.fn(),
 }))
 
 vi.mock('@/services/reportesService', () => ({
@@ -184,5 +185,149 @@ describe('IncidenteDetallePage con Asistente de Reportes IA (HU 6.2, HU 6.3.2, H
         true
       )
     })
+  })
+
+  it('humaniza el título del encabezado mostrando los estudiantes involucrados', async () => {
+    renderComponent('Administrador')
+
+    expect(await screen.findByText('Juan Pérez y Diego Araya')).toBeInTheDocument()
+    expect(screen.getByText(/Incidente #15/i)).toBeInTheDocument()
+  })
+
+  it('renderiza stepper de estado y permite abrir modal de justificación para actualizar estado', async () => {
+    incidentesService.updateEstadoIncidente.mockResolvedValue({
+      ...dummyIncidente,
+      estado: 'Derivado',
+    })
+
+    renderComponent('Administrador')
+
+    expect(await screen.findByText('Estado del Incidente')).toBeInTheDocument()
+    expect(screen.getByText('Actual')).toBeInTheDocument()
+
+    // Cambiar select de estado a "Derivado"
+    const select = screen.getByLabelText(/Cambiar Estado/i)
+    fireEvent.change(select, { target: { value: 'Derivado' } })
+
+    // El botón se habilita
+    const btnActualizar = screen.getByRole('button', { name: /Actualizar Estado/i })
+    expect(btnActualizar).not.toBeDisabled()
+    fireEvent.click(btnActualizar)
+
+    // Se abre el modal de justificación
+    expect(await screen.findByText('Confirmar Cambio de Estado')).toBeInTheDocument()
+    expect(screen.getByText(/El estado del caso cambiará de/i)).toBeInTheDocument()
+
+    // Confirmar en el modal
+    const btnConfirmar = screen.getByRole('button', { name: /Confirmar Actualización/i })
+    fireEvent.click(btnConfirmar)
+
+    await waitFor(() => {
+      expect(incidentesService.updateEstadoIncidente).toHaveBeenCalledWith(
+        '15',
+        'Derivado',
+        expect.objectContaining({
+          justificacion: '',
+          observacionesEstudiantes: expect.any(Array),
+        })
+      )
+    })
+  })
+
+  it('permite ingresar observaciones individuales por alumno al derivar y gestionarlas en su tarjeta (Hallazgo 5)', async () => {
+    incidentesService.updateEstadoIncidente.mockResolvedValue({
+      ...dummyIncidente,
+      estado: 'Derivado',
+      estudiantes: [
+        { id: 'est-1', nombre: 'Juan', apellido: 'Pérez', curso: '1° Medio A', observacion: 'Derivado a psicólogo por contención' },
+        { id: 'est-2', nombre: 'Diego', apellido: 'Araya', curso: '1° Medio B', observacion: 'Derivado a orientación y citación' },
+      ],
+    })
+
+    incidentesService.updateObservacionEstudiante.mockResolvedValue({
+      incidente_id: 15,
+      estudiante_id: 'est-1',
+      observacion: 'Derivado a psicólogo por contención',
+    })
+
+    renderComponent('Administrador')
+
+    expect(await screen.findByText('Estado del Incidente')).toBeInTheDocument()
+
+    // Cambiar select de estado a "Derivado"
+    const select = screen.getByLabelText(/Cambiar Estado/i)
+    fireEvent.change(select, { target: { value: 'Derivado' } })
+
+    const btnActualizar = screen.getByRole('button', { name: /Actualizar Estado/i })
+    fireEvent.click(btnActualizar)
+
+    // Se verifica que aparezca la sección de observaciones individuales por alumno
+    expect(await screen.findByText(/Observaciones Individuales de Derivación por Alumno/i)).toBeInTheDocument()
+
+    const inputObservacionJuan = screen.getByPlaceholderText(/Observación individual de derivación para Juan/i)
+    fireEvent.change(inputObservacionJuan, {
+      target: { value: 'Derivado a psicólogo por contención emocional inmediata' },
+    })
+
+    const inputObservacionDiego = screen.getByPlaceholderText(/Observación individual de derivación para Diego/i)
+    fireEvent.change(inputObservacionDiego, {
+      target: { value: 'Derivado a taller formativo de resolución de conflictos' },
+    })
+
+    // Confirmar actualización
+    const btnConfirmar = screen.getByRole('button', { name: /Confirmar Actualización/i })
+    fireEvent.click(btnConfirmar)
+
+    await waitFor(() => {
+      expect(incidentesService.updateEstadoIncidente).toHaveBeenCalledWith(
+        '15',
+        'Derivado',
+        expect.objectContaining({
+          observacionesEstudiantes: expect.arrayContaining([
+            { estudiante_id: 'est-1', observacion: 'Derivado a psicólogo por contención emocional inmediata' },
+            { estudiante_id: 'est-2', observacion: 'Derivado a taller formativo de resolución de conflictos' },
+          ]),
+        })
+      )
+    })
+  })
+
+  it('permite abrir el modal individual y actualizar la observación de un estudiante específico', async () => {
+    incidentesService.updateObservacionEstudiante.mockResolvedValue({
+      incidente_id: 15,
+      estudiante_id: 'est-1',
+      observacion: 'Nueva observación individualizada',
+    })
+
+    renderComponent('Administrador')
+
+    // Click en "+ Agregar Observación Individual" del primer estudiante
+    const btnsAgregar = await screen.findAllByRole('button', { name: /\+ Agregar Observación Individual/i })
+    fireEvent.click(btnsAgregar[0])
+
+    // Se abre el modal individual
+    expect(await screen.findByText('Observación Individual de Derivación')).toBeInTheDocument()
+    expect(screen.getByText(/Detalle de la Derivación o Actuación Individual/i)).toBeInTheDocument()
+
+    const textarea = screen.getByLabelText(/Detalle de la Derivación o Actuación Individual/i)
+    fireEvent.change(textarea, { target: { value: 'Derivado a dupla psicosocial para seguimiento quincenal' } })
+
+    const btnGuardar = screen.getByRole('button', { name: /Guardar Observación/i })
+    fireEvent.click(btnGuardar)
+
+    await waitFor(() => {
+      expect(incidentesService.updateObservacionEstudiante).toHaveBeenCalledWith(
+        15,
+        'est-1',
+        'Derivado a dupla psicosocial para seguimiento quincenal'
+      )
+    })
+  })
+
+  it('muestra acceso directo contextual para aperturar protocolo RICE en incidentes graves', async () => {
+    renderComponent('Administrador')
+
+    expect(await screen.findByText(/Aperturar Protocolo RICE/i)).toBeInTheDocument()
+    expect(screen.getByText(/Iniciar Mediación Escolar/i)).toBeInTheDocument()
   })
 })

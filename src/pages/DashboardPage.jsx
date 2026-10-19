@@ -22,6 +22,11 @@ import {
   getTendenciaMensual,
   getAccionesPendientes
 } from '@/services/dashboardService'
+import {
+  ROLES_CREACION_INCIDENTES,
+  ROLES_GESTION_CASOS,
+  ROLES_DASHBOARD_ANALYTICS,
+} from '@/constants/roles'
 
 const KpiCard = ({ title, value, trend, icon: Icon, trendUp, colorClasses }) => (
   <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
@@ -185,8 +190,8 @@ const AccionesRapidas = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
 
-  const canCreateIncidente = ['Administrador', 'Equipo de Formación', 'Inspector', 'Docente'].includes(user?.rol)
-  const canCreateProtocolo = ['Administrador', 'Equipo de Formación'].includes(user?.rol)
+  const canCreateIncidente = ROLES_CREACION_INCIDENTES.includes(user?.rol)
+  const canCreateProtocolo = ROLES_GESTION_CASOS.includes(user?.rol)
 
   return (
     <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-xl shadow-xl p-6 text-white flex flex-col justify-center relative overflow-hidden h-full">
@@ -238,7 +243,7 @@ const AccionesRapidas = () => {
 const EstadoVacio = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const canCreate = ['Administrador', 'Equipo de Formación', 'Inspector', 'Docente'].includes(user?.rol)
+  const canCreate = ROLES_CREACION_INCIDENTES.includes(user?.rol)
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 p-12 text-center">
@@ -270,7 +275,7 @@ export default function DashboardPage() {
 
   const [accionesPendientes, setAccionesPendientes] = useState([])
   const [errorAcciones, setErrorAcciones] = useState(false)
-  const puedeVerAcciones = ['Administrador', 'Equipo de Formación', 'Directivo'].includes(user?.rol)
+  const puedeVerAcciones = ROLES_DASHBOARD_ANALYTICS.includes(user?.rol)
 
   useEffect(() => {
     const fetchDashboard = async () => {

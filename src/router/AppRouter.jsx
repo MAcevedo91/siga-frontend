@@ -17,6 +17,12 @@ import AnalyticsDashboard from '@/pages/AnalyticsDashboard'
 import ConfiguracionPage from '@/pages/ConfiguracionPage'
 import CierreAnioPage from '@/pages/CierreAnioPage'
 import { useAuth, getDefaultRouteByRole } from '@/store/useAuthStore'
+import {
+  ROLES_DASHBOARD_ANALYTICS,
+  ROLES_CIERRE_ANIO,
+  ROLES_GESTION_CASOS,
+  ROLES_CREACION_INCIDENTES,
+} from '@/constants/roles'
 
 export default function AppRouter() {
   const { isAuthenticated, user } = useAuth()
@@ -28,7 +34,7 @@ export default function AppRouter() {
       <Route
         path="/dashboard"
         element={
-          <RoleRoute allowedRoles={['Administrador', 'Equipo de Formación', 'Directivo']}>
+          <RoleRoute allowedRoles={ROLES_DASHBOARD_ANALYTICS}>
             <DashboardPage />
           </RoleRoute>
         }
@@ -52,7 +58,7 @@ export default function AppRouter() {
       <Route
         path="/cierre-anio"
         element={
-          <RoleRoute allowedRoles={['Administrador', 'Inspector', 'Equipo de Formación', 'Directivo']}>
+          <RoleRoute allowedRoles={ROLES_CIERRE_ANIO}>
             <CierreAnioPage />
           </RoleRoute>
         }
@@ -88,7 +94,7 @@ export default function AppRouter() {
       <Route
         path="/incidentes/nuevo"
         element={
-          <RoleRoute allowedRoles={['Administrador', 'Equipo de Formación', 'Inspector', 'Docente']}>
+          <RoleRoute allowedRoles={ROLES_CREACION_INCIDENTES}>
             <NuevoIncidentePage />
           </RoleRoute>
         }
@@ -104,7 +110,7 @@ export default function AppRouter() {
       <Route
         path="/protocolos"
         element={
-          <RoleRoute allowedRoles={['Administrador', 'Equipo de Formación', 'Directivo']}>
+          <RoleRoute allowedRoles={ROLES_DASHBOARD_ANALYTICS}>
             <ProtocolosPage />
           </RoleRoute>
         }
@@ -112,7 +118,7 @@ export default function AppRouter() {
       <Route
         path="/protocolos/nuevo"
         element={
-          <RoleRoute allowedRoles={['Administrador', 'Equipo de Formación']}>
+          <RoleRoute allowedRoles={ROLES_GESTION_CASOS}>
             <NuevoProtocoloPage />
           </RoleRoute>
         }
@@ -120,7 +126,7 @@ export default function AppRouter() {
       <Route
         path="/protocolos/:id"
         element={
-          <RoleRoute allowedRoles={['Administrador', 'Equipo de Formación', 'Directivo']}>
+          <RoleRoute allowedRoles={ROLES_DASHBOARD_ANALYTICS}>
             <ProtocoloDetallePage />
           </RoleRoute>
         }
@@ -128,7 +134,7 @@ export default function AppRouter() {
       <Route
         path="/analytics"
         element={
-          <RoleRoute allowedRoles={['Administrador', 'Equipo de Formación', 'Directivo']}>
+          <RoleRoute allowedRoles={ROLES_DASHBOARD_ANALYTICS}>
             <AnalyticsDashboard />
           </RoleRoute>
         }

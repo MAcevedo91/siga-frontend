@@ -16,8 +16,13 @@ export const getDefaultRouteByRole = (rol) => {
     case 'Inspector':
       return '/incidentes'
     case 'Administrador':
-    case 'Equipo de Formación':
+    case 'Directiva':
     case 'Directivo':
+    case 'Coordinador de Convivencia Escolar':
+    case 'Orientador':
+    case 'Psicólogo':
+    case 'Asistente Social':
+    case 'Equipo de Formación':
     default:
       return '/dashboard'
   }

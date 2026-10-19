@@ -15,8 +15,15 @@ export const createIncidente = async (incidenteData) => {
   return response.data.data
 }
 
-export const updateEstadoIncidente = async (id, estado) => {
-  const response = await api.patch(`/incidentes/${id}/estado`, { estado })
+export const updateEstadoIncidente = async (id, estado, payload = {}) => {
+  const response = await api.patch(`/incidentes/${id}/estado`, { estado, ...payload })
+  return response.data.data
+}
+
+export const updateObservacionEstudiante = async (incidenteId, estudianteId, observacion) => {
+  const response = await api.patch(`/incidentes/${incidenteId}/estudiantes/${estudianteId}/observacion`, {
+    observacion,
+  })
   return response.data.data
 }
 

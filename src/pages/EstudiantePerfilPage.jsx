@@ -4,9 +4,12 @@ import { getEstudianteById } from '@/services/estudiantesService'
 import { getEstudiantesEnRiesgo } from '@/services/dashboardService'
 import DownloadPDFButton from '../components/reports/DownloadPDFButton'
 import { formatDate } from '@/utils/formatDate'
-import { MapPin } from 'lucide-react'
+import { MapPin, ArrowLeftRight } from 'lucide-react'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import Breadcrumbs from '@/components/shared/Breadcrumbs'
+import { useAuth } from '@/store/useAuthStore'
+import { ROLES_GESTION_CASOS } from '@/constants/roles'
+import ReasignarCursoModal from '@/components/estudiantes/ReasignarCursoModal'
 
 export default function EstudiantePerfilPage() {
   const { id } = useParams()
@@ -15,8 +18,11 @@ export default function EstudiantePerfilPage() {
   const [estudiante, setEstudiante] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-
   const [riesgoEstudianteId, setRiesgoEstudianteId] = useState(null)
+  const [showReasignarModal, setShowReasignarModal] = useState(false)
+
+  const { user } = useAuth()
+  const canWrite = ROLES_GESTION_CASOS.includes(user?.rol)
 
   useEffect(() => {
     let active = true
@@ -173,8 +179,21 @@ export default function EstudiantePerfilPage() {
                   </div>
                   <div>
                     <dt className="text-sm font-medium text-gray-500">Curso</dt>
-                    <dd className="mt-1 text-sm text-gray-900">
-                      {estudiante.curso?.nombre || (estudiante.estado_matricula === 'Egresado' ? '🎓 Egresado' : estudiante.estado_matricula === 'Retirado' ? '📁 Retirado' : 'Sin curso')}
+                    <dd className="mt-1 text-sm text-gray-900 flex items-center justify-between gap-2">
+                      <span className="font-semibold text-gray-900 dark:text-white">
+                        {estudiante.curso?.nombre || (estudiante.estado_matricula === 'Egresado' ? '🎓 Egresado' : estudiante.estado_matricula === 'Retirado' ? '📁 Retirado' : 'Sin curso')}
+                      </span>
+                      {canWrite && estudiante.estado_matricula !== 'Egresado' && estudiante.estado_matricula !== 'Retirado' && (
+                        <button
+                          type="button"
+                          onClick={() => setShowReasignarModal(true)}
+                          className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-950/60 dark:text-amber-300 dark:hover:bg-amber-900 transition-colors shadow-xs"
+                          title="Cambiar de curso / paralelo"
+                        >
+                          <ArrowLeftRight className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                          <span>Cambiar Curso</span>
+                        </button>
+                      )}
                     </dd>
                   </div>
                   <div>
@@ -331,6 +350,22 @@ export default function EstudiantePerfilPage() {
         </div>
       </div>
       </div>
+
+      {canWrite && showReasignarModal && (
+        <ReasignarCursoModal
+          isOpen={showReasignarModal}
+          onClose={() => setShowReasignarModal(false)}
+          estudiante={estudiante}
+          onSuccess={(resultado) => {
+            setEstudiante((prev) => ({
+              ...prev,
+              curso_id: resultado.curso?.id || resultado.id,
+              curso: resultado.curso || resultado,
+            }))
+            setShowReasignarModal(false)
+          }}
+        />
+      )}
     </DashboardLayout>
   )
 }

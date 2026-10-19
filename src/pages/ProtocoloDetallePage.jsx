@@ -14,6 +14,7 @@ import { formatDate } from '@/utils/formatDate'
 import toast from 'react-hot-toast'
 import { Lock } from 'lucide-react'
 import DashboardLayout from '@/components/layout/DashboardLayout'
+import { ROLES_GESTION_CASOS } from '@/constants/roles'
 
 const ESTADOS = ['En Investigación', 'Derivado', 'Cerrado']
 
@@ -34,7 +35,7 @@ export default function ProtocoloDetallePage() {
 
   const { user } = useAuth()
 
-  const canEdit = ['Administrador', 'Equipo de Formación'].includes(user?.rol)
+  const canEdit = ROLES_GESTION_CASOS.includes(user?.rol)
 
   useEffect(() => {
     loadProtocolo()

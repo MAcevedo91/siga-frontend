@@ -738,37 +738,52 @@ export default function CierreAnioPage() {
                           </select>
                         </td>
                         <td className="px-4 py-2.5">
-                          <select
-                            value={
-                              esEgresado
-                                ? '__EGRESADO__'
-                                : esRetirado
-                                ? '__RETIRADO__'
-                                : a.nuevo_curso_nombre || ''
-                            }
-                            onChange={(e) =>
-                              handleCambioCursoDestino(a.estudiante_id, e.target.value)
-                            }
-                            className={`px-2 py-1 text-xs rounded border ${
-                              esEgresado
-                                ? 'bg-indigo-50 border-indigo-300 text-indigo-700 font-semibold dark:bg-indigo-950/60 dark:text-indigo-300'
-                                : esRetirado
-                                ? 'bg-amber-50 border-amber-300 text-amber-700 font-semibold dark:bg-amber-950/60 dark:text-amber-300'
-                                : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
-                            }`}
-                          >
-                            <optgroup label="Resoluciones Especiales">
-                              <option value="__EGRESADO__">🎓 Archivo Egresado (Término de ciclo)</option>
-                              <option value="__RETIRADO__">📁 Archivo Retirado del colegio</option>
-                            </optgroup>
-                            <optgroup label="Cursos Regulares Proyectados">
-                              {cursosConfig.map((c) => (
-                                <option key={c.nombre} value={c.nombre}>
-                                  {c.nombre}
-                                </option>
-                              ))}
-                            </optgroup>
-                          </select>
+                          <div className="flex flex-col gap-1">
+                            <select
+                              value={
+                                esEgresado
+                                  ? '__EGRESADO__'
+                                  : esRetirado
+                                  ? '__RETIRADO__'
+                                  : a.nuevo_curso_nombre || ''
+                              }
+                              onChange={(e) =>
+                                handleCambioCursoDestino(a.estudiante_id, e.target.value)
+                              }
+                              className={`px-2 py-1 text-xs rounded border ${
+                                esEgresado
+                                  ? 'bg-indigo-50 border-indigo-300 text-indigo-700 font-semibold dark:bg-indigo-950/60 dark:text-indigo-300'
+                                  : esRetirado
+                                  ? 'bg-amber-50 border-amber-300 text-amber-700 font-semibold dark:bg-amber-950/60 dark:text-amber-300'
+                                  : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
+                              }`}
+                            >
+                              <optgroup label="Resoluciones Especiales">
+                                <option value="__EGRESADO__">🎓 Archivo Egresado (Término de ciclo)</option>
+                                <option value="__RETIRADO__">📁 Archivo Retirado del colegio</option>
+                              </optgroup>
+                              <optgroup label="Cursos Regulares Proyectados">
+                                {cursosConfig.map((c) => (
+                                  <option key={c.nombre} value={c.nombre}>
+                                    {c.nombre}
+                                  </option>
+                                ))}
+                              </optgroup>
+                            </select>
+                            {a.nuevo_curso_nombre &&
+                              a.curso_promovido_sugerido &&
+                              a.nuevo_curso_nombre !== a.curso_promovido_sugerido &&
+                              !esEgresado &&
+                              !esRetirado &&
+                              !esRepitente && (
+                                <span
+                                  className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-900 w-fit"
+                                  title="Se modificó el curso destino (ej: cambio de paralelo A -> B por convivencia)"
+                                >
+                                  🔀 Cambio de paralelo / destino
+                                </span>
+                              )}
+                          </div>
                         </td>
                       </tr>
                     )
