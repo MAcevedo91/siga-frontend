@@ -107,4 +107,44 @@ describe('ChecklistProtocolo', () => {
       )
     })
   })
+
+  it('renderiza evidencias adjuntas en los pasos completados y permite eliminarlas', () => {
+    const handleEliminar = vi.fn()
+    const pasosConEvidencias = [
+      {
+        id: 101,
+        orden: 1,
+        accion: 'Entrevista inicial a apoderado',
+        plazo_dias: 2,
+        completado: true,
+        fecha_completado: '2026-09-08T10:00:00Z',
+        observacion: 'Acta firmada con apoderado presente.',
+        evidencias: [
+          {
+            id: 'ev-1',
+            nombre_archivo: 'acta_entrevista_firmada.pdf',
+            url_archivo: 'https://storage.supabase.co/evidencias/acta.pdf',
+            tamano_bytes: 204800,
+          },
+        ],
+      },
+    ]
+
+    render(
+      <ChecklistProtocolo
+        pasos={pasosConEvidencias}
+        canEdit={true}
+        onEliminarEvidencia={handleEliminar}
+      />
+    )
+
+    expect(screen.getByText('Documentos y Evidencias Adjuntas (1)')).toBeInTheDocument()
+    expect(screen.getByText('acta_entrevista_firmada.pdf')).toBeInTheDocument()
+    expect(screen.getByText('200.0 KB')).toBeInTheDocument()
+
+    const eliminarBtn = screen.getByTitle('Eliminar evidencia')
+    fireEvent.click(eliminarBtn)
+    expect(handleEliminar).toHaveBeenCalledWith(101, 'ev-1')
+  })
 })
+

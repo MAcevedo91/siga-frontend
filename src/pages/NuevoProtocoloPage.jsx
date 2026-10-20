@@ -243,6 +243,7 @@ export default function NuevoProtocoloPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {tiposProtocolo.map((tipo) => {
                       const isSelected = String(tipoProtocoloId) === String(tipo.id)
+                      const descripcionValida = tipo.descripcion?.trim()
                       return (
                         <button
                           key={tipo.id}
@@ -256,14 +257,19 @@ export default function NuevoProtocoloPage() {
                           }`}
                         >
                           <span
-                            className={`w-3 h-3 rounded-full mt-0.5 shrink-0 ${
+                            className={`w-3 h-3 rounded-full mt-1 shrink-0 ${
                               isSelected ? 'bg-indigo-600 dark:bg-indigo-400' : 'bg-gray-300 dark:bg-gray-600'
                             }`}
                           />
                           <div className="flex-1 min-w-0">
                             <p className="text-xs font-semibold leading-tight">{tipo.nombre}</p>
+                            {descripcionValida ? (
+                              <p className="text-[11px] font-normal text-gray-500 dark:text-gray-400 mt-1 leading-snug line-clamp-2">
+                                {descripcionValida}
+                              </p>
+                            ) : null}
                           </div>
-                          {isSelected && <Check className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />}
+                          {isSelected && <Check className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />}
                         </button>
                       )
                     })}

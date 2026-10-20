@@ -5,6 +5,9 @@ import {
   avanzarEstadoProtocolo,
   getPasosProtocolo,
   actualizarPasoProtocolo,
+  subirEvidenciaPaso,
+  eliminarEvidenciaPaso,
+  descargarExpedientePDF,
 } from '@/services/protocolosService'
 import { getAntecedentesEscalada } from '@/services/estudiantesService'
 import ChecklistProtocolo from '@/components/protocolos/ChecklistProtocolo'
@@ -12,7 +15,7 @@ import AlertaEscaladaBanner from '@/components/shared/AlertaEscaladaBanner'
 import { useAuth } from '@/store/useAuthStore'
 import { formatDate } from '@/utils/formatDate'
 import toast from 'react-hot-toast'
-import { Lock } from 'lucide-react'
+import { Lock, FileText } from 'lucide-react'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { ROLES_GESTION_CASOS } from '@/constants/roles'
 
@@ -27,6 +30,7 @@ export default function ProtocoloDetallePage() {
   const [showAvanzarForm, setShowAvanzarForm] = useState(false)
   const [observacion, setObservacion] = useState('')
   const [updatingEstado, setUpdatingEstado] = useState(false)
+  const [descargandoPdf, setDescargandoPdf] = useState(false)
 
   // Estados para checklist y alerta de escalada
   const [pasos, setPasos] = useState([])
@@ -77,32 +81,71 @@ export default function ProtocoloDetallePage() {
     }
   }
 
-  const handleCompletarPaso = async (pasoId, observacionPaso) => {
+  const handleCompletarPaso = async (pasoId, observacionPaso, archivo = null) => {
     try {
-      const updatedPaso = await actualizarPasoProtocolo(id, pasoId, {
+      await actualizarPasoProtocolo(id, pasoId, {
         completado: true,
         observacion: observacionPaso,
       })
-      // Actualización reactiva instantánea sin recargar la página
-      setPasos((prev) =>
-        prev.map((p) =>
-          p.id === pasoId
-            ? {
-                ...p,
-                ...updatedPaso,
-                completado: true,
-                observacion: observacionPaso,
-                fecha_completado: updatedPaso?.fecha_completado || new Date().toISOString(),
-              }
-            : p
-        )
-      )
+
+      // Si se adjuntó un archivo de evidencia durante la certificación, subirlo
+      if (archivo) {
+        try {
+          await subirEvidenciaPaso(id, pasoId, archivo)
+        } catch (fileErr) {
+          console.error('Error al subir evidencia adjunta:', fileErr)
+          toast.error('Paso completado, pero ocurrió un problema al subir la evidencia adjunta')
+        }
+      }
+
+      await loadPasos()
       toast.success('Paso normativo completado exitosamente')
     } catch (err) {
       console.error('Error al certificar paso:', err)
       const msg = err.response?.data?.message || 'Error al completar el paso normativo'
       toast.error(msg)
       throw err
+    }
+  }
+
+  const handleSubirEvidencia = async (pasoId, archivo) => {
+    try {
+      await subirEvidenciaPaso(id, pasoId, archivo)
+      toast.success('Evidencia probatoria adjuntada exitosamente')
+      await loadPasos()
+    } catch (err) {
+      console.error('Error al subir evidencia:', err)
+      const msg = err.response?.data?.message || 'Error al subir la evidencia'
+      toast.error(msg)
+    }
+  }
+
+  const handleEliminarEvidencia = async (pasoId, evidenciaId) => {
+    if (!window.confirm('¿Seguro que deseas eliminar este archivo probatorio?')) return
+    try {
+      await eliminarEvidenciaPaso(id, pasoId, evidenciaId)
+      toast.success('Evidencia eliminada exitosamente')
+      await loadPasos()
+    } catch (err) {
+      console.error('Error al eliminar evidencia:', err)
+      const msg = err.response?.data?.message || 'Error al eliminar la evidencia'
+      toast.error(msg)
+    }
+  }
+
+  const handleDescargarExpediente = async () => {
+    try {
+      setDescargandoPdf(true)
+      const apellidoEst = (protocolo?.estudiante?.apellido || 'Estudiante').replace(/\s+/g, '_')
+      const folio = String(id).substring(0, 8).toUpperCase()
+      const nombreSugerido = `Expediente_RICE_${folio}_${apellidoEst}.pdf`
+      await descargarExpedientePDF(id, nombreSugerido)
+      toast.success('Expediente oficial RICE generado y descargado exitosamente')
+    } catch (err) {
+      console.error('Error al descargar expediente:', err)
+      toast.error('Ocurrió un problema al generar el expediente en PDF')
+    } finally {
+      setDescargandoPdf(false)
     }
   }
 
@@ -193,9 +236,36 @@ export default function ProtocoloDetallePage() {
           )}
 
           <div className="overflow-hidden rounded-lg bg-white shadow">
-            <div className="bg-gradient-to-r from-purple-600 to-purple-800 px-6 py-8">
-              <h1 className="text-3xl font-bold text-white">Protocolo RICE #{protocolo.id}</h1>
-              <p className="mt-1 text-purple-100">{protocolo.tipo_protocolo}</p>
+            <div className="bg-gradient-to-r from-purple-600 to-purple-800 px-6 py-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <h1 className="text-3xl font-bold text-white">Protocolo RICE #{protocolo.id}</h1>
+                <p className="mt-1 text-purple-100">{protocolo.tipo_protocolo}</p>
+              </div>
+
+              <div>
+                <button
+                  type="button"
+                  onClick={handleDescargarExpediente}
+                  disabled={descargandoPdf}
+                  className="inline-flex items-center gap-2 rounded-lg bg-white/15 hover:bg-white/25 border border-white/30 text-white px-4 py-2.5 text-sm font-semibold transition shadow-sm backdrop-blur-sm disabled:opacity-50"
+                  title="Descargar expediente oficial con carátula y anexo de evidencias probatorias"
+                >
+                  {descargandoPdf ? (
+                    <>
+                      <svg className="h-4 w-4 animate-spin text-white" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Generando Expediente...
+                    </>
+                  ) : (
+                    <>
+                      <FileText className="h-4 w-4" />
+                      <span>Descargar Expediente RICE (PDF)</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
 
             <div className="space-y-6 p-6">
@@ -249,6 +319,8 @@ export default function ProtocoloDetallePage() {
             loading={loadingPasos}
             canEdit={canEdit}
             onCompletarPaso={handleCompletarPaso}
+            onSubirEvidencia={handleSubirEvidencia}
+            onEliminarEvidencia={handleEliminarEvidencia}
             protocoloCerrado={protocolo.estado === 'Cerrado'}
           />
 

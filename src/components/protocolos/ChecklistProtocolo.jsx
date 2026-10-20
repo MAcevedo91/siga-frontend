@@ -11,6 +11,11 @@ import {
   MessageSquare,
   ShieldCheck,
   RefreshCw,
+  Paperclip,
+  FileText,
+  ExternalLink,
+  Trash2,
+  Plus,
 } from 'lucide-react'
 
 export default function ChecklistProtocolo({
@@ -18,6 +23,8 @@ export default function ChecklistProtocolo({
   loading = false,
   canEdit = false,
   onCompletarPaso,
+  onSubirEvidencia,
+  onEliminarEvidencia,
   protocoloCerrado = false,
 }) {
   const [selectedPaso, setSelectedPaso] = useState(null)
@@ -33,11 +40,15 @@ export default function ChecklistProtocolo({
     setModalOpen(true)
   }
 
-  const handleConfirmCompletar = async (observacion) => {
+  const handleConfirmCompletar = async (observacion, archivo) => {
     if (!selectedPaso || !onCompletarPaso) return
     try {
       setCompleting(true)
-      await onCompletarPaso(selectedPaso.id, observacion)
+      if (archivo) {
+        await onCompletarPaso(selectedPaso.id, observacion, archivo)
+      } else {
+        await onCompletarPaso(selectedPaso.id, observacion)
+      }
       setModalOpen(false)
       setSelectedPaso(null)
     } finally {
@@ -191,6 +202,81 @@ export default function ChecklistProtocolo({
                                 <p className="italic text-gray-700 dark:text-gray-300">
                                   &ldquo;{paso.observacion}&rdquo;
                                 </p>
+                              </div>
+                            )}
+
+                            {/* Evidencias probatorias adjuntas (Hallazgo 7) */}
+                            {Array.isArray(paso.evidencias) && paso.evidencias.length > 0 && (
+                              <div className="mt-2.5 space-y-1.5">
+                                <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-1">
+                                  <Paperclip className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                                  <span>Documentos y Evidencias Adjuntas ({paso.evidencias.length})</span>
+                                </p>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                  {paso.evidencias.map((ev) => (
+                                    <div
+                                      key={ev.id}
+                                      className="flex items-center justify-between p-2 rounded-xl bg-white dark:bg-gray-900/70 border border-emerald-100 dark:border-emerald-900/40 text-xs shadow-2xs"
+                                    >
+                                      <div className="flex items-center gap-2 min-w-0 flex-1 mr-2">
+                                        <FileText className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                                        <div className="min-w-0 flex-1">
+                                          <p className="font-semibold text-gray-800 dark:text-gray-200 truncate" title={ev.nombre_archivo}>
+                                            {ev.nombre_archivo}
+                                          </p>
+                                          {ev.tamano_bytes && (
+                                            <p className="text-[10px] text-gray-400">
+                                              {(ev.tamano_bytes / 1024).toFixed(1)} KB
+                                            </p>
+                                          )}
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-1 shrink-0">
+                                        <a
+                                          href={ev.url_archivo}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="p-1 rounded-lg text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/60 transition"
+                                          title="Abrir / Descargar evidencia"
+                                        >
+                                          <ExternalLink className="w-3.5 h-3.5" />
+                                        </a>
+                                        {canEdit && !protocoloCerrado && onEliminarEvidencia && (
+                                          <button
+                                            type="button"
+                                            onClick={() => onEliminarEvidencia(paso.id, ev.id)}
+                                            className="p-1 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/60 transition"
+                                            title="Eliminar evidencia"
+                                          >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                          </button>
+                                        )}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Botón para adjuntar evidencia adicional en paso completado */}
+                            {canEdit && !protocoloCerrado && onSubirEvidencia && (
+                              <div className="pt-1">
+                                <label className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-medium text-emerald-700 dark:text-emerald-300 bg-emerald-50/80 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 rounded-lg cursor-pointer transition border border-emerald-200/80 dark:border-emerald-800/60">
+                                  <Plus className="w-3 h-3" />
+                                  <span>Adjuntar evidencia probatoria</span>
+                                  <input
+                                    type="file"
+                                    className="hidden"
+                                    accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx,application/pdf,image/*,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0]
+                                      if (file) {
+                                        onSubirEvidencia(paso.id, file)
+                                        e.target.value = ''
+                                      }
+                                    }}
+                                  />
+                                </label>
                               </div>
                             )}
                           </div>
