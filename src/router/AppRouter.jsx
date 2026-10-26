@@ -1,4 +1,9 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
+import MediacionesPage from '@/pages/MediacionesPage'
+import MediacionNuevaPage from '@/pages/MediacionNuevaPage'
+import MediacionDetallePage from '@/pages/MediacionDetallePage'
+import SociogramaCursoPage from '@/pages/SociogramaCursoPage'
+import { ROLES_MEDIACION_LECTURA } from '@/utils/mediaciones'
 import PrivateRoute from './PrivateRoute'
 import RoleRoute from './RoleRoute'
 import LoginPage from '@/pages/LoginPage'
@@ -29,6 +34,10 @@ export default function AppRouter() {
 
   return (
     <Routes>
+      <Route path="/mediaciones" element={<RoleRoute allowedRoles={ROLES_MEDIACION_LECTURA}><MediacionesPage /></RoleRoute>} />
+      <Route path="/mediaciones/nueva" element={<RoleRoute allowedRoles={ROLES_MEDIACION_LECTURA}><MediacionNuevaPage /></RoleRoute>} />
+      <Route path="/mediaciones/:id" element={<RoleRoute allowedRoles={ROLES_MEDIACION_LECTURA}><MediacionDetallePage /></RoleRoute>} />
+      <Route path="/sociograma" element={<RoleRoute allowedRoles={ROLES_MEDIACION_LECTURA}><SociogramaCursoPage /></RoleRoute>} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/no-autorizado" element={<UnauthorizedPage />} />
       <Route

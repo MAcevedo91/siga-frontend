@@ -7,6 +7,8 @@ import NotificationBadge from '@/components/notifications/NotificationBadge'
 import NotificationCenter from '@/components/notifications/NotificationCenter'
 import ThemeToggle from '@/components/ThemeToggle'
 import {
+  Scale,
+  Network,
   LayoutDashboard,
   Users,
   AlertTriangle,
@@ -24,6 +26,8 @@ import AsistenteNormativoModal from '@/components/rice/AsistenteNormativoModal'
 import NavbarStudentSearch from '@/components/layout/NavbarStudentSearch'
 import { ROLES_DASHBOARD_ANALYTICS, ROLES_CIERRE_ANIO } from '@/constants/roles'
 
+import { ROLES_MEDIACION_LECTURA } from '@/utils/mediaciones'
+
 import logoSidebar from '@/assets/logo_sidebar.png'
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
@@ -38,6 +42,8 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     { icon: GraduationCap, label: 'Cursos', path: '/estudiantes' },
     { icon: AlertTriangle, label: 'Incidentes', path: '/incidentes' },
     { icon: ShieldAlert, label: 'Protocolos RICE', path: '/protocolos', roles: ROLES_DASHBOARD_ANALYTICS },
+    { icon: Scale, label: 'Mediaciones', path: '/mediaciones', roles: ROLES_MEDIACION_LECTURA },
+    { icon: Network, label: 'Sociograma', path: '/sociograma', roles: ROLES_MEDIACION_LECTURA },
     { icon: Calendar, label: 'Cierre de Año', path: '/cierre-anio', roles: ROLES_CIERRE_ANIO },
     { icon: Users, label: 'Usuarios', path: '/usuarios', roles: ['Administrador'] },
     { icon: Settings, label: 'Configuración', path: '/configuracion', roles: ['Administrador'] },
