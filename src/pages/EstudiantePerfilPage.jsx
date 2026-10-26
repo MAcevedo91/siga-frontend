@@ -1,3 +1,4 @@
+import SeguimientoFormativo from '@/components/estudiantes/SeguimientoFormativo'
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { getEstudianteById } from '@/services/estudiantesService'
@@ -350,6 +351,8 @@ export default function EstudiantePerfilPage() {
         </div>
       </div>
       </div>
+
+      <div className="mx-auto max-w-7xl px-4 pb-6"><SeguimientoFormativo key={id} estudianteId={id} /></div>
 
       {canWrite && showReasignarModal && (
         <ReasignarCursoModal
