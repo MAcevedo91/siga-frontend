@@ -896,7 +896,7 @@ export default function IncidenteDetallePage() {
 
                 <button
                   type="button"
-                  onClick={() => navigate(`/protocolos/nuevo?tipo=mediacion&incidenteId=${id}`)}
+                  onClick={() => navigate(`/mediaciones/nueva?incidenteId=${id}`)}
                   className="w-full inline-flex items-center justify-between rounded-xl border border-indigo-200 bg-indigo-50/60 p-3 text-xs font-semibold text-indigo-900 hover:bg-indigo-100/70 transition-all text-left"
                 >
                   <span className="flex items-center gap-2">
