@@ -227,7 +227,7 @@ test("el tablero conserva diseño sin desbordamiento en móvil", async ({
   await setup(page);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/mediaciones");
-  await expect(page.getByText("MED-2026-001")).toBeVisible();
+  await expect(page.getByText("MED-2026-001", { exact: true })).toBeVisible();
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth,
@@ -292,4 +292,87 @@ test("la API sin anexos mantiene el expediente operativo y desactiva persistenci
     }),
   ).toBeDisabled();
   expect(calls).toBe(0);
+});
+
+test("el tablero filtra la página y permite cambiar el estudiante del expediente", async ({
+  page,
+}) => {
+  await setup(page);
+  await page.goto("/mediaciones");
+  await page.getByRole("button", { name: "Cambiar estudiante ↔" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Luis Pérez", exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Vencidos (0)", exact: true }).click();
+  await expect(
+    page.getByText("No hay mediaciones para este filtro.", { exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Todos (1)", exact: true }).click();
+  await page
+    .getByLabel("Buscar mediaciones en esta página")
+    .fill("desconocido");
+  await expect(
+    page.getByText("No hay mediaciones para este filtro.", { exact: true }),
+  ).toBeVisible();
+  await page.getByLabel("Buscar mediaciones en esta página").fill("Ana");
+  await expect(page.getByText("MED-2026-001", { exact: true })).toBeVisible();
+});
+test("las pestañas móviles abren el acuerdo incompleto al guardar y conservan los roles adicionales", async ({
+  page,
+}) => {
+  await setup(page);
+  const med = mediation();
+  med.mediacion_compromisos = [
+    {
+      id: "acuerdo1",
+      estudiante_id: ids.a,
+      descripcion: "Acuerdo válido de Ana",
+      fecha_limite: future,
+      tipo_compromiso: "otro",
+      estado: "pendiente",
+    },
+    {
+      id: "acuerdo2",
+      estudiante_id: ids.b,
+      descripcion: "Acuerdo válido de Luis",
+      fecha_limite: future,
+      tipo_compromiso: "otro",
+      estado: "pendiente",
+    },
+  ];
+  await page.route(
+    new RegExp("/api/(?:v1/)?mediaciones/" + ids.med + "$"),
+    (route) => route.fulfill({ status: 200, json: { data: med } }),
+  );
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(`/mediaciones/${ids.med}`);
+  await page.setViewportSize({ width: 1024, height: 900 });
+  await expect(page.getByRole("tab", { name: /Luis/ })).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole("tab", { name: /Luis/ }).click();
+  await page
+    .getByRole("button", { name: "Editar acuerdo 2", exact: true })
+    .click();
+  await page.getByLabel("Descripción del acuerdo 2").fill("");
+  await page.getByRole("button", { name: "Listo", exact: true }).last().click();
+  await page.getByRole("tab", { name: /Ana/ }).click();
+  await page
+    .getByRole("button", { name: "Guardar acuerdos", exact: true })
+    .click();
+  await expect(page.getByRole("tab", { name: /Luis/ })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
+  await expect(page.getByLabel("Descripción del acuerdo 2")).toBeVisible();
+  await expect(page.getByRole("alert")).toContainText("5 a 1000");
+  await page.goto("/mediaciones/nueva");
+  await page.getByLabel("Buscar estudiantes").fill("Ana");
+  await page.getByRole("button", { name: /Agregar Ana Rojas/ }).click();
+  await page.getByText("Más roles", { exact: true }).click();
+  await page
+    .getByRole("combobox", { name: "Participación de Ana Rojas", exact: true })
+    .selectOption("afectado");
+  await expect(
+    page.getByText("Más roles · Persona afectada", { exact: true }),
+  ).toBeVisible();
 });
