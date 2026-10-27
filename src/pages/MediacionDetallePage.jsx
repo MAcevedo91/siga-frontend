@@ -1,69 +1,71 @@
-import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
-import DashboardLayout from '@/components/layout/DashboardLayout'
-import { useAuth } from '@/store/useAuthStore'
+import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import DashboardLayout from "@/components/layout/DashboardLayout";
+import { useAuth } from "@/store/useAuthStore";
 import {
   obtenerMediacion,
   guardarCompromisos,
-} from '@/services/mediacionesService'
+} from "@/services/mediacionesService";
 import {
   mostrarFecha,
   nombreEstudiante,
   mensajeError,
   ROLES_MEDIACION_GESTION,
-} from '@/utils/mediaciones'
-import AsistenteAcuerdosFormativos from '@/components/mediaciones/AsistenteAcuerdosFormativos'
-import ModalEvaluarCierre from '@/components/mediaciones/ModalEvaluarCierre'
-import DocumentosMediacion from '@/components/mediaciones/DocumentosMediacion'
-import LienzoFirmaModal from '@/components/mediaciones/LienzoFirmaModal'
-import VisorActaModal from '@/components/mediaciones/VisorActaModal'
-import { Semaforo } from './MediacionesPage'
+} from "@/utils/mediaciones";
+import AsistenteAcuerdosFormativos from "@/components/mediaciones/AsistenteAcuerdosFormativos";
+import ModalEvaluarCierre from "@/components/mediaciones/ModalEvaluarCierre";
+import DocumentosMediacion from "@/components/mediaciones/DocumentosMediacion";
+import LienzoFirmaModal from "@/components/mediaciones/LienzoFirmaModal";
+import VisorActaModal from "@/components/mediaciones/VisorActaModal";
+import { Semaforo } from "./MediacionesPage";
 import {
   PageTitle,
   ErrorBox,
   buttonClass,
   secondaryClass,
-} from '@/components/mediaciones/MediacionUI'
+} from "@/components/mediaciones/MediacionUI";
 export default function MediacionDetallePage() {
-  const { id } = useParams()
-  const { user } = useAuth()
+  const { id } = useParams();
+  const { user } = useAuth();
   const [med, setMed] = useState(null),
-    [error, setError] = useState(''),
-    [modal, setModal] = useState(''),
+    [error, setError] = useState(""),
+    [modal, setModal] = useState(""),
     [version, setVersion] = useState(0),
-    [success, setSuccess] = useState('')
-  const manage = ROLES_MEDIACION_GESTION.includes(user?.rol)
+    [success, setSuccess] = useState("");
+  const manage = ROLES_MEDIACION_GESTION.includes(user?.rol);
   useEffect(() => {
-    setSuccess('')
-  }, [id])
+    setSuccess("");
+  }, [id]);
   useEffect(() => {
-    let active = true
-    setMed(null)
-    setModal('')
-    setError('')
+    let active = true;
+    setMed(null);
+    setModal("");
+    setError("");
     obtenerMediacion(id)
       .then((m) => active && setMed(m))
-      .catch((e) => active && setError(mensajeError(e)))
+      .catch((e) => active && setError(mensajeError(e)));
     return () => {
-      active = false
-    }
-  }, [id, version])
+      active = false;
+    };
+  }, [id, version]);
   async function save(payload) {
-    await guardarCompromisos(id, payload)
-    setSuccess('Acuerdos guardados en el expediente.')
-    setVersion((v) => v + 1)
+    await guardarCompromisos(id, payload);
+    setSuccess("Acuerdos guardados en el expediente.");
+    setVersion((v) => v + 1);
   }
   return (
     <DashboardLayout>
-      <div className="text-slate-900 mx-auto max-w-6xl p-4 sm:p-6">
-        <PageTitle
-          title={med?.folio || 'Expediente de mediación'}
-          subtitle="Diálogo, acuerdos y seguimiento"
-        >
-          <Link to="/mediaciones" className={secondaryClass}>
-            Volver al tablero
-          </Link>
-        </PageTitle>
+      <div className="mediation-design med-workspace med-screen-assistant">
+        <div className="med-topbar">
+          <PageTitle
+            title="Asistente Guiado de Mediación Escolar"
+            subtitle={`Caso ${med?.folio || "·"} · Diálogo, acuerdos y seguimiento`}
+          >
+            <Link to="/mediaciones" className={secondaryClass}>
+              Volver al tablero
+            </Link>
+          </PageTitle>
+        </div>
         <ErrorBox>{error}</ErrorBox>
         {success && (
           <p
@@ -75,32 +77,38 @@ export default function MediacionDetallePage() {
         )}
         {med?.id === id ? (
           <>
-            <section className="mb-6 rounded-2xl border bg-white p-5">
-              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                <Semaforo mediacion={med} />
-                <p className="text-sm text-slate-500">
-                  Sesión: {mostrarFecha(med.fecha_programada)} ·{' '}
-                  {med.lugar_sesion}
-                </p>
-              </div>
-              <p className="mb-4 text-slate-700">{med.motivo}</p>
-              <div className="flex flex-wrap gap-2">
-                {med.mediacion_participantes?.map((p) => (
-                  <Link
-                    className="rounded-lg bg-indigo-50 px-3 py-2 text-sm text-indigo-700"
-                    key={p.estudiante_id || p.id}
-                    to={`/estudiantes/${p.estudiante_id || p.estudiantes?.id}`}
-                  >
-                    {nombreEstudiante(p.estudiantes)}
-                  </Link>
-                ))}
-              </div>
-            </section>
-            <section className="rounded-2xl border bg-white p-5">
+            <details className="my-3 rounded-lg border bg-white p-4">
+              <summary className="cursor-pointer text-xs font-semibold text-slate-600">
+                Datos de la sesión y participantes
+              </summary>
+              <section className="mt-3">
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                  <Semaforo mediacion={med} />
+                  <p className="text-sm text-slate-500">
+                    Sesión: {mostrarFecha(med.fecha_programada)} ·{" "}
+                    {med.lugar_sesion}
+                  </p>
+                </div>
+                <p className="mb-4 text-slate-700">{med.motivo}</p>
+                <div className="flex flex-wrap gap-2">
+                  {med.mediacion_participantes?.map((p) => (
+                    <Link
+                      className="rounded-lg bg-indigo-50 px-3 py-2 text-sm text-indigo-700"
+                      key={p.estudiante_id || p.id}
+                      to={`/estudiantes/${p.estudiante_id || p.estudiantes?.id}`}
+                    >
+                      {nombreEstudiante(p.estudiantes)}
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            </details>
+            <section className="mt-4">
               <AsistenteAcuerdosFormativos
                 key={`${id}-${version}`}
                 mediacion={med}
                 onSave={save}
+                onContinue={() => setModal("acta")}
                 readOnly={Boolean(med.cerrada_at)}
               />
             </section>
@@ -109,21 +117,21 @@ export default function MediacionDetallePage() {
               mediacion={med}
               canWrite
               onUpdated={() => {
-                setSuccess('Documento guardado en el expediente.')
-                setVersion((v) => v + 1)
+                setSuccess("Documento guardado en el expediente.");
+                setVersion((v) => v + 1);
               }}
             />
             <section className="mt-5 flex flex-wrap gap-3">
               <button
                 className={secondaryClass}
-                onClick={() => setModal('acta')}
+                onClick={() => setModal("acta")}
               >
-                {med.cerrada_at ? 'Ver acta de cierre PDF' : 'Ver acta PDF'}
+                {med.cerrada_at ? "Ver acta de cierre PDF" : "Ver acta PDF"}
               </button>
               {!med.cerrada_at && (
                 <button
                   className={secondaryClass}
-                  onClick={() => setModal('firma')}
+                  onClick={() => setModal("firma")}
                 >
                   Capturar firma
                 </button>
@@ -131,7 +139,7 @@ export default function MediacionDetallePage() {
               {manage && !med.cerrada_at && (
                 <button
                   className={buttonClass}
-                  onClick={() => setModal('cerrar')}
+                  onClick={() => setModal("cerrar")}
                 >
                   Evaluar y cerrar
                 </button>
@@ -147,27 +155,30 @@ export default function MediacionDetallePage() {
                 </p>
               </section>
             )}
-            {modal === 'acta' && (
+            {modal === "acta" && (
               <VisorActaModal
                 mediacion={med}
                 canSend={manage}
-                onClose={() => setModal('')}
-              />
-            )}
-            {modal === 'firma' && (
-              <LienzoFirmaModal
-                mediacion={med}
-                onClose={() => setModal('')}
-                onSaved={() => {
-                  setVersion((v) => v + 1)
-                  setSuccess('Firma guardada en el expediente.')
+                onClose={() => {
+                  setModal("");
+                  setVersion((v) => v + 1);
                 }}
               />
             )}
-            {modal === 'cerrar' && (
+            {modal === "firma" && (
+              <LienzoFirmaModal
+                mediacion={med}
+                onClose={() => setModal("")}
+                onSaved={() => {
+                  setVersion((v) => v + 1);
+                  setSuccess("Firma guardada en el expediente.");
+                }}
+              />
+            )}
+            {modal === "cerrar" && (
               <ModalEvaluarCierre
                 mediacion={med}
-                onClose={() => setModal('')}
+                onClose={() => setModal("")}
                 onEvaluated={(evaluaciones) =>
                   setMed((current) =>
                     current?.id === id
@@ -186,9 +197,9 @@ export default function MediacionDetallePage() {
                   )
                 }
                 onSaved={() => {
-                  setModal('')
-                  setVersion((v) => v + 1)
-                  setSuccess('Expediente cerrado correctamente.')
+                  setModal("");
+                  setVersion((v) => v + 1);
+                  setSuccess("Expediente cerrado correctamente.");
                 }}
               />
             )}
@@ -198,5 +209,5 @@ export default function MediacionDetallePage() {
         )}
       </div>
     </DashboardLayout>
-  )
+  );
 }
