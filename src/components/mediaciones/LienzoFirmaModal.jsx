@@ -1,15 +1,14 @@
 import { useRef, useState } from "react";
-import {
-  Modal,
-  Field,
-  ErrorBox,
-  inputClass,
-  buttonClass,
-  secondaryClass,
-} from "./MediacionUI";
+import { Modal, ErrorBox, secondaryClass } from "./MediacionUI";
 import { subirDocumentoMediacion } from "@/services/mediacionesService";
 import { mensajeError, nombreEstudiante } from "@/utils/mediaciones";
-export default function LienzoFirmaModal({ mediacion, onClose, onSaved }) {
+export default function LienzoFirmaModal({
+  mediacion,
+  onClose,
+  onSaved,
+  embedded = false,
+  documents = [],
+}) {
   const available = Boolean(mediacion?.version_documental);
   const canvas = useRef(null),
     drawing = useRef(false),
@@ -35,7 +34,7 @@ export default function LienzoFirmaModal({ mediacion, onClose, onSaved }) {
     ctx.moveTo(p.x, p.y);
     ctx.lineWidth = 2;
     ctx.lineCap = "round";
-    ctx.strokeStyle = "#0f172a";
+    ctx.strokeStyle = "#2c225b";
   }
   function move(e) {
     if (!drawing.current) return;
@@ -80,8 +79,16 @@ export default function LienzoFirmaModal({ mediacion, onClose, onSaved }) {
     a.download = "firma-mediacion.png";
     a.click();
   }
+  const Container = embedded ? "div" : Modal;
   return (
-    <Modal title="Firma de conformidad" onClose={busy ? () => {} : onClose}>
+    <Container
+      {...(embedded
+        ? { className: "med-sign-embedded" }
+        : {
+            title: "Firma de conformidad",
+            onClose: busy ? () => {} : onClose,
+          })}
+    >
       <p className="mb-4 rounded-xl bg-amber-50 p-4 text-sm text-amber-900">
         La firma corresponde a los acuerdos guardados en el expediente. Verifica
         su contenido antes de firmar.
@@ -93,33 +100,49 @@ export default function LienzoFirmaModal({ mediacion, onClose, onSaved }) {
           descargar el PNG para conservarlo con el acta.
         </p>
       )}
-      <div className="mb-4">
-        <Field label="Persona que firma">
-          <select
-            disabled={busy}
-            className={inputClass}
-            value={firmante}
-            onChange={(e) => {
-              setFirmante(e.target.value);
-              clear();
-              setConsent(false);
-            }}
-          >
-            <option value="mediador">Mediador responsable</option>
-            {mediacion?.mediacion_participantes?.map((p) => (
-              <option key={p.estudiante_id} value={p.estudiante_id}>
-                {nombreEstudiante(p.estudiantes)}
-              </option>
-            ))}
-          </select>
-        </Field>
+      <div
+        className="med-signer-tabs"
+        role="group"
+        aria-label="Persona que firma"
+      >
+        {[
+          ...(mediacion?.mediacion_participantes || []).map((p) => ({
+            id: p.estudiante_id || p.estudiantes?.id,
+            name: nombreEstudiante(p.estudiantes),
+          })),
+          { id: "mediador", name: "Mediador responsable" },
+        ].map((person, index) => {
+          const signed = documents.some(
+            (d) => d.tipo === "firma" && d.firmante === person.id && d.vigente,
+          );
+          return (
+            <button
+              key={person.id}
+              type="button"
+              disabled={busy}
+              aria-pressed={firmante === person.id}
+              className={signed ? "signed" : ""}
+              onClick={() => {
+                setFirmante(person.id);
+                clear();
+                setConsent(false);
+              }}
+            >
+              {signed ? "✓" : "○"} {index + 1}. {person.name}{" "}
+              {signed ? "(Firmada)" : firmante === person.id ? "(Activo)" : ""}
+            </button>
+          );
+        })}
       </div>
+      <p className="mb-2 text-xs text-slate-500">
+        Firma con tu dedo, lápiz o cursor dentro del recuadro.
+      </p>
       <canvas
         ref={canvas}
         width={800}
         height={300}
         aria-label="Lienzo para firma manuscrita"
-        className="w-full touch-none rounded-xl border border-slate-300 bg-slate-50"
+        className="med-sign-canvas w-full touch-none rounded-xl border border-slate-300 bg-slate-50"
         onPointerDown={busy ? undefined : start}
         onPointerMove={move}
         onPointerUp={() => {
@@ -152,12 +175,13 @@ export default function LienzoFirmaModal({ mediacion, onClose, onSaved }) {
         </button>
         <button
           disabled={!available || !hasInk || !consent || busy}
-          className={buttonClass}
+          className="med-apply-signature"
+          aria-label="Guardar firma en expediente"
           onClick={save}
         >
-          {busy ? "Guardando…" : "Guardar firma en expediente"}
+          {busy ? "Guardando…" : "✓ Aplicar al acta"}
         </button>
       </div>
-    </Modal>
+    </Container>
   );
 }
