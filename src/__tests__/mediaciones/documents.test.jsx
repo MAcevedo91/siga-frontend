@@ -100,3 +100,18 @@ it("mantiene usable el expediente con la API actual sin solicitar anexos no habi
     screen.getByText(/guardado de firmas y actas todavía no está habilitado/i),
   ).toBeInTheDocument();
 });
+
+it("renderiza de forma segura sin excepciones cuando mediacion es nulo o indefinido", () => {
+  expect(() => {
+    render(
+      <DocumentosMediacion
+        mediacion={null}
+        canWrite
+        onUpdated={() => {}}
+      />,
+    );
+  }).not.toThrow();
+  expect(
+    screen.getByText(/guardado de firmas y actas todavía no está habilitado/i),
+  ).toBeInTheDocument();
+});

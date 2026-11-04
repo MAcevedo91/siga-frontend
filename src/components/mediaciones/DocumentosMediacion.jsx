@@ -17,7 +17,7 @@ export default function DocumentosMediacion({
   canWrite,
   onUpdated,
 }) {
-  const available = Boolean(mediacion.version_documental);
+  const available = Boolean(mediacion?.version_documental);
   const [docs, setDocs] = useState(null),
     [file, setFile] = useState(null),
     [error, setError] = useState(""),
@@ -27,7 +27,7 @@ export default function DocumentosMediacion({
     let active = true;
     setDocs(null);
     setError("");
-    if (!available) {
+    if (!available || !mediacion?.id) {
       setDocs([]);
       return;
     }
@@ -37,10 +37,10 @@ export default function DocumentosMediacion({
     return () => {
       active = false;
     };
-  }, [mediacion.id, mediacion.version_documental, available, revision]);
+  }, [mediacion?.id, mediacion?.version_documental, available, revision]);
   async function upload(e) {
     e.preventDefault();
-    if (!available) return;
+    if (!available || !mediacion?.id) return;
     if (
       !file ||
       file.type !== "application/pdf" ||
@@ -68,6 +68,7 @@ export default function DocumentosMediacion({
     }
   }
   async function download(doc) {
+    if (!mediacion?.id) return;
     setBusy(true);
     setError("");
     try {
@@ -131,7 +132,7 @@ export default function DocumentosMediacion({
           </p>
         )
       )}
-      {canWrite && !mediacion.cerrada_at && (
+      {canWrite && !mediacion?.cerrada_at && (
         <form
           onSubmit={upload}
           className="mt-4 space-y-3 rounded-xl bg-slate-50 p-4"

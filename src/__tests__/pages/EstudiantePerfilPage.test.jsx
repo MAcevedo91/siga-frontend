@@ -151,5 +151,16 @@ describe('Alerta contextual del perfil', () => {
     expect(screen.getByRole('button', { name: 'Estudiantes' })).toBeInTheDocument()
     expect(screen.getByText('Perfil Estudiante Prueba 1')).toBeInTheDocument()
   })
+
+  it('muestra el botón de Citar Apoderado y abre el modal de citación formativa', async () => {
+    montar(() => Promise.resolve(respuesta([])))
+    await screen.findByText('Datos Personales')
+
+    const botonCitar = screen.getByRole('button', { name: /Citar Apoderado/i })
+    expect(botonCitar).toBeInTheDocument()
+
+    fireEvent.click(botonCitar)
+    expect(await screen.findByText(/Programar Citación Formativa/i)).toBeInTheDocument()
+  })
 })
 
