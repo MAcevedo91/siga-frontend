@@ -412,20 +412,6 @@ export default function EstudiantePerfilPage() {
                 </dl>
               )}
             </div>
-
-            {/* Acceso Rápido a Citación desde la Tarjeta del Apoderado */}
-            {apoderadoTitular && (
-              <div className="pt-4 border-t border-slate-100 dark:border-slate-700">
-                <button
-                  type="button"
-                  onClick={() => setShowCitacionModal(true)}
-                  className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 text-xs font-bold hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-colors shadow-2xs"
-                >
-                  <CalendarPlus className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                  <span>Programar Citación con este Apoderado</span>
-                </button>
-              </div>
-            )}
           </section>
         </div>
 
