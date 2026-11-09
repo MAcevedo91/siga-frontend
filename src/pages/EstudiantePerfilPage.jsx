@@ -33,6 +33,7 @@ import { ROLES_GESTION_CASOS } from '@/constants/roles'
 import ReasignarCursoModal from '@/components/estudiantes/ReasignarCursoModal'
 import NuevaCitacionModal from '@/components/citaciones/NuevaCitacionModal'
 import CerrarCitacionAcuerdosModal from '@/components/citaciones/CerrarCitacionAcuerdosModal'
+import EntrevistaCitacionModal from '@/components/citaciones/EntrevistaCitacionModal'
 import {
   listarCitaciones,
   descargarActaCitacionPdf,
@@ -762,9 +763,9 @@ export default function EstudiantePerfilPage() {
         />
       )}
 
-      {/* MODAL REGISTRAR ACUERDOS Y CERRAR CITACIÓN (TASK 10.2.3) */}
+      {/* MODAL ENTREVISTA PRESENCIAL Y FIRMAS EN REACT (TASK 10.2.4) */}
       {showAcuerdosModal && citacionParaAcuerdos && (
-        <CerrarCitacionAcuerdosModal
+        <EntrevistaCitacionModal
           isOpen={showAcuerdosModal}
           onClose={() => {
             setShowAcuerdosModal(false)
