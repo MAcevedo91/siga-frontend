@@ -21,6 +21,10 @@ import {
   FileText,
   ShieldAlert,
   Sparkles,
+  CalendarCheck,
+  FileCheck,
+  Download,
+  CheckCircle2,
 } from 'lucide-react'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import Breadcrumbs from '@/components/shared/Breadcrumbs'
@@ -28,6 +32,12 @@ import { useAuth } from '@/store/useAuthStore'
 import { ROLES_GESTION_CASOS } from '@/constants/roles'
 import ReasignarCursoModal from '@/components/estudiantes/ReasignarCursoModal'
 import NuevaCitacionModal from '@/components/citaciones/NuevaCitacionModal'
+import CerrarCitacionAcuerdosModal from '@/components/citaciones/CerrarCitacionAcuerdosModal'
+import {
+  listarCitaciones,
+  descargarActaCitacionPdf,
+  CATEGORIAS_FORMATIVAS,
+} from '@/services/citacionesService'
 
 export default function EstudiantePerfilPage() {
   const { id } = useParams()
@@ -39,15 +49,43 @@ export default function EstudiantePerfilPage() {
   const [riesgoEstudianteId, setRiesgoEstudianteId] = useState(null)
   const [showReasignarModal, setShowReasignarModal] = useState(false)
   const [showCitacionModal, setShowCitacionModal] = useState(false)
+  const [citaciones, setCitaciones] = useState([])
+  const [citacionParaAcuerdos, setCitacionParaAcuerdos] = useState(null)
+  const [showAcuerdosModal, setShowAcuerdosModal] = useState(false)
+  const [descargandoActaId, setDescargandoActaId] = useState(null)
 
   const { user } = useAuth()
   const canWrite = ROLES_GESTION_CASOS.includes(user?.rol)
+
+  const cargarCitaciones = async () => {
+    try {
+      const res = await listarCitaciones({ estudiante_id: id })
+      if (res?.data) {
+        setCitaciones(res.data)
+      }
+    } catch {
+      // Degradación grácil ante fallos de conectividad o tests unitarios
+    }
+  }
+
+  const handleDescargarActa = async (citacionId, folio) => {
+    try {
+      setDescargandoActaId(citacionId)
+      await descargarActaCitacionPdf(citacionId, folio)
+    } catch (err) {
+      console.error('Error al descargar acta oficial:', err)
+    } finally {
+      setDescargandoActaId(null)
+    }
+  }
 
   useEffect(() => {
     let active = true
     setLoading(true)
     setError(null)
     setRiesgoEstudianteId(null)
+
+    cargarCitaciones()
 
     getEstudianteById(id)
       .then((data) => {
@@ -541,6 +579,152 @@ export default function EstudiantePerfilPage() {
           )}
         </section>
 
+        {/* TARJETA 5: GESTOR DE CITACIONES FORMATIVAS Y ALIANZA FAMILIA-ESCUELA (ÉPICA 10) */}
+        <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 space-y-4 transition-all">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 dark:border-slate-700 pb-3.5">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
+                <CalendarCheck className="w-4 h-4" />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                  Citaciones Formativas y Acuerdos Mutuos
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Convocatorias a entrevistas pedagógicas, compromisos mutuos y actas oficiales.
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowCitacionModal(true)}
+              className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 transition shadow-2xs"
+            >
+              <CalendarPlus className="w-3.5 h-3.5" />
+              <span>Nueva Citación</span>
+            </button>
+          </div>
+
+          {citaciones && citaciones.length > 0 ? (
+            <div className="space-y-3">
+              {citaciones.map((c) => {
+                const categoriaInfo = CATEGORIAS_FORMATIVAS[c.motivo_categoria] || {
+                  label: c.motivo_categoria || 'Citación Formativa',
+                  color: 'bg-slate-100 text-slate-800',
+                }
+
+                return (
+                  <div
+                    key={c.id}
+                    className="rounded-xl border border-slate-200 dark:border-slate-700 p-4 hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                  >
+                    <div className="space-y-1.5 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                          {c.folio}
+                        </span>
+
+                        <span
+                          className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${categoriaInfo.color}`}
+                        >
+                          {categoriaInfo.label}
+                        </span>
+
+                        <span
+                          className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                            c.estado === 'realizada'
+                              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                              : c.estado === 'confirmada'
+                              ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
+                              : c.estado === 'reprogramacion_solicitada'
+                              ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                              : c.estado === 'justificada'
+                              ? 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300'
+                              : c.estado === 'cancelada'
+                              ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
+                              : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                          }`}
+                        >
+                          {c.estado === 'realizada'
+                            ? '✓ Realizada con Acuerdos'
+                            : c.estado === 'confirmada'
+                            ? 'Asistencia Confirmada'
+                            : c.estado === 'reprogramacion_solicitada'
+                            ? 'Reprogramación Solicitada'
+                            : c.estado === 'justificada'
+                            ? 'Inasistencia Justificada'
+                            : c.estado === 'cancelada'
+                            ? 'Cancelada'
+                            : 'Programada'}
+                        </span>
+                      </div>
+
+                      <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2">
+                        {c.motivo_detalle}
+                      </p>
+
+                      <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-500 dark:text-slate-400">
+                        <span>
+                          📅 {new Date(c.fecha_hora_programada).toLocaleDateString('es-CL', {
+                            weekday: 'short',
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </span>
+                        <span>•</span>
+                        <span>
+                          {c.modalidad === 'virtual' ? '🌐 Virtual' : `🏫 ${c.lugar_entrevista || 'Presencial'}`}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Acciones por Citación */}
+                    <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
+                      {c.estado === 'realizada' ? (
+                        <button
+                          type="button"
+                          onClick={() => handleDescargarActa(c.id, c.folio)}
+                          disabled={descargandoActaId === c.id}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 text-xs font-bold hover:bg-indigo-100 transition shadow-2xs"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          <span>
+                            {descargandoActaId === c.id ? 'Descargando...' : 'Acta Oficial PDF'}
+                          </span>
+                        </button>
+                      ) : c.estado !== 'cancelada' ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCitacionParaAcuerdos(c)
+                            setShowAcuerdosModal(true)
+                          }}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-2xs"
+                        >
+                          <FileCheck className="w-3.5 h-3.5" />
+                          <span>Registrar Acuerdos</span>
+                        </button>
+                      ) : null}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <div className="py-7 text-center text-slate-500">
+              <CalendarCheck className="w-9 h-9 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
+              <p className="text-sm font-medium">Sin citaciones formativas programadas</p>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Utilice el botón superior para convocar al apoderado titular a una entrevista colaborativa.
+              </p>
+            </div>
+          )}
+        </section>
+
         {/* SEGUIMIENTO FORMATIVO E INFORMES */}
         <div className="w-full">
           <SeguimientoFormativo key={id} estudianteId={id} />
@@ -571,9 +755,25 @@ export default function EstudiantePerfilPage() {
           onClose={() => setShowCitacionModal(false)}
           onSuccess={() => {
             setShowCitacionModal(false)
+            cargarCitaciones()
           }}
           estudiante={estudiante}
           apoderado={apoderadoTitular}
+        />
+      )}
+
+      {/* MODAL REGISTRAR ACUERDOS Y CERRAR CITACIÓN (TASK 10.2.3) */}
+      {showAcuerdosModal && citacionParaAcuerdos && (
+        <CerrarCitacionAcuerdosModal
+          isOpen={showAcuerdosModal}
+          onClose={() => {
+            setShowAcuerdosModal(false)
+            setCitacionParaAcuerdos(null)
+          }}
+          citacion={citacionParaAcuerdos}
+          onSuccess={() => {
+            cargarCitaciones()
+          }}
         />
       )}
     </DashboardLayout>

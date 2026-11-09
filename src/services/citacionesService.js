@@ -138,3 +138,30 @@ export const descargarArchivoIcs = (citacion) => {
   document.body.removeChild(a)
   window.URL.revokeObjectURL(url)
 }
+
+/**
+ * Registra los acuerdos mutuos y cierra formalmente la entrevista formativa (Privado - Docente / Directivo).
+ */
+export const registrarAcuerdosCitacion = async (citacionId, payload) => {
+  const response = await api.post(`/citaciones/${citacionId}/acuerdos`, payload)
+  return response.data.data
+}
+
+/**
+ * Descarga el Buffer del Acta Oficial de Citación en PDF (Privado).
+ */
+export const descargarActaCitacionPdf = async (citacionId, folio = 'formativa') => {
+  const response = await api.get(`/citaciones/${citacionId}/acta-pdf`, {
+    responseType: 'blob',
+  })
+  const blob = new Blob([response.data], { type: 'application/pdf' })
+  const url = window.URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.setAttribute('download', `Acta_Citacion_${folio}.pdf`)
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  window.URL.revokeObjectURL(url)
+  return true
+}
