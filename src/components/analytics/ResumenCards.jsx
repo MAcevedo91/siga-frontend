@@ -1,76 +1,95 @@
-import { TrendingUp, TrendingDown, AlertTriangle, FolderOpen } from 'lucide-react'
+import { FolderOpen, AlertTriangle, Users, TrendingUp, TrendingDown } from 'lucide-react'
 
-const ICON_COLORS = {
-  blue: 'text-blue-600',
-  red: 'text-red-600',
-  yellow: 'text-yellow-600',
-}
-
-export default function ResumenCards({ data = {}, loading }) {
-  if (loading || !data) {
+export default function ResumenCards({ data = {}, loading = false }) {
+  if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="bg-white rounded-lg shadow p-6 animate-pulse">
-            <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
-            <div className="h-8 bg-gray-300 rounded w-3/4"></div>
-          </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-7 lg:gap-8">
+        {[1, 2, 3].map((i) => (
+          <div
+            key={i}
+            className="rounded-2xl p-5 sm:p-6 shadow-2xs animate-pulse bg-gray-100 dark:bg-gray-800 min-h-[120px]"
+          />
         ))}
       </div>
     )
   }
 
-  const cards = [
+  const kpis = [
     {
-      title: 'Incidentes este mes',
+      title: 'Incidentes del Mes',
       value: data.totalIncidentes ?? 0,
       change: data.variacion,
       icon: FolderOpen,
-      color: 'blue',
+      iconBg: 'bg-gradient-to-tr from-purple-600 to-indigo-600 text-white shadow-2xs',
+      cardBg:
+        'bg-gradient-to-br from-purple-100/90 via-indigo-50/50 to-white dark:from-purple-950/70 dark:via-slate-900/80 dark:to-gray-800 border border-purple-300/90 dark:border-purple-800/80 text-purple-950 dark:text-purple-100',
     },
     {
-      title: 'Incidentes abiertos',
+      title: 'Casos Abiertos',
       value: data.abiertos ?? 0,
+      subtext: 'En investigación activa',
       icon: AlertTriangle,
-      color: 'red',
+      iconBg: 'bg-gradient-to-tr from-blue-600 to-cyan-600 text-white shadow-2xs',
+      cardBg:
+        'bg-gradient-to-br from-blue-100/90 via-sky-50/50 to-white dark:from-blue-950/70 dark:via-slate-900/80 dark:to-gray-800 border border-blue-300/90 dark:border-blue-800/80 text-blue-950 dark:text-blue-100',
     },
     {
-      title: 'Estudiantes en riesgo',
+      title: 'Estudiantes en Riesgo',
       value: data.estudiantesRiesgo ?? 0,
-      description: '> 3 incidentes',
-      icon: AlertTriangle,
-      color: 'yellow',
+      subtext: 'Focalización prioritaria',
+      icon: Users,
+      iconBg: 'bg-gradient-to-tr from-emerald-600 to-teal-600 text-white shadow-2xs',
+      cardBg:
+        'bg-gradient-to-br from-emerald-100/90 via-teal-50/50 to-white dark:from-emerald-950/70 dark:via-slate-900/80 dark:to-gray-800 border border-emerald-300/90 dark:border-emerald-800/80 text-emerald-950 dark:text-emerald-100',
     },
   ]
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      {cards.map((card, idx) => {
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-7 lg:gap-8">
+      {kpis.map((card, idx) => {
         const IconComponent = card.icon
-        const iconColorClass = ICON_COLORS[card.color] || 'text-gray-600'
 
         return (
-          <div key={idx} className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-gray-600">{card.title}</p>
-              <IconComponent className={`w-5 h-5 ${iconColorClass}`} />
-            </div>
-            <p className="text-3xl font-bold text-gray-900">{card.value}</p>
-            {card.change !== undefined && (
-              <div className="flex items-center mt-2">
-                {card.change >= 0 ? (
-                  <TrendingUp className="w-4 h-4 text-red-600 mr-1" />
-                ) : (
-                  <TrendingDown className="w-4 h-4 text-green-600 mr-1" />
-                )}
-                <span className={`text-sm ${card.change >= 0 ? 'text-red-600' : 'text-green-600'}`}>
-                  {Math.abs(card.change)}% vs mes anterior
-                </span>
+          <div
+            key={idx}
+            className={`rounded-2xl p-5 sm:p-6 shadow-2xs transition-all flex flex-col justify-between min-h-[120px] ${card.cardBg}`}
+          >
+            {/* CABECERA: ICONO SQUIRCLE + TÍTULO LIMPIO */}
+            <div className="flex items-center gap-3">
+              <div
+                className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${card.iconBg}`}
+              >
+                <IconComponent className="w-4 h-4" />
               </div>
-            )}
-            {card.description && (
-              <p className="text-xs text-gray-500 mt-1">{card.description}</p>
-            )}
+              <h2 className="text-xs font-bold uppercase tracking-wider opacity-90 truncate">
+                {card.title}
+              </h2>
+            </div>
+
+            {/* CIFRA PRINCIPAL ENORME Y DESAHOGADA */}
+            <div className="my-2.5">
+              <p className="text-3xl sm:text-4xl font-black tracking-tight leading-none">
+                {card.value}
+              </p>
+            </div>
+
+            {/* SUBTEXTO / VARIACIÓN */}
+            <div className="text-[11px] opacity-80 font-medium flex items-center gap-1 truncate">
+              {card.change !== undefined ? (
+                <>
+                  {card.change >= 0 ? (
+                    <TrendingUp className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                  ) : (
+                    <TrendingDown className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                  )}
+                  <span>
+                    {card.change >= 0 ? `+${card.change}` : card.change}% vs mes anterior
+                  </span>
+                </>
+              ) : (
+                <span>{card.subtext}</span>
+              )}
+            </div>
           </div>
         )
       })}

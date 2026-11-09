@@ -62,11 +62,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         />
       )}
 
-      <div className={`
-        fixed inset-y-0 left-0 z-30 w-64 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-white transition-transform duration-300 ease-in-out shadow-2xl
+      <aside className={`
+        fixed inset-y-0 left-0 z-30 w-64 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-white transition-transform duration-300 ease-in-out shadow-2xl flex flex-col h-full
         ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:static md:flex-shrink-0
       `}>
-        <div className="flex items-center justify-center h-16 px-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+        <div className="flex items-center justify-center h-16 px-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shrink-0">
           <img
             src={logoSidebar}
             alt="SIGA Escolar"
@@ -74,7 +74,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           />
         </div>
 
-        <div className="p-4">
+        <div className="p-4 flex-1 overflow-y-auto">
           <p className="text-xs text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider mb-4">Menú Principal</p>
           <nav className="space-y-1">
             {navItems.map((item, idx) => {
@@ -99,7 +99,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             })}
           </nav>
         </div>
-      </div>
+      </aside>
     </>
   )
 }
@@ -188,10 +188,10 @@ export default function DashboardLayout({ children }) {
   }, [token])
 
   return (
-    <div className="flex h-screen bg-slate-50 dark:bg-gray-900 font-sans overflow-hidden text-gray-900 dark:text-gray-100">
+    <div className="fixed inset-0 flex bg-slate-50 dark:bg-gray-900 font-sans overflow-hidden text-gray-900 dark:text-gray-100">
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
         <Header
           setIsOpen={setIsSidebarOpen}
           unreadCount={unreadCount}
@@ -199,7 +199,7 @@ export default function DashboardLayout({ children }) {
           onOpenAsistenteRice={() => setAsistenteRiceOpen(true)}
         />
 
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50 dark:bg-gray-900">
+        <main className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto bg-slate-50 dark:bg-gray-900">
           {children}
         </main>
       </div>
