@@ -165,3 +165,20 @@ export const descargarActaCitacionPdf = async (citacionId, folio = 'formativa') 
   window.URL.revokeObjectURL(url)
   return true
 }
+
+/**
+ * Consulta la analítica agregada de participación familiar y motivos formativos (TASK 10.3.1).
+ */
+export const obtenerMetricasCitaciones = async (params = {}) => {
+  const response = await api.get('/citaciones/metricas', { params })
+  return response.data.data
+}
+
+/**
+ * Consulta el historial cronológico y resumen analítico de citaciones de un estudiante (TASK 10.3.1).
+ */
+export const obtenerHistorialCitacionesEstudiante = async (estudianteId) => {
+  const response = await api.get(`/citaciones/estudiante/${estudianteId}`)
+  return response.data.data
+}
+
