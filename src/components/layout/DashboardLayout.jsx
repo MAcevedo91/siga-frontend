@@ -21,6 +21,7 @@ import {
   GraduationCap,
   Sparkles,
   Calendar,
+  CalendarCheck,
 } from 'lucide-react'
 import AsistenteNormativoModal from '@/components/rice/AsistenteNormativoModal'
 import NavbarStudentSearch from '@/components/layout/NavbarStudentSearch'
@@ -43,6 +44,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     { icon: AlertTriangle, label: 'Incidentes', path: '/incidentes' },
     { icon: ShieldAlert, label: 'Protocolos RICE', path: '/protocolos', roles: ROLES_DASHBOARD_ANALYTICS },
     { icon: Scale, label: 'Mediaciones', path: '/mediaciones', roles: ROLES_MEDIACION_LECTURA },
+    { icon: CalendarCheck, label: 'Citaciones', path: '/citaciones' },
     { icon: Network, label: 'Sociograma', path: '/sociograma', roles: ROLES_MEDIACION_LECTURA },
     { icon: Calendar, label: 'Cierre de Año', path: '/cierre-anio', roles: ROLES_CIERRE_ANIO },
     { icon: Users, label: 'Usuarios', path: '/usuarios', roles: ['Administrador'] },

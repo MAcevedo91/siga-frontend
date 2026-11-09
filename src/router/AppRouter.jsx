@@ -4,6 +4,7 @@ import MediacionNuevaPage from '@/pages/MediacionNuevaPage'
 import MediacionDetallePage from '@/pages/MediacionDetallePage'
 import SociogramaCursoPage from '@/pages/SociogramaCursoPage'
 import ConfirmacionCitacionPublicPage from '@/pages/ConfirmacionCitacionPublicPage'
+import CitacionesPage from '@/pages/CitacionesPage'
 import { ROLES_MEDIACION_LECTURA } from '@/utils/mediaciones'
 import PrivateRoute from './PrivateRoute'
 import RoleRoute from './RoleRoute'
@@ -39,6 +40,7 @@ export default function AppRouter() {
       <Route path="/mediaciones/nueva" element={<RoleRoute allowedRoles={ROLES_MEDIACION_LECTURA}><MediacionNuevaPage /></RoleRoute>} />
       <Route path="/mediaciones/:id" element={<RoleRoute allowedRoles={ROLES_MEDIACION_LECTURA}><MediacionDetallePage /></RoleRoute>} />
       <Route path="/sociograma" element={<RoleRoute allowedRoles={ROLES_MEDIACION_LECTURA}><SociogramaCursoPage /></RoleRoute>} />
+      <Route path="/citaciones" element={<PrivateRoute><CitacionesPage /></PrivateRoute>} />
       <Route path="/citaciones/confirmacion/:token" element={<ConfirmacionCitacionPublicPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/no-autorizado" element={<UnauthorizedPage />} />
