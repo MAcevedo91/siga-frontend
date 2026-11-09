@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 
 export default function AccionesPendientesWidget({ acciones = [], error = false }) {
   return (
-    <section aria-labelledby="acciones-pendientes-title" className="rounded-2xl border border-gray-100 bg-white p-3.5 shadow-2xs dark:border-gray-700 dark:bg-gray-800 sm:p-4 flex flex-col justify-between flex-1">
+    <section aria-labelledby="acciones-pendientes-title" className="rounded-2xl border border-slate-300/80 bg-gradient-to-br from-slate-100/90 via-blue-50/40 to-white p-3.5 shadow-2xs dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-gray-800 sm:p-4 flex flex-col justify-between flex-1">
       {/* Encabezado: Título y Badge Pizarra activa */}
       <div className="mb-2.5 flex items-center justify-between">
         <h2 id="acciones-pendientes-title" className="text-base font-extrabold tracking-tight text-gray-900 dark:text-white">

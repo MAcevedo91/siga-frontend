@@ -24,29 +24,29 @@ import {
   ROLES_DASHBOARD_ANALYTICS,
 } from '@/constants/roles'
 
-// Tarjeta KPI superior: ícono al lado del título y valor numérico centrado abajo
-const KpiCard = ({ title, value, icon: Icon, colorClasses }) => (
-  <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700/80 p-3.5 shadow-2xs transition-all hover:shadow-xs flex flex-col justify-between min-h-[96px]">
+// Tarjeta KPI superior: ícono al lado del título y valor numérico centrado abajo con gradiente temático
+const KpiCard = ({ title, value, icon: Icon, colorClasses, bgClasses, borderClasses }) => (
+  <div className={`rounded-2xl p-3.5 shadow-2xs transition-all hover:shadow-xs flex flex-col justify-between min-h-[96px] ${bgClasses || 'bg-white dark:bg-gray-800'} ${borderClasses || 'border border-gray-100 dark:border-gray-700/80'}`}>
     {/* Cabecera: Ícono squircle al lado del título */}
     <div className="flex items-center gap-2.5">
       <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-white shadow-2xs shrink-0 ${colorClasses}`}>
         <Icon className="w-4 h-4" />
       </div>
-      <span className="text-[10.5px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide leading-tight">
+      <span className="text-[10.5px] font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wide leading-tight">
         {title}
       </span>
     </div>
 
     {/* Cuerpo: Métrica cuantitativa centrada abajo */}
     <div className="flex-1 flex items-center justify-center pt-2 pb-0.5">
-      <p className="text-3xl font-black text-gray-900 dark:text-white text-center tracking-tight leading-none">
+      <p className="text-3xl font-black text-gray-950 dark:text-white text-center tracking-tight leading-none">
         {value}
       </p>
     </div>
   </div>
 )
 
-// Módulo de Acciones Rápidas — card blanco con botones verticales lado a lado (tal cual la maqueta)
+// Módulo de Acciones Rápidas — card con botones verticales lado a lado
 const AccionesRapidas = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -55,7 +55,7 @@ const AccionesRapidas = () => {
   const canCreateProtocolo = ROLES_GESTION_CASOS.includes(user?.rol)
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700/80 p-3.5 sm:p-4 shadow-2xs">
+    <div className="bg-gradient-to-br from-slate-100/90 via-indigo-50/40 to-white dark:from-slate-900 dark:to-gray-800 rounded-2xl border border-slate-300/80 dark:border-slate-700 p-3.5 sm:p-4 shadow-2xs">
       <h3 className="text-sm font-extrabold text-gray-900 dark:text-white mb-2.5">
         Acciones Rápidas
       </h3>
@@ -173,31 +173,39 @@ export default function DashboardPage() {
 
           {/* COLUMNA DERECHA (~75% ancho): 4 KPIs en una fila + Mapa de Calor por Cursos */}
           <div className={`${puedeVerAcciones ? 'lg:col-span-9' : 'lg:col-span-12'} flex flex-col justify-between gap-3 h-full`}>
-            {/* 1. Fila Horizontal de 4 KPIs */}
+            {/* 1. Fila Horizontal de 4 KPIs con fondos cromáticos temáticos */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
               <KpiCard
                 title="Incidentes Totales"
                 value={datosResumen.total_incidentes}
                 icon={AlertTriangle}
-                colorClasses="bg-amber-500 text-white"
+                colorClasses="bg-gradient-to-tr from-amber-500 to-orange-500 text-white"
+                bgClasses="bg-gradient-to-br from-amber-100/90 via-orange-50/45 to-white dark:from-amber-950/70 dark:via-slate-900/80 dark:to-gray-800"
+                borderClasses="border border-amber-300/90 dark:border-amber-800/80"
               />
               <KpiCard
                 title="Incidentes Graves"
                 value={datosResumen.total_graves}
                 icon={ShieldAlert}
-                colorClasses="bg-rose-500 text-white"
+                colorClasses="bg-gradient-to-tr from-rose-500 to-red-600 text-white"
+                bgClasses="bg-gradient-to-br from-rose-100/90 via-rose-50/45 to-white dark:from-rose-950/70 dark:via-slate-900/80 dark:to-gray-800"
+                borderClasses="border border-rose-300/90 dark:border-rose-800/80"
               />
               <KpiCard
                 title="Protocolos RICE Activos"
                 value={datosResumen.protocolos_activos}
                 icon={Users}
-                colorClasses="bg-blue-600 text-white"
+                colorClasses="bg-gradient-to-tr from-blue-600 to-indigo-600 text-white"
+                bgClasses="bg-gradient-to-br from-blue-100/90 via-indigo-50/45 to-white dark:from-blue-950/70 dark:via-slate-900/80 dark:to-gray-800"
+                borderClasses="border border-blue-300/90 dark:border-blue-800/80"
               />
               <KpiCard
                 title="Estudiantes en Seguimiento"
                 value={datosResumen.estudiantes_con_incidentes}
                 icon={UserCheck}
-                colorClasses="bg-teal-600 text-white"
+                colorClasses="bg-gradient-to-tr from-teal-600 to-emerald-600 text-white"
+                bgClasses="bg-gradient-to-br from-teal-100/90 via-emerald-50/45 to-white dark:from-teal-950/70 dark:via-slate-900/80 dark:to-gray-800"
+                borderClasses="border border-teal-300/90 dark:border-teal-800/80"
               />
             </div>
 
