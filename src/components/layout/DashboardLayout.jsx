@@ -8,7 +8,6 @@ import NotificationCenter from '@/components/notifications/NotificationCenter'
 import ThemeToggle from '@/components/ThemeToggle'
 import {
   Scale,
-  Network,
   LayoutDashboard,
   Users,
   AlertTriangle,
@@ -45,7 +44,6 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     { icon: ShieldAlert, label: 'Protocolos RICE', path: '/protocolos', roles: ROLES_DASHBOARD_ANALYTICS },
     { icon: Scale, label: 'Mediaciones', path: '/mediaciones', roles: ROLES_MEDIACION_LECTURA },
     { icon: CalendarCheck, label: 'Citaciones', path: '/citaciones' },
-    { icon: Network, label: 'Sociograma', path: '/sociograma', roles: ROLES_MEDIACION_LECTURA },
     { icon: Calendar, label: 'Cierre de Año', path: '/cierre-anio', roles: ROLES_CIERRE_ANIO },
     { icon: Users, label: 'Usuarios', path: '/usuarios', roles: ['Administrador'] },
     { icon: Settings, label: 'Configuración', path: '/configuracion', roles: ['Administrador'] },

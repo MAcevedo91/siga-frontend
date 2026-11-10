@@ -1,7 +1,89 @@
 import { forwardRef, useEffect, useRef, useState } from 'react'
 import { secondaryClass } from '@/components/mediaciones/MediacionUI'
+
 const WIDTH = 1000,
   HEIGHT = 640
+
+/**
+ * Determina el estilo visual, color semafórico y metadatos de una arista
+ * según la ponderación matemática y el tipo de vínculo calculado por el backend.
+ *
+ * @param {Object} link - Datos del enlace { weight, tipo_vinculo, mediaciones_count, incidentes_count }
+ * @returns {{ stroke: string, dashArray: string, etiqueta: string, badgeBg: string }}
+ */
+export const obtenerEstiloArista = (link) => {
+  if (!link) {
+    return {
+      stroke: '#94a3b8',
+      dashArray: 'none',
+      etiqueta: 'Interacción Registrada',
+      badgeBg: 'bg-slate-100 text-slate-700 border-slate-300',
+    }
+  }
+
+  const peso = Number(link.weight) || 0
+  const tieneMediacion = Number(link.mediaciones_count || link.mediaciones_realizadas || 0) > 0
+  const tipo = link.tipo_vinculo || ''
+
+  // 1. Acuerdo restaurativo neto (la mediación disipó o superó la tensión previa)
+  if (peso < 0 || tipo === 'acuerdo_restaurativo') {
+    return {
+      stroke: '#10b981', // Verde esmeralda
+      dashArray: '5,5',
+      etiqueta: 'Acuerdo Restaurativo',
+      badgeBg: 'bg-emerald-50 text-emerald-700 border-emerald-300',
+    }
+  }
+
+  // 2. Conflicto severo / tensión crítica (peso >= 5, ej: falta gravísima o reiteración grave)
+  if (peso >= 5 || tipo === 'conflicto_severo') {
+    return {
+      stroke: '#ef4444', // Rojo intenso
+      dashArray: 'none',
+      etiqueta: 'Conflicto Severo',
+      badgeBg: 'bg-red-50 text-red-700 border-red-300',
+    }
+  }
+
+  // 3. Conflicto moderado (peso >= 3, ej: falta grave o múltiples leves)
+  if (peso >= 3 || tipo === 'conflicto_moderado') {
+    return {
+      stroke: '#f97316', // Naranja
+      dashArray: 'none',
+      etiqueta: 'Conflicto Moderado',
+      badgeBg: 'bg-orange-50 text-orange-700 border-orange-300',
+    }
+  }
+
+  // 4. Con mediación activa en proceso (tensión residual en abordaje)
+  if (tieneMediacion && peso > 0) {
+    return {
+      stroke: '#8b5cf6', // Violeta / Morado
+      dashArray: '6,3',
+      etiqueta: 'Mediación en Curso',
+      badgeBg: 'bg-purple-50 text-purple-700 border-purple-300',
+    }
+  }
+
+  // 5. Conflicto leve (peso 1-2, desacuerdo puntual en aula)
+  if (peso > 0 || tipo === 'conflicto_leve') {
+    return {
+      stroke: '#f59e0b', // Ámbar cálido
+      dashArray: 'none',
+      etiqueta: 'Conflicto Leve',
+      badgeBg: 'bg-amber-50 text-amber-700 border-amber-300',
+    }
+  }
+
+  // 6. Neutro / Resuelto
+  return {
+    stroke: '#94a3b8', // Gris
+    dashArray: 'none',
+    etiqueta: 'Interacción Registrada',
+    badgeBg: 'bg-slate-50 text-slate-700 border-slate-300',
+  }
+}
+
 const SociogramaGrafoView = forwardRef(function SociogramaGrafoView(
   { nodes = [], links = [], onSelect },
   forwardedRef,
@@ -225,27 +307,31 @@ const SociogramaGrafoView = forwardRef(function SociogramaGrafoView(
       >
         <rect width={WIDTH} height={HEIGHT} fill="#f8fafc" />
         <g ref={graphRef}>
-          {links.map((l, i) => (
-            <line
-              key={i}
-              data-edge-index={i}
-              x1="500"
-              y1="320"
-              x2="500"
-              y2="320"
-              stroke={l.mediaciones_count ? '#7c3aed' : '#94a3b8'}
-              strokeWidth={Math.min(
-                7,
-                1 + Math.log2(1 + Math.abs(Number(l.weight) || 0)),
-              )}
-              opacity="0.65"
-            >
-              <title>
-                {l.tipo_vinculo || 'Interacción registrada'} · Peso neto:{' '}
-                {l.weight ?? 0}
-              </title>
-            </line>
-          ))}
+          {links.map((l, i) => {
+            const estilo = obtenerEstiloArista(l)
+            const strokeWidth = Math.min(
+              7,
+              Math.max(2, 1.5 + Math.log2(1 + Math.abs(Number(l.weight) || 0))),
+            )
+            return (
+              <line
+                key={i}
+                data-edge-index={i}
+                x1="500"
+                y1="320"
+                x2="500"
+                y2="320"
+                stroke={estilo.stroke}
+                strokeDasharray={estilo.dashArray !== 'none' ? estilo.dashArray : undefined}
+                strokeWidth={strokeWidth}
+                opacity="0.85"
+              >
+                <title>
+                  {`${estilo.etiqueta} · Peso neto: ${l.weight ?? 0} (Incidentes: ${l.incidentes_count || 0}, Mediaciones: ${l.mediaciones_count || 0})`}
+                </title>
+              </line>
+            )
+          })}
           {nodes.map((n, i) => (
             <g
               key={n.id}
@@ -290,10 +376,34 @@ const SociogramaGrafoView = forwardRef(function SociogramaGrafoView(
           ))}
         </g>
       </svg>
+      {/* Barra de Leyenda Semafórica Formativa */}
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white p-3 text-xs text-slate-600 shadow-sm">
+        <span className="font-semibold text-slate-700">Tipos de Vínculo:</span>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-1.5" title="Conflicto disipado o mitigado tras mediación escolar">
+            <span className="inline-block h-2 w-5 rounded-full bg-emerald-500 border border-emerald-600 border-dashed" />
+            <span className="font-medium text-emerald-800">Acuerdo Restaurativo (-2)</span>
+          </div>
+          <div className="flex items-center gap-1.5" title="Mediación escolar registrada con seguimiento en curso">
+            <span className="inline-block h-2 w-5 rounded-full bg-purple-500" />
+            <span className="font-medium text-purple-800">Mediación en Curso</span>
+          </div>
+          <div className="flex items-center gap-1.5" title="Fricción puntual o interrupción leve (+1)">
+            <span className="inline-block h-2 w-5 rounded-full bg-amber-500" />
+            <span className="font-medium text-amber-800">Conflicto Leve (+1)</span>
+          </div>
+          <div className="flex items-center gap-1.5" title="Falta grave o reiteración moderada (+3)">
+            <span className="inline-block h-2 w-5 rounded-full bg-orange-500" />
+            <span className="font-medium text-orange-800">Conflicto Moderado (+3)</span>
+          </div>
+          <div className="flex items-center gap-1.5" title="Falta gravísima o tensión crítica persistente (≥+5)">
+            <span className="inline-block h-2 w-5 rounded-full bg-red-500" />
+            <span className="font-medium text-red-800">Conflicto Severo (≥+5)</span>
+          </div>
+        </div>
+      </div>
       <p className="mt-2 text-xs text-slate-500">
-        Los vínculos representan registros compartidos; no equivalen a un
-        diagnóstico personal. Morado: vínculos con mediaciones; gris: otros
-        vínculos.
+        Los vínculos representan registros compartidos de convivencia y acuerdos formativos; no constituyen etiquetas individuales ni determinan sanciones.
       </p>
     </div>
   )

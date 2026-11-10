@@ -15,10 +15,12 @@ import TableSkeleton from '@/components/shared/TableSkeleton'
 import Breadcrumbs from '@/components/shared/Breadcrumbs'
 import SearchBar from '@/components/search/SearchBar'
 import RiskBadge from '@/components/risk/RiskBadge'
-import { Search, Upload, FileDown, FileText, X, Filter, ArrowUpRight, UserRound, Calendar, GraduationCap, FileSpreadsheet, Mail, LayoutGrid, List, Puzzle, Users, ShieldAlert, ArrowLeftRight } from 'lucide-react'
+import { Search, Upload, FileDown, FileText, X, Filter, ArrowUpRight, UserRound, Calendar, GraduationCap, FileSpreadsheet, Mail, LayoutGrid, List, Puzzle, Users, ShieldAlert, ArrowLeftRight, Network } from 'lucide-react'
 import { exportEstudiantesToExcel, exportEstudiantesToPDF } from '@/utils/exportUtils'
 import api from '@/services/api'
 import { ROLES_GESTION_CASOS } from '@/constants/roles'
+import { ROLES_MEDIACION_LECTURA } from '@/utils/mediaciones'
+import CursoSociogramaTab from '@/components/sociograma/CursoSociogramaTab'
 
 const PALETA_CURSOS = [
   {
@@ -86,6 +88,7 @@ export default function EstudiantesPageMejorada() {
   const [loadingRisks, setLoadingRisks] = useState(false)
   const [anioSeleccionado, setAnioSeleccionado] = useState(null)
   const [vistaModo, setVistaModo] = useState('lista') // 'lista' | 'tarjetas'
+  const [tabCurso, setTabCurso] = useState('listado') // 'listado' | 'sociograma'
   const [filtroSoloPie, setFiltroSoloPie] = useState(false)
   const [filtroRiesgo, setFiltroRiesgo] = useState('') // '' | 'alto' | 'medio' | 'bajo'
   const { user } = useAuth()
@@ -101,11 +104,16 @@ export default function EstudiantesPageMejorada() {
     if (cParam !== null) {
       setCursoFilter(cParam)
     }
+    const tParam = searchParams.get('tab')
+    if (tParam === 'sociograma' || tParam === 'listado') {
+      setTabCurso(tParam)
+    }
   }, [searchParams])
 
   const handleSelectCurso = (id) => {
     setCursoFilter(String(id))
     setSearchResults(null)
+    setTabCurso('listado')
     navigate(`/estudiantes?curso=${id}`, { replace: true })
   }
 
@@ -114,12 +122,14 @@ export default function EstudiantesPageMejorada() {
     setSearchResults(null)
     setFiltroSoloPie(false)
     setFiltroRiesgo('')
+    setTabCurso('listado')
     navigate('/estudiantes', { replace: true })
   }
 
   const debouncedSearch = useDebounce(searchTerm, 300)
 
   const canWrite = ROLES_GESTION_CASOS.includes(user?.rol)
+  const canVerSociograma = ROLES_MEDIACION_LECTURA.includes(user?.rol)
 
   // Años lectivos disponibles según la oferta de cursos
   const aniosDisponibles = useMemo(() => {
@@ -482,140 +492,182 @@ export default function EstudiantesPageMejorada() {
             </div>
           </div>
 
-          {/* Barra de Acciones y Filtros del Curso */}
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              {/* Buscador dentro del curso */}
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Buscar por nombre, apellido o RUT..."
-                  className="w-full rounded-xl border border-gray-300 bg-white py-2 pl-10 pr-4 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
-                />
-                {searchTerm && (
+          {/* Switch Alternador de Vista: Listado de Estudiantes vs Sociograma de Aula */}
+          {canVerSociograma && (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-200 bg-white p-2 shadow-xs dark:border-gray-700 dark:bg-gray-800">
+              <div className="inline-flex rounded-xl bg-gray-100 p-1 shadow-inner dark:bg-gray-900/60">
+                <button
+                  type="button"
+                  onClick={() => setTabCurso('listado')}
+                  className={`flex items-center gap-2 rounded-lg px-4 py-2 text-xs sm:text-sm font-bold transition-all ${
+                    tabCurso === 'listado'
+                      ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white'
+                      : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
+                  }`}
+                >
+                  <Users className="w-4 h-4" />
+                  <span>Listado de estudiantes ({displayEstudiantes.length})</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTabCurso('sociograma')}
+                  className={`flex items-center gap-2 rounded-lg px-4 py-2 text-xs sm:text-sm font-bold transition-all ${
+                    tabCurso === 'sociograma'
+                      ? 'bg-indigo-600 text-white shadow-sm dark:bg-indigo-500'
+                      : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
+                  }`}
+                >
+                  <Network className="w-4 h-4" />
+                  <span>Sociograma de aula</span>
+                </button>
+              </div>
+
+              <span className="text-xs text-gray-500 pr-2 hidden sm:inline">
+                {tabCurso === 'sociograma'
+                  ? 'Red relacional y dinámica de convivencia'
+                  : 'Nómina oficial y registros académicos'}
+              </span>
+            </div>
+          )}
+
+          {tabCurso === 'listado' && (
+            <>
+              {/* Barra de Acciones y Filtros del Curso */}
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                {/* Buscador dentro del curso */}
+                <div className="relative flex-1 max-w-md">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Buscar por nombre, apellido o RUT..."
+                    className="w-full rounded-xl border border-gray-300 bg-white py-2 pl-10 pr-4 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
+                  />
+                  {searchTerm && (
+                    <button
+                      onClick={() => setSearchTerm('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Botones de Vista (Lista / Tarjetas) y Exportación */}
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* Selector Lista / Tarjetas */}
+                  <div className="flex items-center rounded-xl border border-gray-200 bg-gray-100 p-1 dark:border-gray-700 dark:bg-gray-800">
+                    <button
+                      type="button"
+                      onClick={() => setVistaModo('lista')}
+                      className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+                        vistaModo === 'lista'
+                          ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white'
+                          : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
+                      }`}
+                    >
+                      <List className="w-3.5 h-3.5" />
+                      <span>Lista</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setVistaModo('tarjetas')}
+                      className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+                        vistaModo === 'tarjetas'
+                          ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white'
+                          : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
+                      }`}
+                    >
+                      <LayoutGrid className="w-3.5 h-3.5" />
+                      <span>Tarjetas</span>
+                    </button>
+                  </div>
+
+                  {/* Botón Excel */}
                   <button
-                    onClick={() => setSearchTerm('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    type="button"
+                    onClick={handleExportExcel}
+                    data-testid="export-excel-button"
+                    className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-2 text-xs font-bold text-white shadow-sm hover:bg-emerald-700 transition-colors"
                   >
-                    <X className="w-4 h-4" />
+                    <FileSpreadsheet className="w-3.5 h-3.5" />
+                    <span>Excel</span>
+                  </button>
+
+                  {/* Botón PDF */}
+                  <button
+                    type="button"
+                    onClick={handleExportPDF}
+                    className="flex items-center gap-1.5 rounded-xl bg-rose-600 px-3.5 py-2 text-xs font-bold text-white shadow-sm hover:bg-rose-700 transition-colors"
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                    <span>PDF</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Chips de Filtrado Rápido */}
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setFiltroSoloPie(!filtroSoloPie)}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all border ${
+                    filtroSoloPie
+                      ? 'bg-purple-600 text-white border-purple-600 shadow-sm'
+                      : 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800'
+                  }`}
+                >
+                  <Puzzle className="w-3.5 h-3.5" />
+                  <span>Solo PIE ({metricasCurso.pie})</span>
+                  {filtroSoloPie && <X className="w-3 h-3 ml-0.5" />}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setFiltroRiesgo(filtroRiesgo === 'alto' ? '' : 'alto')}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all border ${
+                    filtroRiesgo === 'alto'
+                      ? 'bg-rose-600 text-white border-rose-600 shadow-sm'
+                      : 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800'
+                  }`}
+                >
+                  <span className="h-2 w-2 rounded-full bg-rose-500" />
+                  <span>Riesgo Alto</span>
+                  {filtroRiesgo === 'alto' && <X className="w-3 h-3 ml-0.5" />}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setFiltroRiesgo(filtroRiesgo === 'medio' ? '' : 'medio')}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all border ${
+                    filtroRiesgo === 'medio'
+                      ? 'bg-amber-600 text-white border-amber-600 shadow-sm'
+                      : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800'
+                  }`}
+                >
+                  <span className="h-2 w-2 rounded-full bg-amber-500" />
+                  <span>Riesgo Medio</span>
+                  {filtroRiesgo === 'medio' && <X className="w-3 h-3 ml-0.5" />}
+                </button>
+
+                {(filtroSoloPie || filtroRiesgo || searchTerm) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFiltroSoloPie(false)
+                      setFiltroRiesgo('')
+                      setSearchTerm('')
+                    }}
+                    className="text-xs text-gray-500 hover:text-gray-700 underline font-medium ml-2 dark:text-gray-400"
+                  >
+                    Limpiar filtros
                   </button>
                 )}
               </div>
-
-              {/* Botones de Vista (Lista / Tarjetas) y Exportación */}
-              <div className="flex flex-wrap items-center gap-2">
-                {/* Selector Lista / Tarjetas */}
-                <div className="flex items-center rounded-xl border border-gray-200 bg-gray-100 p-1 dark:border-gray-700 dark:bg-gray-800">
-                  <button
-                    type="button"
-                    onClick={() => setVistaModo('lista')}
-                    className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
-                      vistaModo === 'lista'
-                        ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white'
-                        : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
-                    }`}
-                  >
-                    <List className="w-3.5 h-3.5" />
-                    <span>Lista</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setVistaModo('tarjetas')}
-                    className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
-                      vistaModo === 'tarjetas'
-                        ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white'
-                        : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
-                    }`}
-                  >
-                    <LayoutGrid className="w-3.5 h-3.5" />
-                    <span>Tarjetas</span>
-                  </button>
-                </div>
-
-                {/* Botón Excel */}
-                <button
-                  type="button"
-                  onClick={handleExportExcel}
-                  data-testid="export-excel-button"
-                  className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-2 text-xs font-bold text-white shadow-sm hover:bg-emerald-700 transition-colors"
-                >
-                  <FileSpreadsheet className="w-3.5 h-3.5" />
-                  <span>Excel</span>
-                </button>
-
-                {/* Botón PDF */}
-                <button
-                  type="button"
-                  onClick={handleExportPDF}
-                  className="flex items-center gap-1.5 rounded-xl bg-rose-600 px-3.5 py-2 text-xs font-bold text-white shadow-sm hover:bg-rose-700 transition-colors"
-                >
-                  <FileText className="w-3.5 h-3.5" />
-                  <span>PDF</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Chips de Filtrado Rápido */}
-            <div className="flex flex-wrap items-center gap-2 pt-1">
-              <button
-                type="button"
-                onClick={() => setFiltroSoloPie(!filtroSoloPie)}
-                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all border ${
-                  filtroSoloPie
-                    ? 'bg-purple-600 text-white border-purple-600 shadow-sm'
-                    : 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800'
-                }`}
-              >
-                <Puzzle className="w-3.5 h-3.5" />
-                <span>Solo PIE ({metricasCurso.pie})</span>
-                {filtroSoloPie && <X className="w-3 h-3 ml-0.5" />}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setFiltroRiesgo(filtroRiesgo === 'alto' ? '' : 'alto')}
-                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all border ${
-                  filtroRiesgo === 'alto'
-                    ? 'bg-rose-600 text-white border-rose-600 shadow-sm'
-                    : 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800'
-                }`}
-              >
-                <span className="h-2 w-2 rounded-full bg-rose-500" />
-                <span>Riesgo Alto</span>
-                {filtroRiesgo === 'alto' && <X className="w-3 h-3 ml-0.5" />}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setFiltroRiesgo(filtroRiesgo === 'medio' ? '' : 'medio')}
-                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all border ${
-                  filtroRiesgo === 'medio'
-                    ? 'bg-amber-600 text-white border-amber-600 shadow-sm'
-                    : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800'
-                }`}
-              >
-                <span className="h-2 w-2 rounded-full bg-amber-500" />
-                <span>Riesgo Medio</span>
-                {filtroRiesgo === 'medio' && <X className="w-3 h-3 ml-0.5" />}
-              </button>
-
-              {(filtroSoloPie || filtroRiesgo || searchTerm) && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setFiltroSoloPie(false)
-                    setFiltroRiesgo('')
-                    setSearchTerm('')
-                  }}
-                  className="text-xs text-gray-500 hover:text-gray-700 underline font-medium ml-2 dark:text-gray-400"
-                >
-                  Limpiar filtros
-                </button>
-              )}
-            </div>
-          </div>
+            </>
+          )}
+        </div>
         ) : (
           /* =========================================================================
              VISTA GENERAL: DIRECTORIO DE CURSOS
@@ -873,6 +925,11 @@ export default function EstudiantesPageMejorada() {
               })}
             </div>
           )
+        ) : tabCurso === 'sociograma' && cursoSeleccionado ? (
+          <CursoSociogramaTab
+            cursoId={cursoSeleccionado.id}
+            cursoNombre={cursoSeleccionado.nombre}
+          />
         ) : displayEstudiantes.length === 0 ? (
           <div className="bg-white rounded-lg border-2 border-dashed border-gray-300 p-12 text-center">
             <Search className="w-12 h-12 text-gray-300 mx-auto mb-4" />
