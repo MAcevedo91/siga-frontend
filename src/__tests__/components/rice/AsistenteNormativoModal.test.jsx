@@ -61,4 +61,65 @@ describe('AsistenteNormativoModal Component', () => {
       expect(screen.getByText(/"Texto normativo citado de prueba."/i)).toBeInTheDocument()
     })
   })
+
+  it('muestra badge de Circular N° 482 y banner de subsidiariedad cuando aplica normativa nacional', async () => {
+    const mockResultadoNacional = {
+      respuesta: 'Ante ciberacoso escolar, conforme a la Circular N° 482 de la Superintendencia...',
+      fuentes: [
+        {
+          articulo: 'Protocolo 1: Ciberacoso y Violencia Digital',
+          seccion: 'CIRCULAR N° 482',
+          contenido: 'Notificación inmediata a apoderados en 24 horas y contención emocional.',
+          es_normativa_nacional: true,
+        },
+      ],
+      totalFuentes: 1,
+      tiene_normativa_nacional: true,
+    }
+    vi.spyOn(riceService, 'consultarRiceRag').mockResolvedValueOnce(mockResultadoNacional)
+
+    render(<AsistenteNormativoModal isOpen={true} onClose={vi.fn()} />)
+
+    const textarea = screen.getByPlaceholderText(/Escriba su consulta jurídica o procedimental/i)
+    fireEvent.change(textarea, { target: { value: '¿Qué hacer ante ciberacoso?' } })
+
+    const btnConsultar = screen.getByRole('button', { name: /Consultar/i })
+    fireEvent.click(btnConsultar)
+
+    await waitFor(() => {
+      expect(screen.getByText(/Ante ciberacoso escolar/i)).toBeInTheDocument()
+      expect(screen.getByText(/Circular N° 482 \(Superintendencia\)/i)).toBeInTheDocument()
+      expect(screen.getByText(/Aplicación de Normativa Nacional Subsidiaria:/i)).toBeInTheDocument()
+    })
+  })
+
+  it('formatea correctamente elementos en negrita eliminando asteriscos literales', async () => {
+    const mockResultadoFormato = {
+      respuesta: 'Ante este hecho debe existir **contención inmediata** y citación en **24 horas**.\n\n### Procedimiento Obligatorio\n* Primer paso formativo.',
+      fuentes: [],
+      totalFuentes: 0,
+    }
+    vi.spyOn(riceService, 'consultarRiceRag').mockResolvedValueOnce(mockResultadoFormato)
+
+    render(<AsistenteNormativoModal isOpen={true} onClose={vi.fn()} />)
+
+    const textarea = screen.getByPlaceholderText(/Escriba su consulta jurídica o procedimental/i)
+    fireEvent.change(textarea, { target: { value: 'consulta formato' } })
+
+    const btnConsultar = screen.getByRole('button', { name: /Consultar/i })
+    fireEvent.click(btnConsultar)
+
+    await waitFor(() => {
+      // Debe encontrar el texto dentro de tags strong
+      const strongContencion = screen.getByText('contención inmediata')
+      expect(strongContencion.tagName).toBe('STRONG')
+
+      const strongHoras = screen.getByText('24 horas')
+      expect(strongHoras.tagName).toBe('STRONG')
+
+      // Debe renderizar el encabezado sin los ###
+      expect(screen.getByText('Procedimiento Obligatorio')).toBeInTheDocument()
+      expect(screen.queryByText(/###/)).toBeNull()
+    })
+  })
 })

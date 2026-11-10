@@ -11,6 +11,8 @@ import {
   ShieldCheck,
   ChevronDown,
   ChevronUp,
+  Landmark,
+  School,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { consultarRiceRag } from '@/services/riceService'
@@ -21,6 +23,95 @@ const SUGERENCIAS_CONSULTA = [
   '¿Cómo proceder ante sospecha de porte de armas o sustancias ilícitas?',
   '¿Cuáles son los plazos para citar al apoderado y otorgar derecho a descargos?',
 ]
+
+/**
+ * Procesa segmentos de texto para formatear negritas (**texto**) de forma semántica
+ */
+const formatearTextoInline = (texto) => {
+  if (!texto) return ''
+  const partes = texto.split(/(\*\*[^*]+\*\*)/g)
+  return partes.map((parte, i) => {
+    if (parte.startsWith('**') && parte.endsWith('**')) {
+      const contenido = parte.slice(2, -2)
+      return (
+        <strong key={i} className="font-bold text-slate-900 dark:text-white">
+          {contenido}
+        </strong>
+      )
+    }
+    return parte
+  })
+}
+
+/**
+ * Renderiza el texto estructurado en Markdown (títulos ###, listas, negritas y separadores)
+ */
+const RenderizadorMarkdown = ({ texto }) => {
+  if (!texto) return null
+  const lineas = texto.split('\n')
+
+  return (
+    <div className="space-y-2">
+      {lineas.map((linea, idx) => {
+        const trimmed = linea.trim()
+        if (!trimmed) {
+          return <div key={idx} className="h-1" />
+        }
+
+        // Separador horizontal --- o ***
+        if (trimmed === '---' || trimmed === '***') {
+          return <hr key={idx} className="my-3 border-indigo-200/60 dark:border-indigo-900/40" />
+        }
+
+        // Encabezados nivel 3
+        if (trimmed.startsWith('### ')) {
+          return (
+            <h4 key={idx} className="text-sm font-bold text-indigo-950 dark:text-indigo-200 mt-3 mb-1">
+              {formatearTextoInline(trimmed.replace(/^###\s+/, ''))}
+            </h4>
+          )
+        }
+
+        // Encabezados nivel 2
+        if (trimmed.startsWith('## ')) {
+          return (
+            <h3 key={idx} className="text-base font-bold text-indigo-950 dark:text-indigo-200 mt-3 mb-1">
+              {formatearTextoInline(trimmed.replace(/^##\s+/, ''))}
+            </h3>
+          )
+        }
+
+        // Viñetas no ordenadas (* o - o •)
+        if (/^[*•-]\s+/.test(trimmed)) {
+          return (
+            <div key={idx} className="flex items-start gap-2 ml-3 text-sm text-slate-800 dark:text-slate-200">
+              <span className="text-indigo-500 dark:text-indigo-400 font-bold mt-1 text-xs leading-none">•</span>
+              <span className="flex-1 leading-relaxed">{formatearTextoInline(trimmed.replace(/^[*•-]\s+/, ''))}</span>
+            </div>
+          )
+        }
+
+        // Listas numeradas (1. 2. etc.)
+        const matchNum = trimmed.match(/^(\d+)\.\s+(.*)/)
+        if (matchNum) {
+          return (
+            <div key={idx} className="flex items-start gap-2 ml-1 text-sm text-slate-800 dark:text-slate-200">
+              <span className="font-bold text-indigo-700 dark:text-indigo-300 min-w-[1.25rem]">{matchNum[1]}.</span>
+              <span className="flex-1 leading-relaxed">{formatearTextoInline(matchNum[2])}</span>
+            </div>
+          )
+        }
+
+        // Párrafo normal
+        return (
+          <p key={idx} className="text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-normal">
+            {formatearTextoInline(linea)}
+          </p>
+        )
+      })}
+    </div>
+  )
+}
 
 export const AsistenteNormativoModal = ({
   isOpen,
@@ -188,8 +279,8 @@ export const AsistenteNormativoModal = ({
                   </button>
                 </div>
 
-                <div className="text-sm text-slate-900 dark:text-slate-200 leading-relaxed whitespace-pre-line font-medium">
-                  {resultado.respuesta}
+                <div className="text-sm text-slate-900 dark:text-slate-200 leading-relaxed font-medium">
+                  <RenderizadorMarkdown texto={resultado.respuesta} />
                 </div>
               </div>
 
@@ -213,13 +304,24 @@ export const AsistenteNormativoModal = ({
                       {resultado.fuentes.map((fuente, idx) => (
                         <div
                           key={idx}
-                          className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-indigo-100 dark:border-slate-700 text-xs space-y-1.5 shadow-2xs"
+                          className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-indigo-100 dark:border-slate-700 text-xs space-y-2 shadow-2xs"
                         >
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="font-bold text-indigo-700 dark:text-indigo-300">
-                              {fuente.articulo || 'Artículo'}
-                            </span>
-                            <span className="text-[10px] text-slate-500 font-semibold bg-indigo-50 dark:bg-slate-700 px-2 py-0.5 rounded-full border border-indigo-100/80 dark:border-slate-600">
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              {fuente.es_normativa_nacional ? (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-300 dark:border-amber-800">
+                                  <Landmark className="w-3 h-3 text-amber-600 dark:text-amber-400" /> Circular N° 482 (Superintendencia)
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-indigo-800 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50 px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800">
+                                  <School className="w-3 h-3 text-indigo-600 dark:text-indigo-400" /> RICE Establecimiento
+                                </span>
+                              )}
+                              <span className="font-bold text-slate-800 dark:text-slate-200">
+                                {fuente.articulo || 'Artículo'}
+                              </span>
+                            </div>
+                            <span className="text-[10px] text-slate-500 font-semibold bg-indigo-50/70 dark:bg-slate-700 px-2 py-0.5 rounded-full border border-indigo-100/80 dark:border-slate-600">
                               {fuente.seccion || 'Reglamento'}
                             </span>
                           </div>
@@ -230,6 +332,19 @@ export const AsistenteNormativoModal = ({
                       ))}
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Banner de Subsidiariedad Normativa si aplica */}
+              {resultado.tiene_normativa_nacional && (
+                <div className="flex items-start gap-2.5 p-3.5 bg-gradient-to-br from-amber-50 to-orange-50/40 dark:from-amber-950/30 dark:to-slate-900 border border-amber-300/80 dark:border-amber-900 rounded-xl text-xs text-amber-900 dark:text-amber-200 shadow-xs">
+                  <Landmark className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+                  <div>
+                    <span className="font-bold">Aplicación de Normativa Nacional Subsidiaria:</span>
+                    <p className="mt-0.5 text-slate-700 dark:text-slate-300 leading-relaxed">
+                      Al detectarse una laguna u omisión de protocolo específico en el RICE del colegio, se aplicó la <strong>Circular N° 482 de la Superintendencia de Educación</strong> de forma supletoria y obligatoria. Se recomienda al Encargado/a de Convivencia actualizar el reglamento interno para incorporar formalmente este protocolo.
+                    </p>
+                  </div>
                 </div>
               )}
 
