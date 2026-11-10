@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import {
   getProtocoloById,
   avanzarEstadoProtocolo,
@@ -12,10 +12,27 @@ import {
 import { getAntecedentesEscalada } from '@/services/estudiantesService'
 import ChecklistProtocolo from '@/components/protocolos/ChecklistProtocolo'
 import AlertaEscaladaBanner from '@/components/shared/AlertaEscaladaBanner'
+import AsistenteNormativoModal from '@/components/rice/AsistenteNormativoModal'
 import { useAuth } from '@/store/useAuthStore'
 import { formatDate } from '@/utils/formatDate'
 import toast from 'react-hot-toast'
-import { Lock, FileText } from 'lucide-react'
+import {
+  Lock,
+  FileText,
+  ArrowLeft,
+  BookOpen,
+  Check,
+  CheckCircle2,
+  Clock,
+  Calendar,
+  User,
+  Copy,
+  ExternalLink,
+  ShieldAlert,
+  AlertCircle,
+  Loader2,
+  Share2,
+} from 'lucide-react'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { ROLES_GESTION_CASOS } from '@/constants/roles'
 
@@ -31,6 +48,8 @@ export default function ProtocoloDetallePage() {
   const [observacion, setObservacion] = useState('')
   const [updatingEstado, setUpdatingEstado] = useState(false)
   const [descargandoPdf, setDescargandoPdf] = useState(false)
+  const [copiedId, setCopiedId] = useState(false)
+  const [modalRiceOpen, setModalRiceOpen] = useState(false)
 
   // Estados para checklist y alerta de escalada
   const [pasos, setPasos] = useState([])
@@ -38,7 +57,6 @@ export default function ProtocoloDetallePage() {
   const [alertaEscalada, setAlertaEscalada] = useState(null)
 
   const { user } = useAuth()
-
   const canEdit = ROLES_GESTION_CASOS.includes(user?.rol)
 
   useEffect(() => {
@@ -149,6 +167,14 @@ export default function ProtocoloDetallePage() {
     }
   }
 
+  const handleCopyId = () => {
+    if (!protocolo?.id) return
+    navigator.clipboard?.writeText(String(protocolo.id))
+    setCopiedId(true)
+    toast.success('ID del protocolo copiado al portapapeles')
+    setTimeout(() => setCopiedId(false), 2000)
+  }
+
   const handleAvanzarEstado = async () => {
     if (!observacion.trim()) {
       toast.error('La observación es obligatoria para avanzar el estado')
@@ -177,16 +203,32 @@ export default function ProtocoloDetallePage() {
     }
   }
 
+  const getInitials = (nombre, apellido) => {
+    const n = (nombre || '').trim().charAt(0).toUpperCase()
+    const a = (apellido || '').trim().charAt(0).toUpperCase()
+    return `${n}${a}` || 'ES'
+  }
+
+  const getEstadoBadgeStyle = (estado) => {
+    switch (estado) {
+      case 'En Investigación':
+        return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800'
+      case 'Derivado':
+        return 'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800'
+      case 'Cerrado':
+        return 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800'
+      default:
+        return 'bg-slate-100 text-slate-800 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'
+    }
+  }
+
   if (loading) {
     return (
       <DashboardLayout>
         <div className="flex min-h-[60vh] items-center justify-center">
           <div className="text-center">
-            <svg className="mx-auto h-12 w-12 animate-spin text-blue-600" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-            </svg>
-            <p className="mt-2 text-gray-600">Cargando protocolo...</p>
+            <Loader2 className="mx-auto h-10 w-10 animate-spin text-blue-600" />
+            <p className="mt-3 text-sm font-medium text-gray-600 dark:text-gray-400">Cargando protocolo...</p>
           </div>
         </div>
       </DashboardLayout>
@@ -196,14 +238,15 @@ export default function ProtocoloDetallePage() {
   if (error || !protocolo) {
     return (
       <DashboardLayout>
-        <div className="flex min-h-[60vh] items-center justify-center">
-          <div className="rounded-lg bg-red-50 p-6 text-center">
-            <p className="text-red-800">{error || 'Protocolo no encontrado'}</p>
+        <div className="flex min-h-[60vh] items-center justify-center p-4">
+          <div className="rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 p-8 text-center max-w-md shadow-xs">
+            <AlertCircle className="w-12 h-12 text-red-600 dark:text-red-400 mx-auto mb-3" />
+            <p className="text-sm font-semibold text-red-900 dark:text-red-200 mb-4">{error || 'Protocolo no encontrado'}</p>
             <button
               onClick={() => navigate('/protocolos')}
-              className="mt-4 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+              className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-xs font-bold text-white hover:bg-red-700 shadow-sm transition"
             >
-              Volver a Protocolos
+              <ArrowLeft className="w-4 h-4" /> Volver a Protocolos
             </button>
           </div>
         </div>
@@ -215,173 +258,333 @@ export default function ProtocoloDetallePage() {
   const puedeAvanzar = canEdit && estadoActualIndex < ESTADOS.length - 1
   const tienePasosPendientes = pasos.length > 0 && pasos.some((p) => !p.completado)
 
+  const totalPasos = pasos.length
+  const pasosCompletados = pasos.filter((p) => p.completado).length
+  const porcentajeAvance = totalPasos > 0 ? Math.round((pasosCompletados / totalPasos) * 100) : 0
+
+  const tipoProtocoloNombre = protocolo.tipo_protocolo || protocolo.tipo || 'Protocolo de Convivencia Escolar'
+  const fechaApertura = protocolo.fecha_apertura || protocolo.created_at
+
   return (
     <DashboardLayout>
-      <div className="p-4 sm:p-6 lg:p-8">
-        <div className="mx-auto max-w-5xl">
-        <button
-          onClick={() => navigate('/protocolos')}
-          className="mb-4 flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
-        >
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          Volver a Protocolos
-        </button>
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        {/* BARRA SUPERIOR DE NAVEGACIÓN Y ACCIONES */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <button
+            onClick={() => navigate('/protocolos')}
+            className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Volver a Protocolos</span>
+          </button>
 
-        <div className="space-y-6">
-          {/* Banner de alerta preventiva de antecedentes RICE si corresponde */}
-          {alertaEscalada?.tiene_alerta && (
-            <AlertaEscaladaBanner diagnostico={alertaEscalada} />
-          )}
+          <div className="flex flex-wrap items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => setModalRiceOpen(true)}
+              className="inline-flex items-center gap-2 rounded-xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/50 px-3.5 py-2 text-xs sm:text-sm font-semibold text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-all shadow-xs"
+            >
+              <BookOpen className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
+              <span>Consultar RICE</span>
+            </button>
 
-          <div className="overflow-hidden rounded-lg bg-white shadow">
-            <div className="bg-gradient-to-r from-purple-600 to-purple-800 px-6 py-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div>
-                <h1 className="text-3xl font-bold text-white">Protocolo RICE #{protocolo.id}</h1>
-                <p className="mt-1 text-purple-100">{protocolo.tipo_protocolo}</p>
-              </div>
+            <button
+              type="button"
+              onClick={handleDescargarExpediente}
+              disabled={descargandoPdf}
+              className="inline-flex items-center gap-2 rounded-xl bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-white px-4 py-2 text-xs sm:text-sm font-semibold transition shadow-sm disabled:opacity-50"
+              title="Descargar expediente oficial con carátula y anexo de evidencias probatorias"
+            >
+              {descargandoPdf ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin text-white" />
+                  <span>Generando Expediente...</span>
+                </>
+              ) : (
+                <>
+                  <FileText className="h-4 w-4" />
+                  <span>Descargar Expediente RICE (PDF)</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
 
-              <div>
+        {/* HERO HEADER MODERNO DEL PROTOCOLO */}
+        <div className="rounded-2xl bg-white dark:bg-gray-800 border border-gray-200/90 dark:border-gray-700/80 p-5 sm:p-6 shadow-xs">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Expediente Normativo
+                </span>
+                <span className="text-gray-300 dark:text-gray-600">•</span>
                 <button
                   type="button"
-                  onClick={handleDescargarExpediente}
-                  disabled={descargandoPdf}
-                  className="inline-flex items-center gap-2 rounded-lg bg-white/15 hover:bg-white/25 border border-white/30 text-white px-4 py-2.5 text-sm font-semibold transition shadow-sm backdrop-blur-sm disabled:opacity-50"
-                  title="Descargar expediente oficial con carátula y anexo de evidencias probatorias"
+                  onClick={handleCopyId}
+                  className="group inline-flex items-center gap-1.5 font-mono text-xs font-semibold text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition"
+                  title="Copiar ID"
                 >
-                  {descargandoPdf ? (
-                    <>
-                      <svg className="h-4 w-4 animate-spin text-white" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
-                      Generando Expediente...
-                    </>
+                  <span>Protocolo RICE #{protocolo.id}</span>
+                  {copiedId ? (
+                    <Check className="w-3.5 h-3.5 text-emerald-500" />
                   ) : (
-                    <>
-                      <FileText className="h-4 w-4" />
-                      <span>Descargar Expediente RICE (PDF)</span>
-                    </>
+                    <Copy className="w-3.5 h-3.5 text-gray-400 group-hover:text-indigo-500 transition-colors" />
                   )}
                 </button>
+                <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-bold ${getEstadoBadgeStyle(protocolo.estado)}`}>
+                  {protocolo.estado}
+                </span>
+              </div>
+
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <span>{tipoProtocoloNombre}</span>
+              </h1>
+
+              <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                <span className="inline-flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5 text-indigo-500" />
+                  <span className="font-semibold text-gray-800 dark:text-gray-200">
+                    Estudiante: {protocolo.estudiante?.nombre} {protocolo.estudiante?.apellido}
+                  </span>
+                  {protocolo.estudiante?.curso && (
+                    <span className="text-gray-400">
+                      ({typeof protocolo.estudiante?.curso === 'object' ? protocolo.estudiante?.curso?.nombre : protocolo.estudiante?.curso})
+                    </span>
+                  )}
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                  <span>Apertura: {formatDate(fechaApertura)}</span>
+                </span>
               </div>
             </div>
 
-            <div className="space-y-6 p-6">
-              <div className="grid gap-6 sm:grid-cols-2">
-                <div>
-                  <h2 className="mb-2 text-sm font-medium text-gray-500">Estudiante</h2>
-                  <p className="text-lg font-semibold text-gray-900">
+            {/* Resumen de Cumplimiento Normativo */}
+            <div className="flex flex-col sm:items-end justify-center border-t sm:border-t-0 sm:border-l border-gray-100 dark:border-gray-700/60 pt-3 sm:pt-0 sm:pl-6 min-w-[200px]">
+              <div className="flex items-center justify-between sm:justify-end gap-3 w-full mb-1.5">
+                <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Cumplimiento Checklist</span>
+                <span className="text-xs font-bold text-indigo-700 dark:text-indigo-400">
+                  {pasosCompletados} de {totalPasos} ({porcentajeAvance}%)
+                </span>
+              </div>
+              <div className="w-full bg-gray-100 dark:bg-gray-700 h-2 rounded-full overflow-hidden">
+                <div
+                  className={`h-full transition-all duration-500 rounded-full ${
+                    porcentajeAvance === 100
+                      ? 'bg-gradient-to-r from-emerald-500 to-teal-500'
+                      : 'bg-gradient-to-r from-indigo-500 to-blue-600'
+                  }`}
+                  style={{ width: `${porcentajeAvance}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* LAYOUT PRINCIPAL A 2 COLUMNAS (GRID RESPONSIVO) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* ======================================================== */}
+          {/* COLUMNA PRINCIPAL (8 COLS): CHECKLIST Y OBSERVACIONES    */}
+          {/* ======================================================== */}
+          <div className="lg:col-span-8 space-y-6">
+            {/* Banner de alerta preventiva de antecedentes RICE si corresponde */}
+            {alertaEscalada?.tiene_alerta && (
+              <AlertaEscaladaBanner diagnostico={alertaEscalada} />
+            )}
+
+            {/* Checklist de Pasos Normativos RICE y Evidencias */}
+            <ChecklistProtocolo
+              pasos={pasos}
+              loading={loadingPasos}
+              canEdit={canEdit}
+              onCompletarPaso={handleCompletarPaso}
+              onSubirEvidencia={handleSubirEvidencia}
+              onEliminarEvidencia={handleEliminarEvidencia}
+              protocoloCerrado={protocolo.estado === 'Cerrado'}
+            />
+
+            {/* Observaciones Iniciales y Hechos de Apertura */}
+            {protocolo.observaciones && (
+              <div className="rounded-2xl bg-white dark:bg-gray-800 border border-gray-200/90 dark:border-gray-700/80 p-5 sm:p-6 shadow-xs space-y-3">
+                <div className="flex items-center gap-2.5 pb-3 border-b border-gray-100 dark:border-gray-700/60">
+                  <div className="p-2 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 rounded-xl">
+                    <FileText className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h2 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                      Observaciones y Hechos de Apertura
+                    </h2>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Antecedentes registrados al momento de la activación del protocolo
+                    </p>
+                  </div>
+                </div>
+                <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-900/40 border border-gray-100 dark:border-gray-800 text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap font-normal">
+                  {protocolo.observaciones}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ======================================================== */}
+          {/* COLUMNA LATERAL (4 COLS): ESTUDIANTE, STEPPER Y ACCIONES  */}
+          {/* ======================================================== */}
+          <div className="lg:col-span-4 space-y-6">
+            {/* Tarjeta 1: Ficha del Estudiante Titular */}
+            <div className="rounded-2xl bg-white dark:bg-gray-800 border border-gray-200/90 dark:border-gray-700/80 p-5 shadow-xs space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-700/60">
+                <div className="flex items-center gap-2 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <User className="w-4 h-4 text-indigo-500" />
+                  <span>Estudiante Involucrado</span>
+                </div>
+                {protocolo.estudiante?.es_pie && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                    Programa PIE
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-bold text-sm flex items-center justify-center shadow-xs shrink-0">
+                  {getInitials(protocolo.estudiante?.nombre, protocolo.estudiante?.apellido)}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold text-gray-900 dark:text-white truncate">
                     {protocolo.estudiante?.nombre} {protocolo.estudiante?.apellido}
                   </p>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                     {typeof protocolo.estudiante?.curso === 'object'
                       ? protocolo.estudiante?.curso?.nombre
-                      : protocolo.estudiante?.curso}
+                      : protocolo.estudiante?.curso || 'Sin curso asignado'}
                   </p>
-                </div>
-
-                <div>
-                  <h2 className="mb-2 text-sm font-medium text-gray-500">Fecha de Apertura</h2>
-                  <p className="text-lg font-semibold text-gray-900">
-                    {formatDate(protocolo.fecha_apertura)}
-                  </p>
-                </div>
-              </div>
-
-              {protocolo.incidente && (
-                <div>
-                  <h2 className="mb-2 text-sm font-medium text-gray-500">Incidente Relacionado</h2>
-                  <div className="rounded-lg border border-gray-200 p-4">
-                    <p className="text-sm text-gray-900">
-                      {formatDate(protocolo.incidente.fecha)} - {protocolo.incidente.tipo_abordaje}
+                  {protocolo.estudiante?.rut && (
+                    <p className="text-[11px] text-gray-400 dark:text-gray-500 font-mono mt-0.5">
+                      RUT: {protocolo.estudiante.rut}
                     </p>
-                    <span className="mt-2 inline-flex rounded-full bg-yellow-100 px-2 py-1 text-xs font-semibold text-yellow-800">
-                      {protocolo.incidente.gravedad}
-                    </span>
-                  </div>
+                  )}
                 </div>
-              )}
+              </div>
 
-              {protocolo.observaciones && (
+              {protocolo.estudiante?.id && (
+                <Link
+                  to={`/estudiantes/${protocolo.estudiante.id}`}
+                  className="w-full inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border border-indigo-200/80 dark:border-indigo-800 transition"
+                >
+                  <span>Ver Expediente del Alumno</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </Link>
+              )}
+            </div>
+
+            {/* Tarjeta 2: Incidente Relacionado (si existe) */}
+            {protocolo.incidente && (
+              <div className="rounded-2xl bg-white dark:bg-gray-800 border border-gray-200/90 dark:border-gray-700/80 p-5 shadow-xs space-y-3">
+                <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-700/60">
+                  <div className="flex items-center gap-2 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <ShieldAlert className="w-4 h-4 text-amber-500" />
+                    <span>Incidente Asociado</span>
+                  </div>
+                  <span className="inline-flex items-center rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 px-2 py-0.5 text-[10px] font-bold">
+                    {protocolo.incidente.gravedad}
+                  </span>
+                </div>
+
                 <div>
-                  <h2 className="mb-2 text-sm font-medium text-gray-500">Observaciones Iniciales</h2>
-                  <p className="whitespace-pre-wrap text-gray-700">{protocolo.observaciones}</p>
+                  <p className="text-xs font-semibold text-gray-900 dark:text-white">
+                    {protocolo.incidente.tipo_abordaje}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Fecha del hecho: {formatDate(protocolo.incidente.fecha)}
+                  </p>
                 </div>
-              )}
-            </div>
-          </div>
 
-          {/* Checklist de Pasos Normativos RICE */}
-          <ChecklistProtocolo
-            pasos={pasos}
-            loading={loadingPasos}
-            canEdit={canEdit}
-            onCompletarPaso={handleCompletarPaso}
-            onSubirEvidencia={handleSubirEvidencia}
-            onEliminarEvidencia={handleEliminarEvidencia}
-            protocoloCerrado={protocolo.estado === 'Cerrado'}
-          />
+                <Link
+                  to={`/incidentes/${protocolo.incidente.id}`}
+                  className="w-full inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 transition"
+                >
+                  <span>Revisar Caso #{protocolo.incidente.id}</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            )}
 
-          <div className="overflow-hidden rounded-lg bg-white shadow">
-            <div className="border-b border-gray-200 px-6 py-4">
-              <h2 className="text-lg font-semibold text-gray-900">Línea de Tiempo del Estado</h2>
-            </div>
-            <div className="p-6">
-              <div className="flex items-center justify-between">
-                {ESTADOS.map((estado, index) => (
-                  <div key={estado} className="flex flex-1 items-center">
-                    <div className="flex flex-col items-center">
+            {/* Tarjeta 3: Línea de Tiempo del Estado (Stepper Vertical) */}
+            <div className="rounded-2xl bg-white dark:bg-gray-800 border border-gray-200/90 dark:border-gray-700/80 p-5 shadow-xs space-y-4">
+              <div className="flex items-center gap-2 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider pb-3 border-b border-gray-100 dark:border-gray-700/60">
+                <Clock className="w-4 h-4 text-blue-500" />
+                <span>Etapa Administrativa</span>
+              </div>
+
+              <div className="space-y-4 relative">
+                {ESTADOS.map((estado, index) => {
+                  const isCurrent = index === estadoActualIndex
+                  const isPassed = index < estadoActualIndex
+                  return (
+                    <div key={estado} className="flex items-start gap-3 relative">
+                      {/* Línea conectora vertical */}
+                      {index < ESTADOS.length - 1 && (
+                        <div
+                          className={`absolute left-4 top-8 -bottom-4 w-0.5 ${
+                            isPassed ? 'bg-indigo-600 dark:bg-indigo-500' : 'bg-gray-200 dark:bg-gray-700'
+                          }`}
+                        />
+                      )}
+
+                      {/* Icono del paso */}
                       <div
-                        className={`flex h-12 w-12 items-center justify-center rounded-full ${
-                          index <= estadoActualIndex
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-gray-200 text-gray-600'
+                        className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition-colors z-10 ${
+                          isPassed
+                            ? 'bg-indigo-600 text-white shadow-xs'
+                            : isCurrent
+                            ? 'bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border-2 border-indigo-600 dark:border-indigo-400'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500'
                         }`}
                       >
-                        {index < estadoActualIndex ? (
-                          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
-                        ) : (
-                          <span className="text-sm font-semibold">{index + 1}</span>
-                        )}
+                        {isPassed ? <Check className="w-4 h-4" /> : index + 1}
                       </div>
-                      <p
-                        className={`mt-2 text-center text-xs font-medium ${
-                          index <= estadoActualIndex ? 'text-gray-900' : 'text-gray-500'
-                        }`}
-                      >
-                        {estado}
-                      </p>
+
+                      <div className="min-w-0 pt-1 flex-1">
+                        <p
+                          className={`text-xs font-bold ${
+                            isCurrent
+                              ? 'text-indigo-700 dark:text-indigo-300'
+                              : isPassed
+                              ? 'text-gray-800 dark:text-gray-200'
+                              : 'text-gray-400 dark:text-gray-500'
+                          }`}
+                        >
+                          {estado}
+                        </p>
+                        <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">
+                          {isPassed
+                            ? 'Completado'
+                            : isCurrent
+                            ? 'Etapa en curso activo'
+                            : 'Pendiente'}
+                        </p>
+                      </div>
                     </div>
-                    {index < ESTADOS.length - 1 && (
-                      <div
-                        className={`h-1 flex-1 ${
-                          index < estadoActualIndex ? 'bg-blue-600' : 'bg-gray-200'
-                        }`}
-                      />
-                    )}
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
-          </div>
 
-          {puedeAvanzar && (
-            <div className="overflow-hidden rounded-lg bg-white shadow">
-              <div className="border-b border-gray-200 px-6 py-4">
-                <h2 className="text-lg font-semibold text-gray-900">Avanzar Estado</h2>
-              </div>
-              <div className="p-6">
+            {/* Tarjeta 4: Avanzar Estado Administrativo */}
+            {puedeAvanzar && (
+              <div className="rounded-2xl bg-white dark:bg-gray-800 border border-gray-200/90 dark:border-gray-700/80 p-5 shadow-xs space-y-4">
+                <div className="flex items-center gap-2 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider pb-3 border-b border-gray-100 dark:border-gray-700/60">
+                  <Share2 className="w-4 h-4 text-indigo-500" />
+                  <span>Avanzar Estado</span>
+                </div>
+
                 {tienePasosPendientes && (
                   <div
                     role="alert"
-                    className="mb-4 flex items-center gap-2.5 rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 p-3.5 text-xs text-amber-800 dark:text-amber-200"
+                    className="flex items-start gap-2.5 rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 p-3.5 text-xs text-amber-800 dark:text-amber-200"
                   >
-                    <Lock className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
-                    <span className="font-medium">
+                    <Lock className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                    <span className="font-medium leading-relaxed">
                       Debe completar todos los pasos del checklist antes de cambiar de etapa.
                     </span>
                   </div>
@@ -389,57 +592,67 @@ export default function ProtocoloDetallePage() {
 
                 {!showAvanzarForm ? (
                   <button
+                    type="button"
                     disabled={tienePasosPendientes}
                     onClick={() => setShowAvanzarForm(true)}
-                    className={`rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition ${
+                    className={`w-full rounded-xl px-4 py-2.5 text-xs sm:text-sm font-bold text-white transition shadow-sm ${
                       tienePasosPendientes
-                        ? 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed opacity-60'
-                        : 'bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/20'
+                        ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed opacity-60'
+                        : 'bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 shadow-indigo-500/20 active:scale-[0.99]'
                     }`}
                   >
                     Avanzar a &quot;{ESTADOS[estadoActualIndex + 1]}&quot;
                   </button>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-3 animate-in fade-in">
                     <div>
-                      <label htmlFor="observacion" className="block text-sm font-medium text-gray-700">
-                        Observación <span className="text-red-500">*</span>
+                      <label htmlFor="observacion" className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
+                        Observación del Cambio de Estado <span className="text-red-500">*</span>
                       </label>
                       <textarea
                         id="observacion"
                         value={observacion}
                         onChange={(e) => setObservacion(e.target.value)}
                         rows={3}
-                        className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        placeholder="Describe las acciones realizadas y motivo del cambio de estado..."
+                        className="w-full text-xs rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700/50 p-3 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none"
+                        placeholder="Describa las acciones realizadas y justificación del avance..."
                       />
                     </div>
-                    <div className="flex justify-end gap-3">
+                    <div className="flex items-center justify-end gap-2 pt-1">
                       <button
+                        type="button"
                         onClick={() => {
                           setShowAvanzarForm(false)
                           setObservacion('')
                         }}
-                        className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                        className="px-3.5 py-2 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition border border-gray-200 dark:border-gray-600"
                         disabled={updatingEstado}
                       >
                         Cancelar
                       </button>
                       <button
+                        type="button"
                         onClick={handleAvanzarEstado}
                         disabled={updatingEstado || !observacion.trim()}
-                        className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs transition disabled:opacity-50"
                       >
-                        {updatingEstado ? 'Actualizando...' : 'Confirmar Avance'}
+                        {updatingEstado ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                        <span>Confirmar Avance</span>
                       </button>
                     </div>
                   </div>
                 )}
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
+
+        {/* Modal de Asistencia RAG Normativa (Copiloto RICE) */}
+        <AsistenteNormativoModal
+          isOpen={modalRiceOpen}
+          onClose={() => setModalRiceOpen(false)}
+          consultaInicial={`¿Qué procedimientos y plazos normativos aplican para un caso de ${tipoProtocoloNombre}?`}
+        />
       </div>
     </DashboardLayout>
   )
