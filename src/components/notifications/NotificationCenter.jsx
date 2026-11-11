@@ -1,4 +1,4 @@
-import { X, CheckCheck, Bell } from 'lucide-react'
+import { X, CheckCheck, Bell, AlertTriangle, ShieldAlert, CalendarCheck, Scale, AlertOctagon } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 export default function NotificationCenter({ isOpen, onClose, notificaciones, onMarcarLeida, onMarcarTodasLeidas }) {
@@ -19,6 +19,47 @@ export default function NotificationCenter({ isOpen, onClose, notificaciones, on
   const handleMarcarTodasLeidas = async () => {
     // Optimistic update handled by useNotifications hook
     await onMarcarTodasLeidas()
+  }
+
+  const renderIcon = (tipo) => {
+    switch (tipo) {
+      case 'incidente':
+        return (
+          <div className="p-2 bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 rounded-lg shrink-0">
+            <AlertTriangle className="w-4 h-4" />
+          </div>
+        )
+      case 'protocolo':
+        return (
+          <div className="p-2 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-lg shrink-0">
+            <ShieldAlert className="w-4 h-4" />
+          </div>
+        )
+      case 'citacion':
+        return (
+          <div className="p-2 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 rounded-lg shrink-0">
+            <CalendarCheck className="w-4 h-4" />
+          </div>
+        )
+      case 'mediacion':
+        return (
+          <div className="p-2 bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 rounded-lg shrink-0">
+            <Scale className="w-4 h-4" />
+          </div>
+        )
+      case 'estudiante_riesgo':
+        return (
+          <div className="p-2 bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 rounded-lg shrink-0">
+            <AlertOctagon className="w-4 h-4" />
+          </div>
+        )
+      default:
+        return (
+          <div className="p-2 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-lg shrink-0">
+            <Bell className="w-4 h-4" />
+          </div>
+        )
+    }
   }
 
   if (!isOpen) return null
@@ -78,22 +119,23 @@ export default function NotificationCenter({ isOpen, onClose, notificaciones, on
                   key={notif.id}
                   onClick={() => handleNotificationClick(notif)}
                   className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors ${
-                    !notif.leida ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                    !notif.leida ? 'bg-blue-50/70 dark:bg-blue-900/20' : ''
                   }`}
                 >
                   <div className="flex gap-3">
-                    <div className="flex-1">
+                    {renderIcon(notif.tipo)}
+                    <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
-                        <p className={`text-sm font-medium ${!notif.leida ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300'}`}>
+                        <p className={`text-sm font-semibold truncate ${!notif.leida ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300'}`}>
                           {notif.titulo}
                         </p>
                         {!notif.leida && (
-                          <span className="w-2 h-2 bg-blue-600 dark:bg-blue-400 rounded-full mt-1" />
+                          <span className="w-2 h-2 bg-blue-600 dark:bg-blue-400 rounded-full mt-1 shrink-0" />
                         )}
                       </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{notif.mensaje}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">{notif.mensaje}</p>
                       <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-                        {new Date(notif.created_at).toLocaleString('es-CL')}
+                        {new Date(notif.created_at || notif.fecha_creacion || Date.now()).toLocaleString('es-CL')}
                       </p>
                     </div>
                   </div>

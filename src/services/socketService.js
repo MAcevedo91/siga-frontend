@@ -2,6 +2,16 @@ import { io } from 'socket.io-client'
 
 let socket = null
 
+const getSocketUrl = () => {
+  if (import.meta.env.VITE_SOCKET_URL) {
+    return import.meta.env.VITE_SOCKET_URL
+  }
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL.replace(/\/api\/v1\/?$/, '').replace(/\/api\/?$/, '')
+  }
+  return 'http://localhost:3000'
+}
+
 export function initSocket(token) {
   if (socket && socket.connected) {
     return socket
@@ -10,7 +20,7 @@ export function initSocket(token) {
     socket.disconnect()
   }
 
-  const socketUrl = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001'
+  const socketUrl = getSocketUrl()
 
   socket = io(socketUrl, {
     auth: {
