@@ -54,6 +54,18 @@ export function exportIncidentesToPDF(incidentes = []) {
     body,
     startY: 20,
     styles: { fontSize: 8 },
+    didDrawPage: () => {
+      if (typeof doc.setFontSize === 'function') doc.setFontSize(7)
+      if (typeof doc.setTextColor === 'function') doc.setTextColor(120, 120, 120)
+      const pageHeight = doc.internal?.pageSize?.height || 280
+      const pageWidth = doc.internal?.pageSize?.width || 210
+      doc.text(
+        'CONFIDENCIAL · Contiene datos sensibles de estudiantes protegidos por Ley N° 19.628. Prohibida su divulgación.',
+        pageWidth / 2,
+        pageHeight - 8,
+        { align: 'center' }
+      )
+    },
   })
 
   doc.save(`incidentes_${new Date().toISOString().slice(0, 10)}.pdf`)
@@ -100,6 +112,18 @@ export function exportEstudiantesToPDF(estudiantes = []) {
     body,
     startY: 20,
     styles: { fontSize: 8 },
+    didDrawPage: () => {
+      if (typeof doc.setFontSize === 'function') doc.setFontSize(7)
+      if (typeof doc.setTextColor === 'function') doc.setTextColor(120, 120, 120)
+      const pageHeight = doc.internal?.pageSize?.height || 280
+      const pageWidth = doc.internal?.pageSize?.width || 210
+      doc.text(
+        'CONFIDENCIAL · Contiene datos sensibles de estudiantes protegidos por Ley N° 19.628. Prohibida su divulgación.',
+        pageWidth / 2,
+        pageHeight - 8,
+        { align: 'center' }
+      )
+    },
   })
 
   doc.save(`estudiantes_${new Date().toISOString().slice(0, 10)}.pdf`)

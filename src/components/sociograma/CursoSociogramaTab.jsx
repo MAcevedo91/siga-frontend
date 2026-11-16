@@ -75,7 +75,15 @@ export default function CursoSociogramaTab({ cursoId, cursoNombre }) {
         const pdf = new jsPDF({ orientation: 'landscape' })
         pdf.setFontSize(15)
         pdf.text(`Sociograma · ${cursoNombre || data?.curso?.nombre || 'Curso'}`, 12, 14)
-        pdf.addImage(png, 'PNG', 12, 23, 273, 175)
+        pdf.addImage(png, 'PNG', 12, 21, 273, 172)
+        pdf.setFontSize(7)
+        pdf.setTextColor(120, 120, 120)
+        pdf.text(
+          'CONFIDENCIAL · Contiene datos socioemocionales de estudiantes protegidos por la Ley N° 19.628 y Circular N° 482. Prohibida su difusión no autorizada.',
+          148.5,
+          202,
+          { align: 'center' }
+        )
         pdf.save(`sociograma-${(cursoNombre || 'curso').toLowerCase().replace(/\s+/g, '-')}.pdf`)
       } else {
         const a = document.createElement('a')
