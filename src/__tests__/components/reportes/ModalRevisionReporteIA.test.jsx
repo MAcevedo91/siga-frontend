@@ -121,8 +121,8 @@ describe('ModalRevisionReporteIA (HU 6.2, HU 6.3.2, HU 6.4.2)', () => {
       />
     )
 
-    expect(screen.getByText(/Asistente de Redacción Normativa RICE/i)).toBeInTheDocument()
-    expect(screen.getByText(/Human-in-the-Loop/i)).toBeInTheDocument()
+    expect(screen.getByText(/Informe de incidente/i)).toBeInTheDocument()
+    expect(screen.getByText(/IA \+ revisión/i)).toBeInTheDocument()
     expect(screen.getByText('1. Contexto Institucional y Espacial')).toBeInTheDocument()
     expect(screen.getByText('2. Hechos Objetivos Constatados')).toBeInTheDocument()
     expect(screen.getByText('3. Medidas Inmediatas Adoptadas')).toBeInTheDocument()

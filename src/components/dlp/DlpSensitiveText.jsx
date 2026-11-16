@@ -43,6 +43,7 @@ export function enmascararValor(valor, tipo) {
  */
 export default function DlpSensitiveText({
   value,
+  children,
   tipo = 'texto',
   placeholder = '—',
   className = '',
@@ -54,6 +55,14 @@ export default function DlpSensitiveText({
   const [isRevealed, setIsRevealed] = useState(false)
   const timerRef = useRef(null)
 
+  const rawValue = value !== undefined && value !== null
+    ? String(value)
+    : (children !== undefined && children !== null
+      ? (Array.isArray(children)
+        ? children.map((c) => (typeof c === 'string' || typeof c === 'number' ? c : '')).join('')
+        : String(children))
+      : '')
+
   const debeProtegerse = modoPrivacidad || alwaysBlur
 
   useEffect(() => {
@@ -62,7 +71,7 @@ export default function DlpSensitiveText({
     }
   }, [])
 
-  if (!value) {
+  if (!rawValue) {
     return <span className={`text-gray-400 italic ${className}`}>{placeholder}</span>
   }
 
@@ -83,8 +92,10 @@ export default function DlpSensitiveText({
   }
 
   if (!debeProtegerse) {
-    return <span className={className}>{value}</span>
+    return <span className={className}>{rawValue}</span>
   }
+
+  const textoMostrar = isRevealed ? rawValue : enmascararValor(rawValue, tipo)
 
   return (
     <span
@@ -105,10 +116,10 @@ export default function DlpSensitiveText({
     >
       <span
         className={`transition-all duration-200 ${
-          isRevealed ? 'filter-none font-medium' : 'blur-[4px] opacity-70 group-hover:opacity-90'
+          isRevealed ? 'filter-none font-medium' : 'blur-[3px] opacity-75 group-hover:opacity-90 font-mono tracking-wider'
         }`}
       >
-        {value}
+        {textoMostrar}
       </span>
 
       {showIcon && (

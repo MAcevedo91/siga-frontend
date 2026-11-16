@@ -69,6 +69,7 @@ export default function IncidenteDetallePage() {
   const [loadingReportes, setLoadingReportes] = useState(false)
   const [generandoBorradores, setGenerandoBorradores] = useState(false)
   const [modalReporteOpen, setModalReporteOpen] = useState(false)
+  const [reporteModalId, setReporteModalId] = useState(null)
   const [modalRiceOpen, setModalRiceOpen] = useState(false)
   const [descargandoPdfId, setDescargandoPdfId] = useState(null)
   const [copiedId, setCopiedId] = useState(false)
@@ -188,7 +189,8 @@ export default function IncidenteDetallePage() {
   }
 
   // Clic en botón principal de IA
-  const handleAbrirOGenerarReporte = async () => {
+  const handleAbrirOGenerarReporte = async (reporteId = null) => {
+    setReporteModalId(reporteId || null)
     if (reportes.length > 0) {
       setModalReporteOpen(true)
       return
@@ -239,6 +241,8 @@ export default function IncidenteDetallePage() {
 
   const handleReportesActualizados = (nuevosReportes) => {
     setReportes(nuevosReportes)
+    loadIncidente()
+    loadReportes()
   }
 
   const handleCopyId = () => {
@@ -275,13 +279,71 @@ export default function IncidenteDetallePage() {
     if (!estudiantes || estudiantes.length === 0) return `Incidente #${incidente?.id}`
     if (estudiantes.length === 1) {
       const e = estudiantes[0]
-      return `${e.nombre} ${e.apellido}`
+      return `${e.nombre || ''} ${e.apellido || ''}`.trim()
     }
     if (estudiantes.length === 2) {
-      return `${estudiantes[0].nombre} ${estudiantes[0].apellido} y ${estudiantes[1].nombre} ${estudiantes[1].apellido}`
+      return `${estudiantes[0].nombre || ''} ${estudiantes[0].apellido || ''}`.trim() + ' y ' + `${estudiantes[1].nombre || ''} ${estudiantes[1].apellido || ''}`.trim()
     }
-    return `${estudiantes[0].nombre} ${estudiantes[0].apellido}, ${estudiantes[1].nombre} ${estudiantes[1].apellido} y ${estudiantes.length - 2} más`
+    return `${estudiantes[0].nombre || ''} ${estudiantes[0].apellido || ''}`.trim() + `, ${estudiantes[1].nombre || ''} ${estudiantes[1].apellido || ''}`.trim() + ` y ${estudiantes.length - 2} más`
   }
+
+  // Renderizado del título humanizado protegido con DLP
+  const renderHumanizedTitle = (estudiantes = []) => {
+    if (!estudiantes || estudiantes.length === 0) return `Incidente #${incidente?.id}`
+    if (estudiantes.length === 1) {
+      const e = estudiantes[0]
+      return (
+        <DlpSensitiveText tipo="nombre">
+          {`${e.nombre || ''} ${e.apellido || ''}`.trim() || 'Estudiante'}
+        </DlpSensitiveText>
+      )
+    }
+    if (estudiantes.length === 2) {
+      return (
+        <span className="inline-flex items-center flex-wrap gap-x-2">
+          <DlpSensitiveText tipo="nombre">
+            {`${estudiantes[0].nombre || ''} ${estudiantes[0].apellido || ''}`.trim() || 'Estudiante 1'}
+          </DlpSensitiveText>
+          <span className="text-gray-400 font-normal">y</span>
+          <DlpSensitiveText tipo="nombre">
+            {`${estudiantes[1].nombre || ''} ${estudiantes[1].apellido || ''}`.trim() || 'Estudiante 2'}
+          </DlpSensitiveText>
+        </span>
+      )
+    }
+    return (
+      <span className="inline-flex items-center flex-wrap gap-x-1.5">
+        <DlpSensitiveText tipo="nombre">
+          {`${estudiantes[0].nombre || ''} ${estudiantes[0].apellido || ''}`.trim() || 'Estudiante 1'}
+        </DlpSensitiveText>
+        <span className="text-gray-400 font-normal">,</span>
+        <DlpSensitiveText tipo="nombre">
+          {`${estudiantes[1].nombre || ''} ${estudiantes[1].apellido || ''}`.trim() || 'Estudiante 2'}
+        </DlpSensitiveText>
+        <span className="text-gray-400 font-normal">y {estudiantes.length - 2} más</span>
+      </span>
+    )
+  }
+
+  // Paletas visuales diferenciadas y armónicas para las tarjetas de estudiantes
+  const CARD_PALETTES = [
+    {
+      card: 'border-indigo-200 bg-gradient-to-br from-indigo-50/70 via-indigo-50/30 to-white dark:from-indigo-950/40 dark:via-indigo-950/20 dark:to-gray-900 dark:border-indigo-800/80 hover:border-indigo-300 dark:hover:border-indigo-700',
+      avatar: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/70 dark:text-indigo-200',
+    },
+    {
+      card: 'border-emerald-200 bg-gradient-to-br from-emerald-50/70 via-emerald-50/30 to-white dark:from-emerald-950/40 dark:via-emerald-950/20 dark:to-gray-900 dark:border-emerald-800/80 hover:border-emerald-300 dark:hover:border-emerald-700',
+      avatar: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/70 dark:text-emerald-200',
+    },
+    {
+      card: 'border-purple-200 bg-gradient-to-br from-purple-50/70 via-purple-50/30 to-white dark:from-purple-950/40 dark:via-purple-950/20 dark:to-gray-900 dark:border-purple-800/80 hover:border-purple-300 dark:hover:border-purple-700',
+      avatar: 'bg-purple-100 text-purple-700 dark:bg-purple-900/70 dark:text-purple-200',
+    },
+    {
+      card: 'border-amber-200 bg-gradient-to-br from-amber-50/70 via-amber-50/30 to-white dark:from-amber-950/40 dark:via-amber-950/20 dark:to-gray-900 dark:border-amber-800/80 hover:border-amber-300 dark:hover:border-amber-700',
+      avatar: 'bg-amber-100 text-amber-800 dark:bg-amber-900/70 dark:text-amber-200',
+    },
+  ]
 
   const getGravedadBadgeStyle = (gravedad) => {
     switch (gravedad) {
@@ -373,7 +435,7 @@ export default function IncidenteDetallePage() {
           </div>
         </div>
 
-        {/* OVERLAY MODAL DE ESPERA DURANTE GENERACIÓN CON GEMINI */}
+        {/* OVERLAY MODAL DE ESPERA DURANTE GENERACIÓN ASISTIDA */}
         {generandoBorradores && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
             <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl text-center">
@@ -384,12 +446,11 @@ export default function IncidenteDetallePage() {
                 Asistente de Redacción Normativa RICE
               </h3>
               <p className="text-sm text-gray-600 mb-4 leading-relaxed">
-                <strong>Google Gemini Flash</strong> está redactando la propuesta objetiva de los informes,
-                aplicando sanitización <strong>DLP</strong> conforme a la Circular N° 482 y la Ley N° 19.628.
+                El sistema está redactando la propuesta pedagógica de los informes, resguardando la privacidad y confidencialidad de los estudiantes conforme a la Circular N° 482 y la Ley N° 19.628.
               </p>
               <div className="flex items-center justify-center gap-2 text-xs text-indigo-600 font-medium">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Procesando hechos objetivos y medidas pedagógicas...</span>
+                <span>Estructurando hechos objetivos y medidas formativas...</span>
               </div>
             </div>
           </div>
@@ -415,7 +476,9 @@ export default function IncidenteDetallePage() {
                 </span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
-                {getHumanizedTitle(listaEstudiantes)}
+                <DlpSensitiveText tipo="nombre" value={getHumanizedTitle(listaEstudiantes)}>
+                  {getHumanizedTitle(listaEstudiantes)}
+                </DlpSensitiveText>
               </h1>
               <p className="mt-1 text-xs sm:text-sm text-gray-500">
                 Registrado el {formatDate(incidente.fecha)} por {incidente.usuarios ? `${incidente.usuarios.nombre} ${incidente.usuarios.apellido} (${incidente.usuarios.rol})` : 'Personal institucional'}
@@ -535,7 +598,7 @@ export default function IncidenteDetallePage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                {listaEstudiantes.map((est) => {
+                {listaEstudiantes.map((est, idx) => {
                   const rep = reportes.find((r) => String(r.estudiante_id) === String(est.id))
                   const estudianteCompleto = {
                     ...est,
@@ -561,17 +624,23 @@ export default function IncidenteDetallePage() {
                   const apoderadoEmail = apoderadoTitular?.email
                   const isDownloadingThis = rep && descargandoPdfId === rep.id
                   const rolTexto = getRolEstudiante(estudianteCompleto)
-                  const cursoTexto = est.cursos?.nombre || est.curso || 'Sin curso'
+                  const cursoTexto =
+                    estudianteCompleto.cursos?.nombre ||
+                    estudianteCompleto.curso ||
+                    est.cursos?.nombre ||
+                    est.curso ||
+                    'Sin curso'
+                  const palette = CARD_PALETTES[idx % CARD_PALETTES.length]
 
                   return (
                     <div
-                      key={est.id || rep?.id}
-                      className="rounded-2xl border border-gray-200/90 dark:border-gray-700/80 bg-white dark:bg-gray-800 p-6 flex flex-col justify-between shadow-2xs hover:shadow-xs transition-shadow"
+                      key={est.id || rep?.id || idx}
+                      className={`rounded-2xl border ${palette.card} p-6 flex flex-col justify-between shadow-2xs hover:shadow-xs transition-all`}
                     >
                       <div>
                         {/* Fila superior: Avatar circular con iniciales + Badge de Estado */}
                         <div className="flex items-center justify-between gap-3">
-                          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold text-sm shrink-0">
+                          <div className={`flex h-11 w-11 items-center justify-center rounded-full ${palette.avatar} font-semibold text-sm shrink-0`}>
                             {getInitials(est.nombre, est.apellido)}
                           </div>
 
@@ -597,19 +666,32 @@ export default function IncidenteDetallePage() {
                           )}
                         </div>
 
-                        {/* Nombre del estudiante con protección DLP */}
-                        <h3 className="text-base font-bold text-gray-900 dark:text-white mt-4">
-                          <DlpSensitiveText tipo="nombre">{est.nombre} {est.apellido}</DlpSensitiveText>
-                        </h3>
+                        {/* Disposición vertical: Nombre, RUT, Rol, Curso */}
+                        <div className="mt-3.5 space-y-1">
+                          {/* 1. Nombre del estudiante con protección DLP */}
+                          <h3 className="text-base font-bold text-gray-900 dark:text-white leading-tight">
+                            <DlpSensitiveText tipo="nombre">
+                              {`${est.nombre || ''} ${est.apellido || ''}`.trim() || 'Estudiante'}
+                            </DlpSensitiveText>
+                          </h3>
 
-                        {/* Metadatos compactos: RUT · Rol · Curso */}
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center flex-wrap gap-1.5">
-                          <DlpSensitiveText tipo="rut">{est.rut || 'Sin RUT'}</DlpSensitiveText>
-                          <span>·</span>
-                          <span>{rolTexto}</span>
-                          <span>·</span>
-                          <span>{cursoTexto}</span>
-                        </p>
+                          {/* 2. RUT protegido con DLP */}
+                          <div className="text-xs text-gray-500 dark:text-gray-400 font-mono">
+                            <DlpSensitiveText tipo="rut">{est.rut || 'Sin RUT'}</DlpSensitiveText>
+                          </div>
+
+                          {/* 3. Rol formativo / procesal */}
+                          <div className="pt-0.5">
+                            <span className="inline-flex items-center text-xs font-semibold text-gray-700 dark:text-gray-300">
+                              {rolTexto}
+                            </span>
+                          </div>
+
+                          {/* 4. Curso oficial del estudiante */}
+                          <div className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                            {cursoTexto}
+                          </div>
+                        </div>
 
                         {/* Hecho / Observación individual con ícono de lápiz */}
                         <div className="mt-4 flex items-center justify-between gap-2 text-xs text-gray-700 dark:text-gray-300">
@@ -685,7 +767,10 @@ export default function IncidenteDetallePage() {
                             {canManageReportes && (
                               <button
                                 type="button"
-                                onClick={() => setModalReporteOpen(true)}
+                                onClick={() => {
+                                  setReporteModalId(rep.id)
+                                  setModalReporteOpen(true)
+                                }}
                                 aria-label="Revisar y Aprobar"
                                 className="flex-1 inline-flex items-center justify-center px-4 py-2 rounded-xl bg-gray-950 hover:bg-gray-900 dark:bg-white dark:text-gray-950 text-white text-xs font-semibold transition-colors shadow-2xs"
                               >
@@ -697,7 +782,7 @@ export default function IncidenteDetallePage() {
                           canManageReportes && (
                             <button
                               type="button"
-                              onClick={handleAbrirOGenerarReporte}
+                              onClick={() => handleAbrirOGenerarReporte(null)}
                               disabled={generandoBorradores}
                               aria-label="Redactar Informe con IA"
                               className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-gray-950 hover:bg-gray-900 dark:bg-white dark:text-gray-950 text-white text-xs font-semibold transition-colors shadow-2xs"
@@ -895,11 +980,11 @@ export default function IncidenteDetallePage() {
                       <div className="flex items-center justify-between gap-2 mb-1.5">
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-bold text-gray-900">
-                            {est.nombre} {est.apellido}
+                            <DlpSensitiveText tipo="nombre">{`${est.nombre || ''} ${est.apellido || ''}`.trim() || 'Estudiante'}</DlpSensitiveText>
                           </span>
                           {est.rut && (
                             <span className="font-mono text-[10px] text-gray-500">
-                              ({est.rut})
+                              (<DlpSensitiveText tipo="rut">{est.rut}</DlpSensitiveText>)
                             </span>
                           )}
                           {est.es_victima !== null && est.es_victima !== undefined && (
@@ -925,7 +1010,7 @@ export default function IncidenteDetallePage() {
                             [est.id]: e.target.value,
                           }))
                         }
-                        placeholder={`Observación individual de derivación para ${est.nombre} (ej: derivado a psicólogo por contención emocional)...`}
+                        placeholder={`Observación individual de derivación para ${est.nombre || 'estudiante'} (ej: derivado a psicólogo por contención emocional)...`}
                         className="w-full rounded-lg border border-gray-300 p-2 text-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
                       />
                     </div>
@@ -980,7 +1065,7 @@ export default function IncidenteDetallePage() {
                   Observación Individual de Derivación
                 </h3>
                 <p className="text-xs text-gray-600 mt-0.5">
-                  Estudiante: <strong>{estudianteObservacionModal.nombre} {estudianteObservacionModal.apellido}</strong> {estudianteObservacionModal.rut ? `(${estudianteObservacionModal.rut})` : ''}
+                  Estudiante: <strong><DlpSensitiveText tipo="nombre">{`${estudianteObservacionModal.nombre || ''} ${estudianteObservacionModal.apellido || ''}`.trim() || 'Estudiante'}</DlpSensitiveText></strong> {estudianteObservacionModal.rut ? (<span className="font-mono text-gray-500">(<DlpSensitiveText tipo="rut">{estudianteObservacionModal.rut}</DlpSensitiveText>)</span>) : ''}
                 </p>
               </div>
               <button
@@ -1031,12 +1116,16 @@ export default function IncidenteDetallePage() {
         </div>
       )}
 
-      {/* MODAL DE REVISIÓN MODULAR ASISTIDA POR IA */}
+      {/* MODAL DE REVISIÓN ASISTIDA */}
       <ModalRevisionReporteIA
         isOpen={modalReporteOpen}
-        onClose={() => setModalReporteOpen(false)}
+        onClose={() => {
+          setModalReporteOpen(false)
+          setReporteModalId(null)
+        }}
         incidente={incidente}
         reportes={reportes}
+        initialReporteId={reporteModalId}
         currentUser={user}
         onReportesActualizados={handleReportesActualizados}
       />

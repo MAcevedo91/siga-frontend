@@ -1,6 +1,15 @@
 import api from './api'
 
 /**
+ * Obtiene la lista completa de cursos del establecimiento.
+ * GET /api/v1/cursos
+ */
+export const getCursos = async (params = {}) => {
+  const response = await api.get('/cursos', { params })
+  return response.data.data
+}
+
+/**
  * Obtiene la lista ordenada de niveles disponibles en el período escolar activo.
  * GET /api/v1/cursos/niveles
  * @returns {Promise<string[]>} Ej: ["1° Básico", "2° Básico", ...]

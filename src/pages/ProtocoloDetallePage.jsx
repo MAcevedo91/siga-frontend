@@ -13,6 +13,7 @@ import { getAntecedentesEscalada } from '@/services/estudiantesService'
 import ChecklistProtocolo from '@/components/protocolos/ChecklistProtocolo'
 import AlertaEscaladaBanner from '@/components/shared/AlertaEscaladaBanner'
 import AsistenteNormativoModal from '@/components/rice/AsistenteNormativoModal'
+import DlpSensitiveText from '@/components/dlp/DlpSensitiveText'
 import { useAuth } from '@/store/useAuthStore'
 import { formatDate } from '@/utils/formatDate'
 import toast from 'react-hot-toast'
@@ -343,17 +344,6 @@ export default function ProtocoloDetallePage() {
 
               <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                 <span className="inline-flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5 text-indigo-500" />
-                  <span className="font-semibold text-gray-800 dark:text-gray-200">
-                    Estudiante: {protocolo.estudiante?.nombre} {protocolo.estudiante?.apellido}
-                  </span>
-                  {protocolo.estudiante?.curso && (
-                    <span className="text-gray-400">
-                      ({typeof protocolo.estudiante?.curso === 'object' ? protocolo.estudiante?.curso?.nombre : protocolo.estudiante?.curso})
-                    </span>
-                  )}
-                </span>
-                <span className="inline-flex items-center gap-1.5">
                   <Calendar className="w-3.5 h-3.5 text-gray-400" />
                   <span>Apertura: {formatDate(fechaApertura)}</span>
                 </span>
@@ -451,16 +441,19 @@ export default function ProtocoloDetallePage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-bold text-gray-900 dark:text-white truncate">
-                    {protocolo.estudiante?.nombre} {protocolo.estudiante?.apellido}
+                    <DlpSensitiveText tipo="nombre">
+                      {`${protocolo.estudiante?.nombre || ''} ${protocolo.estudiante?.apellido || ''}`.trim() || 'Estudiante'}
+                    </DlpSensitiveText>
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                    {typeof protocolo.estudiante?.curso === 'object'
-                      ? protocolo.estudiante?.curso?.nombre
-                      : protocolo.estudiante?.curso || 'Sin curso asignado'}
+                    {protocolo.estudiante?.cursos?.nombre ||
+                      protocolo.estudiante?.curso?.nombre ||
+                      (typeof protocolo.estudiante?.curso === 'string' ? protocolo.estudiante.curso : null) ||
+                      'Sin curso asignado'}
                   </p>
                   {protocolo.estudiante?.rut && (
                     <p className="text-[11px] text-gray-400 dark:text-gray-500 font-mono mt-0.5">
-                      RUT: {protocolo.estudiante.rut}
+                      RUT: <DlpSensitiveText tipo="rut">{protocolo.estudiante.rut}</DlpSensitiveText>
                     </p>
                   )}
                 </div>

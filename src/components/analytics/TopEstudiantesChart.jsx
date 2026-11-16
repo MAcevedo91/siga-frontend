@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { Users, ChevronRight, ExternalLink } from 'lucide-react'
+import DlpSensitiveText from '@/components/dlp/DlpSensitiveText'
 
 const AVATAR_COLORS = [
   'bg-purple-200 text-purple-800 dark:bg-purple-950/80 dark:text-purple-300',
@@ -115,7 +116,9 @@ export default function TopEstudiantesChart({ data = [], loading = false }) {
                       </div>
                       <div className="min-w-0">
                         <p className="font-semibold text-gray-900 dark:text-white truncate">
-                          {est.nombre} {est.apellido}
+                          <DlpSensitiveText tipo="nombre">
+                            {`${est.nombre || ''} ${est.apellido || ''}`.trim() || 'Estudiante'}
+                          </DlpSensitiveText>
                         </p>
                       </div>
                     </div>

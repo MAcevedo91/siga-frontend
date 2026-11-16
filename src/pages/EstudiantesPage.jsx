@@ -15,6 +15,7 @@ import TableSkeleton from '@/components/shared/TableSkeleton'
 import Breadcrumbs from '@/components/shared/Breadcrumbs'
 import SearchBar from '@/components/search/SearchBar'
 import RiskBadge from '@/components/risk/RiskBadge'
+import DlpSensitiveText from '@/components/dlp/DlpSensitiveText'
 import { Search, Upload, FileDown, FileText, X, Filter, ArrowUpRight, UserRound, Calendar, GraduationCap, FileSpreadsheet, Mail, LayoutGrid, List, Puzzle, Users, ShieldAlert, ArrowLeftRight, Network } from 'lucide-react'
 import { exportEstudiantesToExcel, exportEstudiantesToPDF } from '@/utils/exportUtils'
 import api from '@/services/api'
@@ -983,9 +984,13 @@ export default function EstudiantesPageMejorada() {
                     {/* Datos del Estudiante */}
                     <div className="mt-4">
                       <h4 className="text-base font-bold text-gray-900 group-hover:text-blue-600 transition-colors dark:text-white dark:group-hover:text-blue-400">
-                        {estudiante.nombre} {estudiante.apellido}
+                        <DlpSensitiveText tipo="nombre">
+                          {`${estudiante.nombre || ''} ${estudiante.apellido || ''}`.trim() || 'Estudiante'}
+                        </DlpSensitiveText>
                       </h4>
-                      <p className="font-mono text-xs text-gray-500 mt-0.5 dark:text-gray-400">{estudiante.rut}</p>
+                      <p className="font-mono text-xs text-gray-500 mt-0.5 dark:text-gray-400">
+                        <DlpSensitiveText tipo="rut">{estudiante.rut}</DlpSensitiveText>
+                      </p>
                     </div>
 
                     {/* Información adicional */}
@@ -1073,11 +1078,15 @@ export default function EstudiantesPageMejorada() {
                     return (
                       <tr key={estudiante.id} className="hover:bg-gray-50/80 transition-colors dark:hover:bg-gray-750">
                         <td className="whitespace-nowrap px-6 py-4">
-                          <div className="text-sm font-mono text-gray-900 dark:text-gray-200">{estudiante.rut}</div>
+                          <div className="text-sm font-mono text-gray-900 dark:text-gray-200">
+                            <DlpSensitiveText tipo="rut">{estudiante.rut}</DlpSensitiveText>
+                          </div>
                         </td>
                         <td className="whitespace-nowrap px-6 py-4">
                           <div className="text-sm font-bold text-gray-900 dark:text-white">
-                            {estudiante.nombre} {estudiante.apellido}
+                            <DlpSensitiveText tipo="nombre">
+                              {`${estudiante.nombre || ''} ${estudiante.apellido || ''}`.trim() || 'Estudiante'}
+                            </DlpSensitiveText>
                           </div>
                         </td>
                         <td className="whitespace-nowrap px-6 py-4">

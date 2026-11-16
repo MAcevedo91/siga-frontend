@@ -4,6 +4,7 @@ import { getProtocolos, getTiposProtocolo } from '@/services/protocolosService'
 import { useAuth } from '@/store/useAuthStore'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { formatDate } from '@/utils/formatDate'
+import DlpSensitiveText from '@/components/dlp/DlpSensitiveText'
 import { ShieldAlert, ShieldCheck, Clock, CheckCircle, AlertTriangle, Calendar, User, FileText, Plus, Filter, X } from 'lucide-react'
 import { ROLES_GESTION_CASOS } from '@/constants/roles'
 
@@ -270,7 +271,9 @@ export default function ProtocolosPage() {
                       </td>
                       <td className="whitespace-nowrap px-6 py-4">
                         <div className="text-sm font-medium text-gray-900">
-                          {protocolo.estudiante?.nombre} {protocolo.estudiante?.apellido}
+                          <DlpSensitiveText tipo="nombre">
+                            {`${protocolo.estudiante?.nombre || ''} ${protocolo.estudiante?.apellido || ''}`.trim() || 'Estudiante'}
+                          </DlpSensitiveText>
                         </div>
                       </td>
                       <td className="whitespace-nowrap px-6 py-4">
