@@ -109,7 +109,9 @@ describe('DLP Component: PrivacyShieldOverlay', () => {
     usePrivacyStore.setState({ pantallaProtegida: true })
     render(<PrivacyShieldOverlay />)
 
-    expect(screen.getByTestId('privacy-shield-overlay')).toBeInTheDocument()
+    const overlay = screen.getByTestId('privacy-shield-overlay')
+    expect(overlay).toBeInTheDocument()
+    expect(overlay).toHaveClass('z-[100]')
     expect(screen.getByText('Pantalla Protegida por Privacidad')).toBeInTheDocument()
   })
 

@@ -88,7 +88,7 @@ export default function PrivacyShieldOverlay() {
       aria-labelledby="privacy-title"
       data-testid="privacy-shield-overlay"
       onClick={handleResume}
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 cursor-pointer select-none privacy-shield-root privacy-shield-backdrop ${
+      className={`fixed inset-0 z-[100] flex items-center justify-center p-4 cursor-pointer select-none privacy-shield-root privacy-shield-backdrop ${
         isUnlocking ? 'is-open' : ''
       }`}
     >

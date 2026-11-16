@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import DashboardLayout from '@/components/layout/DashboardLayout'
@@ -199,5 +199,33 @@ describe('DashboardLayout - Navegación y Sidebar', () => {
     // Exclusivas de Administrador
     expect(screen.queryByText('Usuarios')).not.toBeInTheDocument()
     expect(screen.queryByText('Configuración')).not.toBeInTheDocument()
+  })
+
+  it('permite colapsar el sidebar con el botón toggle y reduce su tamaño', () => {
+    useAuth.mockReturnValue({
+      user: {
+        id: 'user-admin',
+        nombre: 'Administrador Demo',
+        rol: 'Administrador',
+        tenant_id: 'tenant-demo',
+      },
+      logout: vi.fn(),
+    })
+
+    const { container } = render(
+      <MemoryRouter initialEntries={['/dashboard']}>
+        <DashboardLayout>
+          <div>Vista Admin</div>
+        </DashboardLayout>
+      </MemoryRouter>
+    )
+
+    const sidebar = screen.getByTestId('sidebar-nav')
+    expect(sidebar).toHaveClass('w-64')
+
+    const toggleBtn = screen.getByLabelText('Colapsar barra lateral')
+    fireEvent.click(toggleBtn)
+
+    expect(sidebar).toHaveClass('w-[76px]')
   })
 })
