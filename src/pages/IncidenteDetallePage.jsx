@@ -24,8 +24,10 @@ import {
   ChevronRight,
   Edit2,
   MessageSquare,
+  Pencil,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import DlpSensitiveText from '@/components/dlp/DlpSensitiveText'
 import {
   getIncidenteById,
   updateEstadoIncidente,
@@ -254,6 +256,20 @@ export default function IncidenteDetallePage() {
     return `${n}${a}` || 'AL'
   }
 
+  // Helper para obtener rol sensible al género (ej. Agresora / Agresor / Víctima)
+  const getRolEstudiante = (est) => {
+    if (est?.es_victima === true) return 'Víctima'
+    if (est?.es_victima === false) {
+      const primerNombre = (est.nombre || '').trim().split(' ')[0]
+      const esFemenino =
+        est.genero === 'Femenino' ||
+        est.sexo === 'F' ||
+        (primerNombre && /[aá]$/i.test(primerNombre))
+      return esFemenino ? 'Agresora' : 'Agresor'
+    }
+    return 'Involucrado'
+  }
+
   // Helper para humanizar el encabezado según los alumnos involucrados
   const getHumanizedTitle = (estudiantes = []) => {
     if (!estudiantes || estudiantes.length === 0) return `Incidente #${incidente?.id}`
@@ -475,32 +491,19 @@ export default function IncidenteDetallePage() {
               </div>
             </section>
 
-            {/* TARJETA 3: ESTUDIANTES E INFORMES OFICIALES INDIVIDUALES (UNIFICADA) */}
-            <section className="rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50/40 via-teal-50/20 to-white p-5 sm:p-6 shadow-xs">
-              <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
+            {/* SECCIÓN: INFORMES OFICIALES INDIVIDUALES (MINIMALISTA) */}
+            <section className="space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                    <FileText className="h-5 w-5 text-emerald-600" />
-                    Informes Normativos Oficiales (RICE)
+                  <h2 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
+                    Informes oficiales
                   </h2>
-                  <div className="flex flex-wrap items-center gap-2 mt-1">
-                    <p className="text-xs text-gray-600">
-                      Un informe normativo con validez legal individual por cada estudiante involucrado (Circular N° 482 / Ley N° 19.628).
-                    </p>
-                    {listaEstudiantes.length > 0 && (
-                      listaEstudiantes.every((est) => reportes.some((r) => String(r.estudiante_id) === String(est.id) && r.estado === 'Aprobado')) ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-0.5 text-[11px] font-bold">
-                          <CheckCircle className="h-3 w-3 text-emerald-600" />
-                          Todos los PDFs Validados ({listaEstudiantes.length}/{listaEstudiantes.length})
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 text-amber-800 border border-amber-300 px-2.5 py-0.5 text-[11px] font-semibold">
-                          <Clock className="h-3 w-3 text-amber-600" />
-                          {listaEstudiantes.filter((est) => reportes.some((r) => String(r.estudiante_id) === String(est.id) && r.estado === 'Aprobado')).length} de {listaEstudiantes.length} PDFs Validados
-                        </span>
-                      )
-                    )}
-                  </div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                    {listaEstudiantes.filter((est) => reportes.some((r) => String(r.estudiante_id) === String(est.id) && r.estado === 'Aprobado')).length} de {listaEstudiantes.length} validados
+                  </p>
+                  <span className="sr-only">
+                    Informes Normativos Oficiales (RICE)
+                  </span>
                 </div>
 
                 {canManageReportes && (
@@ -508,29 +511,30 @@ export default function IncidenteDetallePage() {
                     type="button"
                     onClick={handleAbrirOGenerarReporte}
                     disabled={generandoBorradores || loadingReportes}
-                    className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs sm:text-sm font-semibold shadow-xs transition-all ${
-                      totalReportes > 0
-                        ? 'bg-gradient-to-r from-blue-700 to-indigo-700 text-white hover:from-blue-800 hover:to-indigo-800'
-                        : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 ring-2 ring-purple-300 ring-offset-1'
-                    } disabled:opacity-60 disabled:cursor-not-allowed`}
-                  >
-                    {generandoBorradores ? (
-                      <Loader2 className="h-4 w-4 animate-spin text-white" />
-                    ) : (
-                      <Sparkles className="h-4 w-4 text-amber-300 animate-pulse" />
-                    )}
-                    <span>
-                      {generandoBorradores
+                    aria-label={
+                      generandoBorradores
                         ? 'Redactando con Gemini...'
                         : totalReportes > 0
                         ? `Ver / Editar Informes Oficiales (${totalReportes})`
-                        : 'Generar Informe Oficial con IA'}
+                        : 'Generar Informe Oficial con IA'
+                    }
+                    className="inline-flex items-center gap-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700/80 transition-colors shadow-2xs disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {generandoBorradores && (
+                      <Loader2 className="h-4 w-4 animate-spin text-gray-600 dark:text-gray-300" />
+                    )}
+                    <span>
+                      {generandoBorradores
+                        ? 'Redactando...'
+                        : totalReportes > 0
+                        ? 'Editar informes'
+                        : 'Generar informes con IA'}
                     </span>
                   </button>
                 )}
               </div>
 
-              <div className="mt-4 space-y-3.5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 {listaEstudiantes.map((est) => {
                   const rep = reportes.find((r) => String(r.estudiante_id) === String(est.id))
                   const estudianteCompleto = {
@@ -555,222 +559,155 @@ export default function IncidenteDetallePage() {
 
                   const apoderadoTitular = estudianteCompleto.apoderados?.find((a) => a.es_titular) || estudianteCompleto.apoderados?.[0]
                   const apoderadoEmail = apoderadoTitular?.email
-                  const emailEnviado = !!rep?.email_apoderado_enviado
-                  const fechaEnvioEmail = rep?.fecha_envio_email
                   const isDownloadingThis = rep && descargandoPdfId === rep.id
+                  const rolTexto = getRolEstudiante(estudianteCompleto)
+                  const cursoTexto = est.cursos?.nombre || est.curso || 'Sin curso'
 
                   return (
                     <div
                       key={est.id || rep?.id}
-                      className={`rounded-xl border p-4 transition-all shadow-xs bg-white ${
-                        esAprobado
-                          ? 'border-emerald-200 ring-1 ring-emerald-100'
-                          : esBorrador
-                          ? 'border-amber-200 ring-1 ring-amber-100'
-                          : 'border-gray-200'
-                      }`}
+                      className="rounded-2xl border border-gray-200/90 dark:border-gray-700/80 bg-white dark:bg-gray-800 p-6 flex flex-col justify-between shadow-2xs hover:shadow-xs transition-shadow"
                     >
-                      {/* FILA DE IDENTIFICACIÓN Y ESTADO DEL INFORME */}
-                      <div className="flex flex-wrap items-center justify-between gap-2.5">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700 font-bold text-xs border border-slate-200 shrink-0">
+                      <div>
+                        {/* Fila superior: Avatar circular con iniciales + Badge de Estado */}
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold text-sm shrink-0">
                             {getInitials(est.nombre, est.apellido)}
                           </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-bold text-gray-900 text-sm">
-                                {est.nombre} {est.apellido}
-                              </span>
-                              {est.rut && (
-                                <span className="font-mono text-xs text-gray-500">
-                                  ({est.rut})
-                                </span>
-                              )}
-                              {est.es_pie && (
-                                <span className="rounded-full bg-purple-100 text-purple-700 px-2 py-0.5 font-semibold text-[10px]">
-                                  PIE
-                                </span>
-                              )}
-                              {est.es_victima !== null && est.es_victima !== undefined && (
-                                <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                                  est.es_victima
-                                    ? 'bg-blue-100 text-blue-700'
-                                    : 'bg-rose-100 text-rose-700'
-                                }`}>
-                                  {est.es_victima ? 'Víctima' : 'Involucrado / Agresor'}
-                                </span>
-                              )}
-                            </div>
-                            <span className="text-xs text-gray-500">
-                              Curso: {est.cursos?.nombre || est.curso || 'No asignado'}
-                            </span>
-                          </div>
-                        </div>
 
-                        {esAprobado ? (
-                          <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 border border-emerald-300 px-3 py-1 text-xs font-semibold text-emerald-900">
-                            <CheckCircle className="h-3.5 w-3.5 text-emerald-600" />
-                            <span>Informe Oficial Aprobado por {nombreAprobador} el {fechaAprobacion}</span>
-                          </div>
-                        ) : esBorrador ? (
-                          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 border border-amber-300 px-3 py-1 text-xs font-semibold text-amber-800">
-                            <Clock className="h-3.5 w-3.5" /> Borrador en revisión
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 border border-gray-300 px-2.5 py-0.5 text-xs font-medium text-gray-600">
-                            <HelpCircle className="h-3.5 w-3.5 text-gray-400" /> Sin borrador redactado
-                          </span>
-                        )}
-                      </div>
-
-                      {/* OBSERVACIÓN INDIVIDUAL DE DERIVACIÓN (HALLAZGO 5) */}
-                      <div className="mt-3 pt-3 border-t border-slate-100">
-                        {estudianteCompleto.observacion ? (
-                          <div className="rounded-xl bg-blue-50/80 border border-blue-200/80 p-3 flex flex-col sm:flex-row sm:items-start justify-between gap-3 text-xs">
-                            <div className="space-y-1 flex-1">
-                              <span className="font-bold text-blue-900 flex items-center gap-1.5 text-xs">
-                                <Send className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                                Observación Individual de Derivación:
-                              </span>
-                              <p className="text-blue-950 whitespace-pre-wrap leading-relaxed text-xs">
-                                {estudianteCompleto.observacion}
-                              </p>
+                          {esAprobado ? (
+                            <div
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400"
+                              title={`Informe Oficial Aprobado por ${nombreAprobador} el ${fechaAprobacion}`}
+                            >
+                              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                              <span>Aprobado</span>
+                              <span className="sr-only">Informe Oficial Aprobado por {nombreAprobador} el {fechaAprobacion}</span>
                             </div>
-                            {canEdit && (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setEstudianteObservacionModal(estudianteCompleto)
-                                  setTextoObservacionIndividual(estudianteCompleto.observacion || '')
-                                }}
-                                className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-700 hover:text-blue-900 hover:underline shrink-0 self-start"
-                                title="Editar observación de derivación de este estudiante"
-                              >
-                                <Edit2 className="w-3 h-3" />
-                                Editar Observación
-                              </button>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="flex flex-wrap items-center justify-between gap-2 text-xs py-1">
-                            <span className="flex items-center gap-1.5 text-gray-400">
-                              <MessageSquare className="w-3.5 h-3.5 text-gray-400" />
-                              Sin observación individual de derivación.
-                            </span>
-                            {canEdit && (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setEstudianteObservacionModal(estudianteCompleto)
-                                  setTextoObservacionIndividual('')
-                                }}
-                                className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:underline"
-                              >
-                                + Agregar Observación Individual
-                              </button>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* FEEDBACK Y ACCIONES ESPECÍFICAS DE ESTE ALUMNO */}
-                      {esAprobado ? (
-                        <div className="mt-3 pt-3 border-t border-gray-100 flex flex-wrap items-center justify-between gap-3 text-xs">
-                          {emailEnviado ? (
-                            <div className="flex items-center gap-2 text-emerald-900 font-medium">
-                              <MailCheck className="h-4 w-4 text-emerald-600 shrink-0" />
-                              <span>
-                                Enviado a <strong>{apoderadoEmail || 'correo del apoderado'}</strong> el{' '}
-                                {formatDateTime(fechaEnvioEmail) || formatDate(fechaEnvioEmail)}
-                              </span>
-                            </div>
-                          ) : apoderadoEmail ? (
-                            <div className="flex items-center gap-2 text-blue-900 font-medium">
-                              <Clock className="h-4 w-4 text-blue-600 shrink-0" />
-                              <span>Despacho de correo en proceso para {apoderadoEmail}</span>
+                          ) : esBorrador ? (
+                            <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-700 dark:text-amber-500">
+                              <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                              <span>En revisión</span>
                             </div>
                           ) : (
-                            <div className="flex items-center gap-2 text-amber-900 font-medium">
-                              <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
-                              <span>Apoderado sin correo registrado. Imprimir copia para citación presencial.</span>
+                            <div className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-400 dark:text-gray-500">
+                              <span className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600"></span>
+                              <span>Sin borrador</span>
                             </div>
                           )}
+                        </div>
 
-                          <div className="flex items-center gap-2 ml-auto">
+                        {/* Nombre del estudiante con protección DLP */}
+                        <h3 className="text-base font-bold text-gray-900 dark:text-white mt-4">
+                          <DlpSensitiveText tipo="nombre">{est.nombre} {est.apellido}</DlpSensitiveText>
+                        </h3>
+
+                        {/* Metadatos compactos: RUT · Rol · Curso */}
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center flex-wrap gap-1.5">
+                          <DlpSensitiveText tipo="rut">{est.rut || 'Sin RUT'}</DlpSensitiveText>
+                          <span>·</span>
+                          <span>{rolTexto}</span>
+                          <span>·</span>
+                          <span>{cursoTexto}</span>
+                        </p>
+
+                        {/* Hecho / Observación individual con ícono de lápiz */}
+                        <div className="mt-4 flex items-center justify-between gap-2 text-xs text-gray-700 dark:text-gray-300">
+                          <span className="truncate" title={estudianteCompleto.observacion || 'Sin observación registrada'}>
+                            {estudianteCompleto.observacion || 'Sin observación registrada'}
+                          </span>
+                          {canEdit && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEstudianteObservacionModal(estudianteCompleto)
+                                setTextoObservacionIndividual(estudianteCompleto.observacion || '')
+                              }}
+                              className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors p-1 -m-1 rounded-md shrink-0"
+                              title={estudianteCompleto.observacion ? 'Editar observación individual' : 'Agregar observación individual'}
+                              aria-label={estudianteCompleto.observacion ? 'Editar Observación' : '+ Agregar Observación Individual'}
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                              <span className="sr-only">
+                                {estudianteCompleto.observacion ? 'Editar Observación' : '+ Agregar Observación Individual'}
+                              </span>
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Advertencia apoderado sin correo */}
+                        {!apoderadoEmail ? (
+                          <p className="text-xs font-medium text-amber-700 dark:text-amber-500 flex items-center gap-1.5 mt-2">
+                            <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                            <span>Apoderado sin correo</span>
+                          </p>
+                        ) : (
+                          <span className="sr-only">{apoderadoEmail}</span>
+                        )}
+                      </div>
+
+                      {/* Botones inferiores */}
+                      <div className="mt-6 flex items-center gap-3">
+                        {esAprobado ? (
+                          <>
                             <button
                               type="button"
                               onClick={() => handleDescargarReportePdf(reporteConEstudiante || rep, true)}
                               disabled={isDownloadingThis}
-                              className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
-                              title="Abrir PDF oficial en nueva pestaña para lectura o impresión"
+                              aria-label="Ver en pestaña"
+                              className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
                             >
-                              <ExternalLink className="h-3.5 w-3.5 text-gray-500" />
-                              Ver en pestaña
+                              Ver
                             </button>
                             <button
                               type="button"
                               onClick={() => handleDescargarReportePdf(reporteConEstudiante || rep, false)}
                               disabled={isDownloadingThis}
-                              className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-700 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-emerald-800 transition-colors disabled:opacity-50"
+                              aria-label="Descargar PDF Oficial"
+                              className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-gray-950 hover:bg-gray-900 dark:bg-white dark:text-gray-950 text-white text-xs font-semibold transition-colors disabled:opacity-50 shadow-2xs"
                             >
-                              {isDownloadingThis ? (
-                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                              ) : (
-                                <Download className="h-3.5 w-3.5" />
-                              )}
-                              Descargar PDF Oficial
+                              {isDownloadingThis && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                              <span>Descargar PDF</span>
                             </button>
-                          </div>
-                        </div>
-                      ) : esBorrador ? (
-                        <div className="mt-3 pt-3 border-t border-amber-100 flex flex-wrap items-center justify-between gap-3 text-xs text-amber-800">
-                          <p className="flex items-center gap-1.5 font-medium">
-                            <Clock className="w-4 h-4 text-amber-600 shrink-0" />
-                            <span>Informe en borrador. Requiere validación de Convivencia Escolar antes de oficializar.</span>
-                          </p>
-
-                          <div className="flex items-center gap-2 ml-auto">
+                          </>
+                        ) : esBorrador ? (
+                          <>
                             <button
                               type="button"
                               onClick={() => handleDescargarReportePdf(reporteConEstudiante || rep, true, true)}
                               disabled={isDownloadingThis}
-                              className="inline-flex items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-xs font-semibold text-amber-900 hover:bg-amber-100 transition-colors shadow-2xs disabled:opacity-50"
-                              title="Previsualizar PDF para validar redacción antes de firmar formalmente"
+                              aria-label="Validar / Previsualizar PDF"
+                              className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
                             >
-                              {isDownloadingThis ? (
-                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                              ) : (
-                                <ExternalLink className="h-3.5 w-3.5 text-amber-700" />
-                              )}
-                              <span>Validar / Previsualizar PDF</span>
+                              {isDownloadingThis && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />}
+                              Previsualizar
                             </button>
                             {canManageReportes && (
                               <button
                                 type="button"
                                 onClick={() => setModalReporteOpen(true)}
-                                className="inline-flex items-center gap-1 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 transition-colors shadow-xs"
+                                aria-label="Revisar y Aprobar"
+                                className="flex-1 inline-flex items-center justify-center px-4 py-2 rounded-xl bg-gray-950 hover:bg-gray-900 dark:bg-white dark:text-gray-950 text-white text-xs font-semibold transition-colors shadow-2xs"
                               >
-                                <span>Revisar y Aprobar</span>
+                                Revisar y aprobar
                               </button>
                             )}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="mt-3 pt-3 border-t border-gray-100 flex flex-wrap items-center justify-between gap-3 text-xs text-gray-500">
-                          <p>Aún no se ha redactado el informe normativo para este estudiante.</p>
-                          {canManageReportes && (
+                          </>
+                        ) : (
+                          canManageReportes && (
                             <button
                               type="button"
                               onClick={handleAbrirOGenerarReporte}
                               disabled={generandoBorradores}
-                              className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-50 border border-indigo-200 px-3 py-1.5 text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition-colors"
+                              aria-label="Redactar Informe con IA"
+                              className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-gray-950 hover:bg-gray-900 dark:bg-white dark:text-gray-950 text-white text-xs font-semibold transition-colors shadow-2xs"
                             >
-                              <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
-                              <span>Redactar Informe con IA</span>
+                              {generandoBorradores && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                              <span>Generar borrador</span>
                             </button>
-                          )}
-                        </div>
-                      )}
+                          )
+                        )}
+                      </div>
                     </div>
                   )
                 })}
