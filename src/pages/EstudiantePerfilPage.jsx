@@ -28,6 +28,7 @@ import {
 } from 'lucide-react'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import Breadcrumbs from '@/components/shared/Breadcrumbs'
+import DlpSensitiveText from '@/components/dlp/DlpSensitiveText'
 import { useAuth } from '@/store/useAuthStore'
 import { ROLES_GESTION_CASOS } from '@/constants/roles'
 import ReasignarCursoModal from '@/components/estudiantes/ReasignarCursoModal'
@@ -214,7 +215,7 @@ export default function EstudiantePerfilPage() {
               <div className="space-y-1.5">
                 <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                   <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                    {estudiante.nombre} {estudiante.apellido}
+                    <DlpSensitiveText value={`${estudiante.nombre} ${estudiante.apellido}`} tipo="nombre" />
                   </h1>
 
                   {estudiante.estado_matricula === 'Egresado' && (
@@ -239,7 +240,7 @@ export default function EstudiantePerfilPage() {
 
                 <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-indigo-200">
                   <span className="font-mono bg-white/10 px-2.5 py-0.5 rounded-md border border-white/15 text-white">
-                    RUT: {estudiante.rut}
+                    RUT: <DlpSensitiveText value={estudiante.rut} tipo="rut" />
                   </span>
                   <span>•</span>
                   <span className="font-semibold text-white">

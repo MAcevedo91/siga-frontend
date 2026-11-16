@@ -6,6 +6,9 @@ import { useNotifications } from '@/hooks/useNotifications'
 import NotificationBadge from '@/components/notifications/NotificationBadge'
 import NotificationCenter from '@/components/notifications/NotificationCenter'
 import ThemeToggle from '@/components/ThemeToggle'
+import ForensicWatermark from '@/components/dlp/ForensicWatermark'
+import PrivacyShieldOverlay from '@/components/dlp/PrivacyShieldOverlay'
+import { usePrivacyStore } from '@/store/usePrivacyStore'
 import {
   Scale,
   LayoutDashboard,
@@ -21,6 +24,8 @@ import {
   Sparkles,
   Calendar,
   CalendarCheck,
+  Eye,
+  EyeOff,
 } from 'lucide-react'
 import AsistenteNormativoModal from '@/components/rice/AsistenteNormativoModal'
 import NavbarStudentSearch from '@/components/layout/NavbarStudentSearch'
@@ -104,6 +109,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 
 const Header = ({ setIsOpen, unreadCount, onNotificationClick, onOpenAsistenteRice }) => {
   const { user, logout } = useAuth()
+  const { modoPrivacidad, toggleModoPrivacidad } = usePrivacyStore()
   const navigate = useNavigate()
 
   const handleLogout = () => {
@@ -128,7 +134,33 @@ const Header = ({ setIsOpen, unreadCount, onNotificationClick, onOpenAsistenteRi
         <NavbarStudentSearch />
       </div>
 
-      <div className="flex items-center gap-3 sm:gap-4">
+      <div className="flex items-center gap-2 sm:gap-3">
+        {/* Botón DLP: Modo Privacidad Anti-Shoulder Surfing */}
+        <button
+          type="button"
+          onClick={toggleModoPrivacidad}
+          title={
+            modoPrivacidad
+              ? 'Modo Privacidad ACTIVO: Los datos sensibles de estudiantes están desenfocados (Alt + P)'
+              : 'Activar Modo Privacidad: Desenfoca datos de alumnos para protegerlos de miradas ajenas (Alt + P)'
+          }
+          data-testid="privacy-toggle-button"
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-lg transition-all shadow-sm border ${
+            modoPrivacidad
+              ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-200 border-amber-300 dark:border-amber-700 ring-2 ring-amber-400/30'
+              : 'bg-slate-100 hover:bg-slate-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700'
+          }`}
+        >
+          {modoPrivacidad ? (
+            <EyeOff className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 animate-pulse" />
+          ) : (
+            <Eye className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+          )}
+          <span className="hidden xl:inline">
+            {modoPrivacidad ? 'Privacidad Activa' : 'Privacidad'}
+          </span>
+        </button>
+
         <button
           type="button"
           onClick={onOpenAsistenteRice}
@@ -176,6 +208,7 @@ export default function DashboardLayout({ children }) {
   const [notificationCenterOpen, setNotificationCenterOpen] = useState(false)
   const [asistenteRiceOpen, setAsistenteRiceOpen] = useState(false)
   const { token } = useAuth()
+  const { toggleModoPrivacidad } = usePrivacyStore()
   const { notificaciones, unreadCount, marcarLeida, marcarTodasLeidas } = useNotifications()
 
   // Initialize socket on mount
@@ -185,8 +218,26 @@ export default function DashboardLayout({ children }) {
     }
   }, [token])
 
+  // Listener global para atajo Alt + P (alternar Modo Privacidad en cualquier vista)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.altKey && (e.key === 'p' || e.key === 'P')) {
+        e.preventDefault()
+        toggleModoPrivacidad()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [toggleModoPrivacidad])
+
   return (
     <div className="fixed inset-0 flex bg-slate-50 dark:bg-gray-900 font-sans overflow-hidden text-gray-900 dark:text-gray-100">
+      {/* DLP: Marca de agua forense disuasoria contra fotos y capturas */}
+      <ForensicWatermark />
+
+      {/* DLP: Escudo de privacidad por desatención o minimización */}
+      <PrivacyShieldOverlay />
+
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
       <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
