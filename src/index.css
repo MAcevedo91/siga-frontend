@@ -299,3 +299,188 @@ body,
   }
 }
 
+/* ==========================================================
+   DLP: SESIÓN PROTEGIDA (PANTALLA PROTEGIDA ANIMADA)
+   ========================================================== */
+.privacy-shield-root {
+  --bg: #0f1b2d;
+  --bg2: #0a121f;
+  --card: #f7f8fa;
+  --ink: #14213a;
+  --muted: #66728a;
+  --line: #d9dfe9;
+  --accent: #0f9d8a;
+  --accent-d: #0b7b6c;
+  --redact: #14213a;
+}
+
+.dark .privacy-shield-root,
+:root[data-theme="dark"] .privacy-shield-root {
+  --card: #17243b;
+  --ink: #eef2f8;
+  --muted: #93a0ba;
+  --line: #2a3a57;
+  --redact: #eef2f8;
+  --bg: #070d17;
+  --bg2: #05080f;
+}
+
+.privacy-shield-backdrop {
+  background: radial-gradient(ellipse at 50% 0%, var(--bg), var(--bg2));
+}
+
+.privacy-shield-card {
+  width: min(380px, 90vw);
+  background: var(--card);
+  border-radius: 20px;
+  padding: 30px 28px 24px;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  animation: privacyCardIn 0.6s ease both;
+}
+
+@keyframes privacyCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.privacy-shield-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.privacy-row-bg {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 1.5;
+}
+
+.privacy-av,
+.privacy-ln {
+  fill: var(--line);
+}
+
+/* Tachado / Redact */
+.privacy-bar {
+  fill: var(--redact);
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: privacyRedact 6s cubic-bezier(0.6, 0, 0.2, 1) infinite;
+}
+
+@keyframes privacyRedact {
+  0% { transform: scaleX(0); }
+  18%, 80% { transform: scaleX(1); }
+  92%, 100% { transform: scaleX(0); }
+}
+
+/* Barrido / Scan */
+.privacy-scan {
+  animation: privacyScan 6s ease-in-out infinite;
+}
+
+@keyframes privacyScan {
+  0% { transform: translateY(0); opacity: 0; }
+  8% { opacity: 1; }
+  60% { opacity: 1; }
+  75%, 100% { transform: translateY(108px); opacity: 0; }
+}
+
+/* Escudo */
+.privacy-sh {
+  fill: var(--card);
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-linejoin: round;
+  stroke-dasharray: 190;
+  stroke-dashoffset: 190;
+  animation: privacyDraw 1.4s 0.3s ease forwards;
+  transition: fill 0.4s;
+}
+
+@keyframes privacyDraw {
+  to { stroke-dashoffset: 0; }
+}
+
+.privacy-ring {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: privacyRing 3s 1.6s ease-out infinite;
+}
+
+@keyframes privacyRing {
+  0% { transform: scale(0.8); opacity: 0.5; }
+  100% { transform: scale(1.9); opacity: 0; }
+}
+
+.privacy-lock {
+  opacity: 0;
+  animation: privacyFade 0.5s 1.2s forwards;
+}
+
+@keyframes privacyFade {
+  to { opacity: 1; }
+}
+
+.privacy-shackle {
+  transition: transform 0.4s cubic-bezier(0.3, 1.6, 0.5, 1);
+  transform-box: fill-box;
+  transform-origin: right bottom;
+}
+
+/* Estado abierto / Reanudado */
+.privacy-shield-root.is-open .privacy-bar {
+  animation: none;
+  transform: scaleX(0);
+  transition: transform 0.6s cubic-bezier(0.6, 0, 0.2, 1);
+}
+
+.privacy-shield-root.is-open .privacy-scan,
+.privacy-shield-root.is-open .privacy-ring {
+  animation: none;
+  opacity: 0;
+}
+
+.privacy-shield-root.is-open .privacy-shackle {
+  transform: translateY(-4px) rotate(-18deg);
+}
+
+.privacy-shield-root.is-open .privacy-sh {
+  fill: var(--accent);
+}
+
+.privacy-shield-root.is-open .privacy-lockbody {
+  fill: var(--card);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .privacy-shield-card,
+  .privacy-bar,
+  .privacy-scan,
+  .privacy-ring,
+  .privacy-lock {
+    animation: none !important;
+  }
+  .privacy-sh {
+    stroke-dashoffset: 0;
+  }
+  .privacy-lock {
+    opacity: 1;
+  }
+  .privacy-bar {
+    transform: scaleX(1);
+  }
+}
+
