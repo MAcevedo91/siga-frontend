@@ -36,6 +36,10 @@ vi.mock('@/components/layout/NavbarStudentSearch', () => ({
   default: () => <div data-testid="navbar-search" />,
 }))
 
+vi.mock('@/components/rice/CopilotoRobotChat', () => ({
+  default: () => <div data-testid="copiloto-robot-mock" />,
+}))
+
 vi.mock('@/components/rice/AsistenteNormativoModal', () => ({
   default: () => null,
 }))

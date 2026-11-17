@@ -27,12 +27,14 @@ export const uploadRice = async (formData) => {
  * Realiza una consulta RAG en lenguaje natural sobre el RICE del colegio.
  * @param {string} consulta - Pregunta o consulta del usuario
  * @param {Object} [contextoIncidente] - Datos del incidente opcional para contexto
+ * @param {string} [nombreUsuario] - Nombre del usuario para personalización de saludo
  * @returns {Promise<Object>} { respuesta, fuentes, totalFuentes }
  */
-export const consultarRiceRag = async (consulta, contextoIncidente = null) => {
+export const consultarRiceRag = async (consulta, contextoIncidente = null, nombreUsuario = null) => {
   const payload = {
     consulta,
     ...(contextoIncidente ? { contexto_incidente: contextoIncidente } : {}),
+    ...(nombreUsuario ? { nombre_usuario: nombreUsuario } : {}),
   }
   const response = await api.post('/rice/consultar', payload)
   return response.data.data

@@ -15,7 +15,7 @@ import {
   Eye,
   EyeOff,
 } from 'lucide-react'
-import AsistenteNormativoModal from '@/components/rice/AsistenteNormativoModal'
+import CopilotoRobotChat from '@/components/rice/CopilotoRobotChat'
 import NavbarStudentSearch from '@/components/layout/NavbarStudentSearch'
 import SidebarNav from '@/components/layout/SidebarNav'
 
@@ -171,9 +171,10 @@ export default function DashboardLayout({ children }) {
         onMarcarTodasLeidas={marcarTodasLeidas}
       />
 
-      {/* Copiloto Normativo RICE Modal */}
-      <AsistenteNormativoModal
+      {/* Copiloto Escolar Sigi: Chatbot Flotante con Botón Robot */}
+      <CopilotoRobotChat
         isOpen={asistenteRiceOpen}
+        onOpen={() => setAsistenteRiceOpen(true)}
         onClose={() => setAsistenteRiceOpen(false)}
       />
     </div>
