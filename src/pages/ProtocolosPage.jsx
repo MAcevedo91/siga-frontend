@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { getProtocolos, getTiposProtocolo } from '@/services/protocolosService'
 import { useAuth } from '@/store/useAuthStore'
 import DashboardLayout from '@/components/layout/DashboardLayout'
+import Breadcrumbs from '@/components/shared/Breadcrumbs'
 import { formatDate } from '@/utils/formatDate'
 import DlpSensitiveText from '@/components/dlp/DlpSensitiveText'
 import { ShieldAlert, ShieldCheck, Clock, CheckCircle, AlertTriangle, Calendar, User, FileText, Plus, Filter, X } from 'lucide-react'
@@ -96,7 +97,9 @@ export default function ProtocolosPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-6 max-w-7xl mx-auto">
+      <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-6">
+        <Breadcrumbs items={[{ label: 'Protocolos RICE' }]} />
+
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Protocolos RICE</h1>
@@ -236,55 +239,88 @@ export default function ProtocolosPage() {
             </div>
           </div>
         ) : (
-          <div className="overflow-hidden rounded-lg bg-white shadow">
+          <div className="overflow-hidden rounded-2xl bg-white dark:bg-gray-900 border border-gray-200/90 dark:border-gray-800 shadow-sm">
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800 text-sm">
+                <thead className="bg-gray-50/80 dark:bg-gray-800/60">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 whitespace-nowrap">
                       Fecha Apertura
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                       Tipo
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                       Estudiante
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 whitespace-nowrap">
                       Estado
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
+                    <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                      Progreso
+                    </th>
+                    <th className="px-5 py-3.5 text-right text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 whitespace-nowrap">
                       Acciones
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 bg-white">
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-800 bg-white dark:bg-gray-900">
                   {protocolos.map((protocolo) => (
-                    <tr key={protocolo.id} className="hover:bg-gray-50">
-                      <td className="whitespace-nowrap px-6 py-4">
-                        <div className="text-sm text-gray-900">
+                    <tr key={protocolo.id} className="hover:bg-gray-50/80 dark:hover:bg-gray-800/40 transition-colors">
+                      <td className="whitespace-nowrap px-5 py-3.5">
+                        <div className="text-xs sm:text-sm text-gray-900 dark:text-gray-100 font-medium">
                           {formatDate(protocolo.fecha_apertura)}
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900">{protocolo.tipo_protocolo}</div>
+                      <td className="px-5 py-3.5">
+                        <div className="text-xs sm:text-sm text-gray-900 dark:text-gray-100 font-medium">
+                          {protocolo.tipo_protocolo}
+                        </div>
                       </td>
-                      <td className="whitespace-nowrap px-6 py-4">
-                        <div className="text-sm font-medium text-gray-900">
+                      <td className="whitespace-nowrap px-5 py-3.5">
+                        <div className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">
                           <DlpSensitiveText tipo="nombre">
                             {`${protocolo.estudiante?.nombre || ''} ${protocolo.estudiante?.apellido || ''}`.trim() || 'Estudiante'}
                           </DlpSensitiveText>
                         </div>
                       </td>
-                      <td className="whitespace-nowrap px-6 py-4">
-                        <span className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${getEstadoBadge(protocolo.estado)}`}>
+                      <td className="whitespace-nowrap px-5 py-3.5">
+                        <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold ${getEstadoBadge(protocolo.estado)}`}>
                           {protocolo.estado}
                         </span>
                       </td>
-                      <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
+                      <td className="whitespace-nowrap px-5 py-3.5">
+                        <div className="flex flex-col gap-1 min-w-[140px]">
+                          <div className="flex items-center justify-between text-xs font-semibold text-gray-700 dark:text-gray-300">
+                            <span>{protocolo.porcentaje_avance ?? (protocolo.estado === 'Cerrado' ? 100 : protocolo.estado === 'Derivado' ? 66 : 33)}%</span>
+                            {protocolo.total_pasos > 0 ? (
+                              <span className="text-[10px] text-gray-400 font-normal">
+                                {protocolo.pasos_completados}/{protocolo.total_pasos} pasos
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-gray-400 font-normal">{protocolo.estado}</span>
+                            )}
+                          </div>
+                          <div className="w-full bg-gray-100 dark:bg-gray-700 h-2 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all duration-300 ${
+                                (protocolo.porcentaje_avance === 100 || protocolo.estado === 'Cerrado')
+                                  ? 'bg-emerald-500'
+                                  : (protocolo.porcentaje_avance || 0) >= 50 || protocolo.estado === 'Derivado'
+                                  ? 'bg-blue-600'
+                                  : 'bg-amber-500'
+                              }`}
+                              style={{
+                                width: `${protocolo.porcentaje_avance ?? (protocolo.estado === 'Cerrado' ? 100 : protocolo.estado === 'Derivado' ? 66 : 33)}%`
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </td>
+                      <td className="whitespace-nowrap px-5 py-3.5 text-right text-sm font-medium">
                         <button
                           onClick={() => navigate(`/protocolos/${protocolo.id}`)}
-                          className="text-blue-600 hover:text-blue-900"
+                          className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-semibold text-xs transition-colors"
                         >
                           Ver Detalle
                         </button>

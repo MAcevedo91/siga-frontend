@@ -4,6 +4,7 @@ import { useForm, useFieldArray } from 'react-hook-form'
 import { createIncidente, getTiposAbordaje } from '@/services/incidentesService'
 import AlertaGrave from '@/components/incidentes/AlertaGrave'
 import SelectorEstudianteCascada from '@/components/shared/SelectorEstudianteCascada'
+import Breadcrumbs from '@/components/shared/Breadcrumbs'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import toast from 'react-hot-toast'
 import {
@@ -179,22 +180,16 @@ export default function NuevoIncidentePage() {
   return (
     <DashboardLayout>
       <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
-        {/* Cabecera / Breadcrumb */}
+        <Breadcrumbs
+          items={[
+            { label: 'Incidentes', href: '/incidentes' },
+            { label: 'Nuevo Incidente' },
+          ]}
+        />
+
+        {/* Cabecera Principal */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 dark:border-gray-700/80 pb-5">
           <div className="space-y-1">
-            <div className="flex items-center gap-2 text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
-              <span>Convivencia Escolar</span>
-              <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-              <button
-                type="button"
-                onClick={handleCancelClick}
-                className="hover:underline"
-              >
-                Incidentes
-              </button>
-              <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-              <span className="text-gray-500 dark:text-gray-400">Nuevo Registro</span>
-            </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white flex items-center gap-2.5">
               <span>Registrar Nuevo Incidente</span>
             </h1>

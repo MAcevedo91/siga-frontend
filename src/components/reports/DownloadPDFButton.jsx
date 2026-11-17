@@ -37,7 +37,7 @@ export default function DownloadPDFButton({ estudianteId, estudianteNombre }) {
       {loading ? (
         <Loader2 className="w-4 h-4 animate-spin" />
       ) : (
-        <Download className="w-4 h-4" />
+        <Download className="w-4 h-4 shrink-0" />
       )}
       Descargar PDF
     </button>

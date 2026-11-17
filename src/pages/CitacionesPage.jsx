@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import DashboardLayout from '@/components/layout/DashboardLayout'
+import Breadcrumbs from '@/components/shared/Breadcrumbs'
 import {
   listarCitaciones,
   obtenerMetricasCitaciones,
@@ -177,6 +178,8 @@ export default function CitacionesPage() {
   return (
     <DashboardLayout>
       <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto" data-testid="citaciones-page">
+        <Breadcrumbs items={[{ label: 'Citaciones' }]} />
+
         {/* CABECERA PRINCIPAL MODERNA */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>

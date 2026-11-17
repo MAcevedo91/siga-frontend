@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import { useAuth } from "@/store/useAuthStore";
 import {
   obtenerMediacion,
@@ -56,6 +57,12 @@ export default function MediacionDetallePage() {
   return (
     <DashboardLayout>
       <div className="mediation-design med-workspace med-screen-assistant">
+        <Breadcrumbs
+          items={[
+            { label: 'Mediación Escolar', href: '/mediaciones' },
+            { label: `Caso ${med?.folio || id}` },
+          ]}
+        />
         <div className="med-topbar">
           <PageTitle
             title="Asistente Guiado de Mediación Escolar"

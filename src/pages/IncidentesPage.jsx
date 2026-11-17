@@ -163,15 +163,15 @@ export default function IncidentesPageMejorada() {
 
   return (
     <DashboardLayout>
-      <div className="p-6 max-w-7xl mx-auto">
+      <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
         <Breadcrumbs items={[{ label: 'Incidentes' }]} />
 
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Registro de Incidentes</h1>
-            <p className="mt-1 text-sm text-gray-600">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Registro de Incidentes</h1>
+            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
               {loading ? (
-                <span className="inline-block w-20 h-4 bg-gray-200 rounded animate-pulse"></span>
+                <span className="inline-block w-20 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></span>
               ) : (
                 <>
                   {displayIncidentes.length} incidente{displayIncidentes.length !== 1 ? 's' : ''}
@@ -181,15 +181,15 @@ export default function IncidentesPageMejorada() {
             </p>
           </div>
 
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 flex-wrap items-center">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+              className="flex items-center gap-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3.5 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors shadow-2xs"
             >
               <Filter className="w-4 h-4" />
               Filtros
               {hasActiveFilters && (
-                <span className="ml-1 px-2 py-0.5 bg-blue-600 text-white text-xs rounded-full">
+                <span className="ml-1 px-2 py-0.5 bg-blue-600 text-white text-xs rounded-full font-bold">
                   {filterCount}
                 </span>
               )}
@@ -199,19 +199,21 @@ export default function IncidentesPageMejorada() {
               <>
                 <button
                   onClick={handleExportExcel}
-                  className="flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 transition-colors"
+                  className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-2 text-sm font-medium text-white hover:bg-emerald-700 transition-colors shadow-2xs"
                   disabled={loading}
+                  title="Exportar a Excel"
                 >
                   <FileDown className="w-4 h-4" />
                   Excel
                 </button>
                 <button
                   onClick={handleExportPDF}
-                  className="flex items-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors"
+                  className="flex items-center gap-1.5 rounded-xl bg-red-600 px-3.5 py-2 text-sm font-semibold text-white hover:bg-red-700 transition-colors shadow-2xs"
                   disabled={loading}
+                  title="Exportar listado a PDF"
                 >
-                  <FileText className="w-4 h-4" />
-                  PDF
+                  <FileText className="w-4 h-4 shrink-0" />
+                  <span>Exportar PDF</span>
                 </button>
               </>
             )}
@@ -220,7 +222,7 @@ export default function IncidentesPageMejorada() {
               <button
                 onClick={() => navigate('/incidentes/nuevo')}
                 data-testid="nuevo-incidente-button"
-                className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+                className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition-colors shadow-xs"
               >
                 <Plus className="w-4 h-4" />
                 Nuevo Incidente
@@ -487,55 +489,55 @@ export default function IncidentesPageMejorada() {
           </div>
         ) : (
           <>
-            <div className="overflow-hidden rounded-lg bg-white shadow">
+            <div className="overflow-hidden rounded-2xl bg-white dark:bg-gray-900 border border-gray-200/90 dark:border-gray-800 shadow-sm">
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                <table className="w-full min-w-[860px] lg:min-w-full lg:table-fixed divide-y divide-gray-200 dark:divide-gray-800 text-sm">
+                  <thead className="bg-gray-50/90 dark:bg-gray-800/70">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                      <th className="w-[11%] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 whitespace-nowrap">
                         Fecha
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                      <th className="w-[22%] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                         Estudiante(s)
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                      <th className="w-[11%] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 whitespace-nowrap">
                         Curso
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                      <th className="w-[10%] px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 whitespace-nowrap">
                         Gravedad
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                      <th className="w-[13%] px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 whitespace-nowrap">
                         Estado
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                        Relato / Descripción
+                      <th className="w-[23%] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                        Relato
                       </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
+                      <th className="w-[10%] px-3 py-3 text-right text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 whitespace-nowrap">
                         Acciones
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200 bg-white">
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-800 bg-white dark:bg-gray-900">
                     {paginatedIncidentes.map((incidente) => (
-                      <tr key={incidente.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="whitespace-nowrap px-6 py-4">
-                          <div className="text-sm text-gray-900 flex items-center gap-1">
-                            <Calendar className="w-3 h-3 text-gray-400" />
-                            {formatDate(incidente.fecha)}
+                      <tr key={incidente.id} className="hover:bg-gray-50/80 dark:hover:bg-gray-800/40 transition-colors">
+                        <td className="whitespace-nowrap px-3 py-3">
+                          <div className="text-xs text-gray-900 dark:text-gray-100 flex items-center gap-1.5 font-medium">
+                            <Calendar className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                            <span>{formatDate(incidente.fecha)}</span>
                           </div>
                         </td>
-                        <td className="whitespace-nowrap px-6 py-4">
+                        <td className="px-3 py-3 overflow-hidden">
                           {incidente.estudiantes && incidente.estudiantes.length > 0 ? (
-                            <div className="flex flex-col gap-2">
+                            <div className="flex flex-col gap-1">
                               {incidente.estudiantes.map((est, idx) => (
-                                <div key={est.id || idx} className="text-sm">
-                                  <div className="font-semibold text-gray-900 leading-tight">
+                                <div key={est.id || idx} className="text-xs truncate">
+                                  <div className="font-semibold text-gray-900 dark:text-white leading-tight truncate">
                                     <DlpSensitiveText tipo="nombre">
                                       {`${est.nombre || ''} ${est.apellido || ''}`.trim() || 'Estudiante'}
                                     </DlpSensitiveText>
                                   </div>
                                   {est.rut && (
-                                    <div className="text-xs text-gray-400 font-mono mt-0.5">
+                                    <div className="text-[11px] text-gray-400 font-mono truncate">
                                       <DlpSensitiveText tipo="rut">{est.rut}</DlpSensitiveText>
                                     </div>
                                   )}
@@ -543,29 +545,29 @@ export default function IncidentesPageMejorada() {
                               ))}
                             </div>
                           ) : incidente.estudiante ? (
-                            <div className="text-sm">
-                              <div className="font-semibold text-gray-900">
+                            <div className="text-xs truncate">
+                              <div className="font-semibold text-gray-900 dark:text-white truncate">
                                 <DlpSensitiveText tipo="nombre">
                                   {`${incidente.estudiante.nombre || ''} ${incidente.estudiante.apellido || ''}`.trim() || 'Estudiante'}
                                 </DlpSensitiveText>
                               </div>
                               {incidente.estudiante.rut && (
-                                <div className="text-xs text-gray-400 font-mono mt-0.5">
+                                <div className="text-[11px] text-gray-400 font-mono truncate">
                                   <DlpSensitiveText tipo="rut">{incidente.estudiante.rut}</DlpSensitiveText>
                                 </div>
                               )}
                             </div>
                           ) : incidente.estudiantes_count !== undefined ? (
-                            <div className="text-sm font-medium text-gray-900">
+                            <div className="text-xs font-medium text-gray-900 dark:text-gray-100">
                               {incidente.estudiantes_count} estudiante(s)
                             </div>
                           ) : (
-                            <div className="text-sm text-gray-500">-</div>
+                            <div className="text-xs text-gray-500">-</div>
                           )}
                         </td>
-                        <td className="whitespace-nowrap px-6 py-4">
+                        <td className="whitespace-nowrap px-3 py-3 overflow-hidden">
                           {incidente.estudiantes && incidente.estudiantes.length > 0 ? (
-                            <div className="flex flex-col gap-1.5">
+                            <div className="flex flex-col gap-1">
                               {Array.from(new Set(
                                 incidente.estudiantes
                                   .map(e => e.cursos?.nombre || e.curso)
@@ -573,7 +575,7 @@ export default function IncidentesPageMejorada() {
                               )).map((cursoNombre, cIdx) => (
                                 <span
                                   key={cIdx}
-                                  className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200/80 dark:border-gray-700 w-fit"
+                                  className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200/80 dark:border-gray-700 w-fit truncate max-w-full"
                                 >
                                   {cursoNombre}
                                 </span>
@@ -583,32 +585,35 @@ export default function IncidentesPageMejorada() {
                               )}
                             </div>
                           ) : incidente.estudiante?.cursos?.nombre || incidente.estudiante?.curso ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200/80 dark:border-gray-700 w-fit">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200/80 dark:border-gray-700 w-fit truncate max-w-full">
                               {incidente.estudiante.cursos?.nombre || incidente.estudiante.curso}
                             </span>
                           ) : (
                             <span className="text-xs text-gray-400">-</span>
                           )}
                         </td>
-                        <td className="whitespace-nowrap px-6 py-4">
-                          <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${getGravedadBadge(incidente.gravedad)}`}>
+                        <td className="whitespace-nowrap px-3 py-3 text-center">
+                          <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-bold ${getGravedadBadge(incidente.gravedad)}`}>
                             {incidente.gravedad}
                           </span>
                         </td>
-                        <td className="whitespace-nowrap px-6 py-4">
-                          <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${getEstadoBadge(incidente.estado)}`}>
+                        <td className="whitespace-nowrap px-3 py-3 text-center">
+                          <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-bold ${getEstadoBadge(incidente.estado)}`}>
                             {incidente.estado}
                           </span>
                         </td>
-                        <td className="px-6 py-4 max-w-xs">
-                          <div className="text-sm text-gray-600 truncate" title={incidente.relato || incidente.descripcion}>
+                        <td className="px-3 py-3 overflow-hidden">
+                          <p
+                            className="text-xs text-gray-600 dark:text-gray-300 truncate"
+                            title={incidente.relato || incidente.descripcion || ''}
+                          >
                             {incidente.relato || incidente.descripcion || '-'}
-                          </div>
+                          </p>
                         </td>
-                        <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
+                        <td className="whitespace-nowrap px-3 py-3 text-right">
                           <button
                             onClick={() => navigate(`/incidentes/${incidente.id}`)}
-                            className="text-blue-600 hover:text-blue-900 transition-colors font-medium"
+                            className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-800 dark:hover:text-blue-300 font-semibold text-xs transition-colors"
                           >
                             Ver Detalle
                           </button>

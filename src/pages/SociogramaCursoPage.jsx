@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import CursoSociogramaTab from "@/components/sociograma/CursoSociogramaTab";
 import { obtenerCursosSociograma } from "@/services/sprint9Service";
 import { mensajeError } from "@/utils/mediaciones";
@@ -32,6 +33,12 @@ export default function SociogramaCursoPage() {
   return (
     <DashboardLayout>
       <div className="text-slate-900 mx-auto max-w-7xl p-4 sm:p-6">
+        <Breadcrumbs
+          items={[
+            { label: 'Cursos', href: '/estudiantes' },
+            { label: cursoSeleccionado ? `Sociograma · ${cursoSeleccionado.nombre}` : 'Sociograma Escolar' },
+          ]}
+        />
         <PageTitle
           title="Sociograma del curso"
           subtitle="Explora interacciones registradas y oportunidades de acompañamiento"

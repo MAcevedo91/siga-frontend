@@ -40,9 +40,11 @@ import {
 } from '@/services/reportesService'
 import ModalRevisionReporteIA from '@/components/reportes/ModalRevisionReporteIA'
 import AsistenteNormativoModal from '@/components/rice/AsistenteNormativoModal'
+import SigiAvatar from '@/components/rice/SigiAvatar'
 import { useAuth } from '@/store/useAuthStore'
 import { formatDate, formatDateTime } from '@/utils/formatDate'
 import DashboardLayout from '@/components/layout/DashboardLayout'
+import Breadcrumbs from '@/components/shared/Breadcrumbs'
 import { ROLES_GESTION_CASOS, ROLES_GESTION_REPORTES } from '@/constants/roles'
 
 const ESTADOS_INCIDENTE = ['Registrado', 'En Investigación', 'Derivado', 'Cerrado']
@@ -413,11 +415,18 @@ export default function IncidenteDetallePage() {
   return (
     <DashboardLayout>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+        <Breadcrumbs
+          items={[
+            { label: 'Incidentes', href: '/incidentes' },
+            { label: `Caso #${incidente.id}` },
+          ]}
+        />
+
         {/* BARRA SUPERIOR DE NAVEGACIÓN Y ACCIONES */}
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <button
             onClick={() => navigate('/incidentes')}
-            className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+            className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
             <span>Volver a Incidentes</span>
@@ -427,9 +436,9 @@ export default function IncidenteDetallePage() {
             <button
               type="button"
               onClick={() => setModalRiceOpen(true)}
-              className="inline-flex items-center gap-2 rounded-xl border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-xs sm:text-sm font-semibold text-emerald-800 hover:bg-emerald-100 transition-all shadow-xs"
+              className="inline-flex items-center gap-2 rounded-xl border-2 border-emerald-300 dark:border-emerald-700 bg-emerald-100/80 dark:bg-emerald-950/60 px-3.5 py-2 text-xs sm:text-sm font-bold text-emerald-900 dark:text-emerald-200 hover:bg-emerald-200/80 dark:hover:bg-emerald-900/80 transition-all shadow-xs"
             >
-              <BookOpen className="h-4 w-4 text-emerald-700" />
+              <BookOpen className="h-4 w-4 text-emerald-700 dark:text-emerald-300" />
               <span>Consultar RICE</span>
             </button>
           </div>
@@ -457,37 +466,43 @@ export default function IncidenteDetallePage() {
         )}
 
         {/* ENCABEZADO HUMANIZADO DEL CASO */}
-        <div className="mb-6 rounded-2xl bg-white border border-gray-200/90 p-5 sm:p-6 shadow-xs">
+        <div className={`mb-6 rounded-2xl border-2 p-5 sm:p-6 shadow-sm bg-gradient-to-r ${
+          incidente.gravedad === 'Gravísima'
+            ? 'from-rose-100/90 via-red-50/60 to-white dark:from-rose-950/80 dark:via-slate-900 dark:to-gray-900 border-rose-300 dark:border-rose-800'
+            : incidente.gravedad === 'Grave'
+            ? 'from-amber-100/90 via-orange-50/60 to-white dark:from-amber-950/80 dark:via-slate-900 dark:to-gray-900 border-amber-300 dark:border-amber-800'
+            : 'from-cyan-100/90 via-blue-50/60 to-white dark:from-cyan-950/80 dark:via-slate-900 dark:to-gray-900 border-cyan-300 dark:border-cyan-800'
+        }`}>
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <div className="flex flex-wrap items-center gap-2.5 mb-2">
-                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <span className="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                   Detalle del Caso
                 </span>
-                <span className="text-gray-300">•</span>
-                <span className="font-mono text-xs font-semibold text-gray-600">
+                <span className="text-gray-400">•</span>
+                <span className="font-mono text-xs font-bold text-gray-800 dark:text-gray-200 bg-white/80 dark:bg-gray-800 px-2 py-0.5 rounded-md border border-gray-200 dark:border-gray-700">
                   Incidente #{incidente.id}
                 </span>
-                <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-bold ${getGravedadBadgeStyle(incidente.gravedad)}`}>
+                <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-bold shadow-2xs ${getGravedadBadgeStyle(incidente.gravedad)}`}>
                   {incidente.gravedad}
                 </span>
-                <span className="inline-flex items-center rounded-full bg-slate-100 border border-slate-300 px-2.5 py-0.5 text-xs font-semibold text-slate-800">
+                <span className="inline-flex items-center rounded-full bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-900 px-2.5 py-0.5 text-xs font-bold">
                   {incidente.estado}
                 </span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
                 <DlpSensitiveText tipo="nombre" value={getHumanizedTitle(listaEstudiantes)}>
                   {getHumanizedTitle(listaEstudiantes)}
                 </DlpSensitiveText>
               </h1>
-              <p className="mt-1 text-xs sm:text-sm text-gray-500">
+              <p className="mt-1.5 text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300">
                 Registrado el {formatDate(incidente.fecha)} por {incidente.usuarios ? `${incidente.usuarios.nombre} ${incidente.usuarios.apellido} (${incidente.usuarios.rol})` : 'Personal institucional'}
               </p>
             </div>
 
             {totalReportes > 0 && (
-              <div className="rounded-xl border border-indigo-200 bg-indigo-50/70 px-3.5 py-2 text-xs text-indigo-900 font-medium flex items-center gap-2">
-                <FileText className="h-4 w-4 text-indigo-600 shrink-0" />
+              <div className="rounded-xl border-2 border-indigo-300 dark:border-indigo-700 bg-indigo-100/90 dark:bg-indigo-950/70 px-4 py-2.5 text-xs text-indigo-950 dark:text-indigo-200 font-bold flex items-center gap-2 shadow-2xs">
+                <FileText className="h-4 w-4 text-indigo-700 dark:text-indigo-400 shrink-0" />
                 <span>{totalReportes} informe(s) normativo(s) disponible(s)</span>
               </div>
             )}
@@ -498,70 +513,91 @@ export default function IncidenteDetallePage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* COLUMNA PRINCIPAL (8 COLS) */}
           <div className="lg:col-span-8 space-y-6">
-            {/* TARJETA 1: METADATOS DEL INCIDENTE */}
-            <section className="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50/50 via-indigo-50/20 to-white p-5 sm:p-6 shadow-xs">
-              <h2 className="text-sm font-bold text-blue-950 uppercase tracking-wider mb-4 flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-blue-600" />
-                Antecedentes del Suceso
-              </h2>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="rounded-xl bg-white/80 border border-blue-100/70 p-3">
-                  <span className="text-[11px] font-semibold text-gray-500 uppercase block">Fecha Suceso</span>
-                  <span className="text-sm font-bold text-gray-900 mt-0.5 block">{formatDate(incidente.fecha)}</span>
+            {/* TARJETA 1: METADATOS DEL INCIDENTE (AZUL / ÍNDIGO INTENSO) */}
+            <section className="rounded-2xl border-2 border-blue-300 dark:border-blue-800 bg-gradient-to-br from-blue-100/95 via-indigo-100/50 to-white dark:from-blue-950/85 dark:via-slate-900/90 dark:to-gray-900 p-5 sm:p-6 shadow-md">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-extrabold text-blue-950 dark:text-blue-100 uppercase tracking-wider flex items-center gap-2.5">
+                  <span className="p-1.5 rounded-lg bg-blue-600 text-white shadow-xs">
+                    <Calendar className="h-4 w-4" />
+                  </span>
+                  Antecedentes del Suceso
+                </h2>
+                <span className="hidden sm:inline-flex text-[10px] font-bold text-blue-800 dark:text-blue-200 uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-blue-200/80 dark:bg-blue-900/70 border border-blue-300 dark:border-blue-700">
+                  Ficha Técnica
+                </span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+                <div className="rounded-xl bg-white dark:bg-gray-800/90 border-2 border-blue-200/90 dark:border-blue-800/70 p-3.5 shadow-2xs">
+                  <span className="text-[11px] font-bold text-blue-700 dark:text-blue-300 uppercase block">Fecha Suceso</span>
+                  <span className="text-sm font-extrabold text-gray-900 dark:text-white mt-1 block">{formatDate(incidente.fecha)}</span>
                 </div>
-                <div className="rounded-xl bg-white/80 border border-blue-100/70 p-3">
-                  <span className="text-[11px] font-semibold text-gray-500 uppercase block">Gravedad</span>
-                  <span className="text-sm font-bold text-gray-900 mt-0.5 block">{incidente.gravedad}</span>
+                <div className="rounded-xl bg-white dark:bg-gray-800/90 border-2 border-blue-200/90 dark:border-blue-800/70 p-3.5 shadow-2xs">
+                  <span className="text-[11px] font-bold text-blue-700 dark:text-blue-300 uppercase block">Gravedad</span>
+                  <span className="text-sm font-extrabold text-gray-900 dark:text-white mt-1 block">{incidente.gravedad}</span>
                 </div>
-                <div className="rounded-xl bg-white/80 border border-blue-100/70 p-3">
-                  <span className="text-[11px] font-semibold text-gray-500 uppercase block">Tipo Abordaje</span>
-                  <span className="text-sm font-bold text-gray-900 mt-0.5 block truncate" title={incidente.tipo_abordaje || incidente.tipos_abordaje?.nombre || 'General'}>
+                <div className="rounded-xl bg-white dark:bg-gray-800/90 border-2 border-blue-200/90 dark:border-blue-800/70 p-3.5 shadow-2xs">
+                  <span className="text-[11px] font-bold text-blue-700 dark:text-blue-300 uppercase block">Tipo Abordaje</span>
+                  <span className="text-sm font-extrabold text-gray-900 dark:text-white mt-1 block truncate" title={incidente.tipo_abordaje || incidente.tipos_abordaje?.nombre || 'General'}>
                     {incidente.tipo_abordaje || incidente.tipos_abordaje?.nombre || 'No especificado'}
                   </span>
                 </div>
-                <div className="rounded-xl bg-white/80 border border-blue-100/70 p-3">
-                  <span className="text-[11px] font-semibold text-gray-500 uppercase block">Involucrados</span>
-                  <span className="text-sm font-bold text-gray-900 mt-0.5 block">
+                <div className="rounded-xl bg-white dark:bg-gray-800/90 border-2 border-blue-200/90 dark:border-blue-800/70 p-3.5 shadow-2xs">
+                  <span className="text-[11px] font-bold text-blue-700 dark:text-blue-300 uppercase block">Involucrados</span>
+                  <span className="text-sm font-extrabold text-gray-900 dark:text-white mt-1 block">
                     {listaEstudiantes.length} {listaEstudiantes.length === 1 ? 'estudiante' : 'estudiantes'}
                   </span>
                 </div>
               </div>
             </section>
 
-            {/* TARJETA 2: RELATO FACTUAL Y MEDIDAS INMEDIATAS */}
-            <section className="rounded-2xl border border-purple-100 bg-gradient-to-br from-purple-50/40 via-violet-50/20 to-white p-5 sm:p-6 shadow-xs">
-              <h2 className="text-sm font-bold text-purple-950 uppercase tracking-wider mb-4 flex items-center gap-2">
-                <Scale className="h-4 w-4 text-purple-600" />
-                Relato Factual y Actuaciones Inmediatas
-              </h2>
+            {/* TARJETA 2: RELATO FACTUAL Y MEDIDAS INMEDIATAS (PÚRPURA / VIOLETA INTENSO) */}
+            <section className="rounded-2xl border-2 border-purple-300 dark:border-purple-800 bg-gradient-to-br from-purple-100/95 via-violet-100/50 to-white dark:from-purple-950/85 dark:via-slate-900/90 dark:to-gray-900 p-5 sm:p-6 shadow-md">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-extrabold text-purple-950 dark:text-purple-100 uppercase tracking-wider flex items-center gap-2.5">
+                  <span className="p-1.5 rounded-lg bg-purple-600 text-white shadow-xs">
+                    <Scale className="h-4 w-4" />
+                  </span>
+                  Relato Factual y Actuaciones Inmediatas
+                </h2>
+                <span className="hidden sm:inline-flex text-[10px] font-bold text-purple-800 dark:text-purple-200 uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-purple-200/80 dark:bg-purple-900/70 border border-purple-300 dark:border-purple-700">
+                  Registro de Hechos
+                </span>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="rounded-xl bg-white/90 border border-purple-100/80 p-4">
-                  <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                <div className="rounded-xl bg-white dark:bg-gray-800/90 border-2 border-purple-200/90 dark:border-purple-800/70 p-4 shadow-2xs">
+                  <h3 className="text-xs font-extrabold text-purple-900 dark:text-purple-300 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                    <MessageSquare className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
                     Relato de los Hechos
                   </h3>
-                  <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">
+                  <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">
                     {incidente.relato || 'Sin relato detallado registrado en el sistema.'}
                   </p>
                 </div>
-                <div className="rounded-xl bg-white/90 border border-purple-100/80 p-4">
-                  <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                <div className="rounded-xl bg-white dark:bg-gray-800/90 border-2 border-purple-200/90 dark:border-purple-800/70 p-4 shadow-2xs">
+                  <h3 className="text-xs font-extrabold text-purple-900 dark:text-purple-300 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                    <ShieldAlert className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
                     Medidas Inmediatas Adoptadas
                   </h3>
-                  <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">
+                  <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">
                     {incidente.medidas || 'Sin medidas inmediatas adicionales registradas.'}
                   </p>
                 </div>
               </div>
             </section>
 
-            {/* SECCIÓN: INFORMES OFICIALES INDIVIDUALES (MINIMALISTA) */}
-            <section className="space-y-4">
+            {/* SECCIÓN 3: INFORMES OFICIALES INDIVIDUALES (ESMERALDA / TEAL INTENSO) */}
+            <section className="rounded-2xl border-2 border-emerald-300 dark:border-emerald-800 bg-gradient-to-br from-emerald-100/95 via-teal-100/50 to-white dark:from-emerald-950/85 dark:via-slate-900/90 dark:to-gray-900 p-5 sm:p-6 shadow-md space-y-5">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
-                    Informes oficiales
-                  </h2>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                  <div className="flex items-center gap-2.5">
+                    <span className="p-1.5 rounded-lg bg-emerald-600 text-white shadow-xs">
+                      <FileText className="h-4 w-4" />
+                    </span>
+                    <h2 className="text-lg sm:text-xl font-extrabold tracking-tight text-emerald-950 dark:text-emerald-100">
+                      Informes oficiales
+                    </h2>
+                  </div>
+                  <p className="text-xs sm:text-sm font-medium text-emerald-800 dark:text-emerald-300 mt-1">
                     {listaEstudiantes.filter((est) => reportes.some((r) => String(r.estudiante_id) === String(est.id) && r.estado === 'Aprobado')).length} de {listaEstudiantes.length} validados
                   </p>
                   <span className="sr-only">
@@ -576,22 +612,23 @@ export default function IncidenteDetallePage() {
                     disabled={generandoBorradores || loadingReportes}
                     aria-label={
                       generandoBorradores
-                        ? 'Redactando con Gemini...'
+                        ? 'Redactando informe con Sigi...'
                         : totalReportes > 0
                         ? `Ver / Editar Informes Oficiales (${totalReportes})`
                         : 'Generar Informe Oficial con IA'
                     }
-                    className="inline-flex items-center gap-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700/80 transition-colors shadow-2xs disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="inline-flex items-center gap-2 rounded-xl border-2 border-emerald-400 dark:border-emerald-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-bold text-emerald-900 dark:text-emerald-100 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 transition-colors shadow-xs disabled:opacity-60 disabled:cursor-not-allowed"
                   >
+                    <SigiAvatar size="xs" variant="badge" className="w-4 h-4 shrink-0" />
                     {generandoBorradores && (
                       <Loader2 className="h-4 w-4 animate-spin text-gray-600 dark:text-gray-300" />
                     )}
                     <span>
                       {generandoBorradores
-                        ? 'Redactando...'
+                        ? 'Redactando con Sigi...'
                         : totalReportes > 0
                         ? 'Editar informes'
-                        : 'Generar informes con IA'}
+                        : 'Redactar con Sigi (IA)'}
                     </span>
                   </button>
                 )}
@@ -784,11 +821,12 @@ export default function IncidenteDetallePage() {
                               type="button"
                               onClick={() => handleAbrirOGenerarReporte(null)}
                               disabled={generandoBorradores}
-                              aria-label="Redactar Informe con IA"
-                              className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-gray-950 hover:bg-gray-900 dark:bg-white dark:text-gray-950 text-white text-xs font-semibold transition-colors shadow-2xs"
+                              aria-label="Redactar Informe con Sigi"
+                              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gray-950 hover:bg-gray-900 dark:bg-white dark:text-gray-950 text-white text-xs font-semibold transition-colors shadow-2xs"
                             >
+                              <SigiAvatar size="xs" variant="badge" className="w-3.5 h-3.5 shrink-0" />
                               {generandoBorradores && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                              <span>Generar borrador</span>
+                              <span>Redactar borrador con Sigi</span>
                             </button>
                           )
                         )}
@@ -802,11 +840,16 @@ export default function IncidenteDetallePage() {
 
           {/* COLUMNA LATERAL (ASIDE STICKY 4 COLS) */}
           <aside className="lg:col-span-4 space-y-6 lg:sticky lg:top-6">
-            {/* TARJETA 1: ESTADO DEL INCIDENTE Y STEPPER VISUAL */}
-            <div className="rounded-2xl border border-gray-200/90 bg-white p-5 shadow-xs">
-              <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4 flex items-center justify-between">
-                <span>Estado del Incidente</span>
-                <span className="rounded-md bg-blue-50 text-blue-700 px-2 py-0.5 text-xs font-semibold">
+            {/* TARJETA 1: ESTADO DEL INCIDENTE Y STEPPER VISUAL (SLATE / ÍNDIGO ESTRUCTURADO) */}
+            <div className="rounded-2xl border-2 border-slate-300 dark:border-slate-700 bg-gradient-to-br from-slate-100/95 via-indigo-50/50 to-white dark:from-slate-900 dark:via-slate-850 dark:to-gray-900 p-5 shadow-md">
+              <h2 className="text-sm font-extrabold text-slate-900 dark:text-white uppercase tracking-wider mb-4 flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <span className="p-1 rounded-md bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-900 shadow-2xs">
+                    <Clock className="h-3.5 w-3.5" />
+                  </span>
+                  Estado del Incidente
+                </span>
+                <span className="rounded-md bg-blue-100 text-blue-900 dark:bg-blue-900/80 dark:text-blue-200 px-2.5 py-1 text-xs font-extrabold border border-blue-300 dark:border-blue-700">
                   {incidente.estado}
                 </span>
               </h2>
@@ -819,18 +862,18 @@ export default function IncidenteDetallePage() {
                   return (
                     <div
                       key={est}
-                      className={`flex items-center gap-3 rounded-xl p-2.5 transition-all text-xs font-medium ${
+                      className={`flex items-center gap-3 rounded-xl p-2.5 transition-all text-xs font-semibold ${
                         isCurrent
-                          ? 'bg-blue-50/80 border border-blue-200 text-blue-900 font-bold'
+                          ? 'bg-blue-100/90 dark:bg-blue-950/80 border-2 border-blue-400 dark:border-blue-600 text-blue-950 dark:text-blue-100 font-extrabold shadow-xs'
                           : isDone
-                          ? 'text-gray-700'
+                          ? 'bg-white/80 dark:bg-gray-800/60 border border-emerald-200 dark:border-emerald-800 text-gray-800 dark:text-gray-200'
                           : 'text-gray-400 opacity-60'
                       }`}
                     >
                       <div
                         className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold shrink-0 ${
                           isCurrent
-                            ? 'bg-blue-600 text-white ring-4 ring-blue-100'
+                            ? 'bg-blue-600 text-white ring-4 ring-blue-200 dark:ring-blue-900'
                             : isDone
                             ? 'bg-emerald-600 text-white'
                             : 'bg-gray-200 text-gray-500'
@@ -840,7 +883,7 @@ export default function IncidenteDetallePage() {
                       </div>
                       <span>{est}</span>
                       {isCurrent && (
-                        <span className="ml-auto text-[10px] uppercase font-bold tracking-wider text-blue-600">
+                        <span className="ml-auto text-[10px] uppercase font-bold tracking-wider text-blue-700 dark:text-blue-300">
                           Actual
                         </span>
                       )}
@@ -851,15 +894,15 @@ export default function IncidenteDetallePage() {
 
               {/* SELECTOR INTERACTIVO PARA ACTUALIZAR ESTADO */}
               {canEdit ? (
-                <div className="space-y-3 pt-3 border-t border-gray-100">
-                  <label htmlFor="nuevoEstadoSelect" className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+                <div className="space-y-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                  <label htmlFor="nuevoEstadoSelect" className="block text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">
                     Cambiar Estado
                   </label>
                   <select
                     id="nuevoEstadoSelect"
                     value={nuevoEstado}
                     onChange={(e) => setNuevoEstado(e.target.value)}
-                    className="block w-full rounded-xl border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="block w-full rounded-xl border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm font-medium focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   >
                     <option value="Registrado">Registrado</option>
                     <option value="En Investigación">En Investigación</option>
@@ -879,7 +922,7 @@ export default function IncidenteDetallePage() {
                       setModalEstadoOpen(true)
                     }}
                     disabled={nuevoEstado === incidente.estado || updatingEstado}
-                    className="w-full rounded-xl bg-blue-600 px-4 py-2.5 text-xs sm:text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-xs"
+                    className="w-full rounded-xl bg-blue-600 px-4 py-2.5 text-xs sm:text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-sm"
                   >
                     {updatingEstado ? 'Actualizando...' : 'Actualizar Estado'}
                   </button>
@@ -891,13 +934,15 @@ export default function IncidenteDetallePage() {
               )}
             </div>
 
-            {/* TARJETA 2: ACCIONES RÁPIDAS Y DERIVACIÓN RICE */}
-            <div className="rounded-2xl border border-sky-100 bg-gradient-to-br from-sky-50/40 via-slate-50/30 to-white p-5 shadow-xs">
-              <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-3 flex items-center gap-2">
-                <ShieldAlert className="h-4 w-4 text-sky-600" />
+            {/* TARJETA 2: ACCIONES RÁPIDAS Y DERIVACIÓN RICE (CIAN / SKY INTENSO) */}
+            <div className="rounded-2xl border-2 border-sky-300 dark:border-sky-700 bg-gradient-to-br from-sky-100/95 via-blue-100/40 to-white dark:from-sky-950/85 dark:via-slate-900/90 dark:to-gray-900 p-5 shadow-md">
+              <h2 className="text-sm font-extrabold text-sky-950 dark:text-sky-100 uppercase tracking-wider mb-2 flex items-center gap-2">
+                <span className="p-1 rounded-md bg-sky-600 text-white shadow-2xs">
+                  <ShieldAlert className="h-3.5 w-3.5" />
+                </span>
                 Acciones Rápidas RICE
               </h2>
-              <p className="text-xs text-slate-600 mb-4 leading-relaxed">
+              <p className="text-xs text-sky-800 dark:text-sky-300 font-medium mb-4 leading-relaxed">
                 Herramientas complementarias para activar protocolos de convivencia conforme a la gravedad.
               </p>
 
@@ -906,7 +951,7 @@ export default function IncidenteDetallePage() {
                   <button
                     type="button"
                     onClick={() => navigate(`/protocolos/nuevo?incidenteId=${id}&tipo=grave`)}
-                    className="w-full inline-flex items-center justify-between rounded-xl border border-red-200 bg-red-50/60 p-3 text-xs font-semibold text-red-900 hover:bg-red-100/70 transition-all text-left"
+                    className="w-full inline-flex items-center justify-between rounded-xl border-2 border-red-300 dark:border-red-700 bg-red-100/80 dark:bg-red-950/70 p-3 text-xs font-bold text-red-950 dark:text-red-100 hover:bg-red-200/80 transition-all text-left shadow-2xs"
                   >
                     <span className="flex items-center gap-2">
                       <AlertTriangle className="h-4 w-4 text-red-600" />
@@ -919,7 +964,7 @@ export default function IncidenteDetallePage() {
                 <button
                   type="button"
                   onClick={() => navigate(`/mediaciones/nueva?incidenteId=${id}`)}
-                  className="w-full inline-flex items-center justify-between rounded-xl border border-indigo-200 bg-indigo-50/60 p-3 text-xs font-semibold text-indigo-900 hover:bg-indigo-100/70 transition-all text-left"
+                  className="w-full inline-flex items-center justify-between rounded-xl border-2 border-indigo-300 dark:border-indigo-700 bg-indigo-100/80 dark:bg-indigo-950/70 p-3 text-xs font-bold text-indigo-950 dark:text-indigo-100 hover:bg-indigo-200/80 transition-all text-left shadow-2xs"
                 >
                   <span className="flex items-center gap-2">
                     <Scale className="h-4 w-4 text-indigo-600" />
@@ -931,14 +976,14 @@ export default function IncidenteDetallePage() {
             </div>
 
             {/* IDENTIFICADOR ÚNICO DEL INCIDENTE CON COPIADO RÁPIDO */}
-            <div className="rounded-xl border border-gray-200 bg-gray-50/80 p-3 text-xs text-gray-600 flex items-center justify-between gap-2">
+            <div className="rounded-xl border-2 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 p-3.5 text-xs text-gray-700 dark:text-gray-300 flex items-center justify-between gap-2 shadow-2xs">
               <span className="truncate">
-                ID Incidente: <strong className="font-mono text-gray-800">{incidente.id}</strong>
+                ID Incidente: <strong className="font-mono text-gray-900 dark:text-white font-bold">{incidente.id}</strong>
               </span>
               <button
                 type="button"
                 onClick={handleCopyId}
-                className="inline-flex items-center gap-1 rounded-md bg-white border border-gray-300 px-2 py-1 text-[11px] font-semibold text-gray-700 hover:bg-gray-100 transition-colors shrink-0 shadow-2xs"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 px-2.5 py-1 text-[11px] font-bold text-gray-800 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors shrink-0 shadow-2xs"
                 title="Copiar ID para oficios o seguimiento"
               >
                 {copiedId ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3 text-gray-500" />}

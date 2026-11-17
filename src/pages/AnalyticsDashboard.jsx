@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import DashboardLayout from '../components/layout/DashboardLayout'
+import Breadcrumbs from '@/components/shared/Breadcrumbs'
 import ResumenCards from '../components/analytics/ResumenCards'
 import ReporteMensualModal from '../components/analytics/ReporteMensualModal'
 import TendenciaChart from '../components/analytics/TendenciaChart'
@@ -12,6 +13,7 @@ import * as analyticsService from '../services/analyticsService'
 import { getIncidentesPorCurso } from '../services/dashboardService'
 import { captureAllDashboardCharts } from '../utils/chartExportHelper'
 import { RefreshCw, Sparkles } from 'lucide-react'
+import SigiAvatar from '@/components/rice/SigiAvatar'
 import toast from 'react-hot-toast'
 
 export default function AnalyticsDashboard() {
@@ -88,6 +90,8 @@ export default function AnalyticsDashboard() {
   return (
     <DashboardLayout>
       <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-6 sm:space-y-8 pb-10 sm:pb-14">
+        <Breadcrumbs items={[{ label: 'Analítica Escolar' }]} />
+
         {/* CABECERA: TÍTULO DIRECTO Y ACCIONES SUPERIORES */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -101,8 +105,8 @@ export default function AnalyticsDashboard() {
               onClick={() => setModalPdfOpen(true)}
               className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white shadow-xs hover:shadow-sm transition-all cursor-pointer"
             >
-              <Sparkles className="w-3.5 h-3.5 text-lime-300" />
-              <span>Reporte Mensual PDF</span>
+              <SigiAvatar size="xs" variant="badge" className="w-4 h-4 shrink-0" />
+              <span>Reporte Mensual PDF con Sigi</span>
             </button>
 
             {/* BOTÓN DE ACTUALIZACIÓN */}

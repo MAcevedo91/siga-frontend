@@ -10,6 +10,7 @@ import { getAntecedentesEscalada } from '@/services/estudiantesService'
 import SelectorEstudianteCascada from '@/components/shared/SelectorEstudianteCascada'
 import AlertaEscaladaBanner from '@/components/shared/AlertaEscaladaBanner'
 import { formatDate } from '@/utils/formatDate'
+import Breadcrumbs from '@/components/shared/Breadcrumbs'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import {
   ShieldAlert,
@@ -173,6 +174,13 @@ export default function NuevoProtocoloPage() {
   return (
     <DashboardLayout>
       <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
+        <Breadcrumbs
+          items={[
+            { label: 'Protocolos RICE', href: '/protocolos' },
+            { label: 'Nuevo Protocolo' },
+          ]}
+        />
+
         {/* Encabezado Superior */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 dark:border-gray-800 pb-5">
           <div className="space-y-1">

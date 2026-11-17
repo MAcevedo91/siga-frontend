@@ -35,6 +35,7 @@ import {
   Share2,
 } from 'lucide-react'
 import DashboardLayout from '@/components/layout/DashboardLayout'
+import Breadcrumbs from '@/components/shared/Breadcrumbs'
 import { ROLES_GESTION_CASOS } from '@/constants/roles'
 
 const ESTADOS = ['En Investigación', 'Derivado', 'Cerrado']
@@ -269,6 +270,13 @@ export default function ProtocoloDetallePage() {
   return (
     <DashboardLayout>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        <Breadcrumbs
+          items={[
+            { label: 'Protocolos RICE', href: '/protocolos' },
+            { label: `Expediente #${protocolo.id}` },
+          ]}
+        />
+
         {/* BARRA SUPERIOR DE NAVEGACIÓN Y ACCIONES */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <button

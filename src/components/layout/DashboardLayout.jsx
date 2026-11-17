@@ -11,7 +11,6 @@ import PrivacyShieldOverlay from '@/components/dlp/PrivacyShieldOverlay'
 import { usePrivacyStore } from '@/store/usePrivacyStore'
 import {
   Menu,
-  Sparkles,
   Eye,
   EyeOff,
 } from 'lucide-react'
@@ -19,7 +18,7 @@ import CopilotoRobotChat from '@/components/rice/CopilotoRobotChat'
 import NavbarStudentSearch from '@/components/layout/NavbarStudentSearch'
 import SidebarNav from '@/components/layout/SidebarNav'
 
-const Header = ({ setIsOpen, unreadCount, onNotificationClick, onOpenAsistenteRice }) => {
+const Header = ({ setIsOpen, unreadCount, onNotificationClick }) => {
   const { modoPrivacidad, toggleModoPrivacidad } = usePrivacyStore()
 
   return (
@@ -62,15 +61,6 @@ const Header = ({ setIsOpen, unreadCount, onNotificationClick, onOpenAsistenteRi
           </span>
         </button>
 
-        <button
-          type="button"
-          onClick={onOpenAsistenteRice}
-          title="Consultar Copiloto Normativo RICE"
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 transition-colors shadow-sm"
-        >
-          <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-          <span className="hidden md:inline">Copiloto RICE</span>
-        </button>
         <ThemeToggle />
         <NotificationBadge
           count={unreadCount}
@@ -154,7 +144,6 @@ export default function DashboardLayout({ children }) {
           setIsOpen={setIsSidebarOpen}
           unreadCount={unreadCount}
           onNotificationClick={() => setNotificationCenterOpen(true)}
-          onOpenAsistenteRice={() => setAsistenteRiceOpen(true)}
         />
 
         <main className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto bg-slate-100 dark:bg-slate-950">

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import { useAuth } from "@/store/useAuthStore";
 import { getEstudiantes } from "@/services/estudiantesService";
 import { getIncidenteById } from "@/services/incidentesService";
@@ -136,6 +137,12 @@ export default function MediacionNuevaPage() {
   return (
     <DashboardLayout>
       <div className="mediation-design med-new-backdrop med-screen-creation">
+        <Breadcrumbs
+          items={[
+            { label: 'Mediación Escolar', href: '/mediaciones' },
+            { label: 'Nueva Mediación' },
+          ]}
+        />
         <div className="med-new-dialog">
           <PageTitle
             title="Nueva Mediación Escolar"

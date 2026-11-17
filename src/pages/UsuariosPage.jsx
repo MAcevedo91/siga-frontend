@@ -13,6 +13,7 @@ import RolBadge from '@/components/usuarios/RolBadge'
 import EstadoBadge from '@/components/usuarios/EstadoBadge'
 import { useAuth } from '@/store/useAuthStore'
 import DashboardLayout from '@/components/layout/DashboardLayout'
+import Breadcrumbs from '@/components/shared/Breadcrumbs'
 import {
   Users,
   UserPlus,
@@ -330,6 +331,7 @@ export default function UsuariosPage() {
     <DashboardLayout>
       <div className="p-4 sm:p-6 lg:p-8">
         <div className="mx-auto max-w-7xl">
+          <Breadcrumbs items={[{ label: 'Gestión de Usuarios' }]} />
           <div className="mb-8">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
