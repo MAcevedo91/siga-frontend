@@ -32,7 +32,7 @@ export async function captureSvgAsPng(elementId) {
       image.crossOrigin = 'anonymous'
 
       image.onload = () => {
-        const scale = 2 // Escala 2x para nitidez retina en PDF
+        const scale = 1.5 // Escala 1.5x: nitidez óptima para A4 manteniendo payload ligero
         const canvas = document.createElement('canvas')
         canvas.width = width * scale
         canvas.height = height * scale

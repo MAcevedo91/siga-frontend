@@ -1,27 +1,29 @@
 import api from './api'
 
-export async function getResumen() {
-  const { data } = await api.get('/analytics/resumen')
+const withRefresh = (refresh) => (refresh ? { params: { refresh: 'true' } } : {})
+
+export async function getResumen(refresh = false) {
+  const { data } = await api.get('/analytics/resumen', withRefresh(refresh))
   return data.data
 }
 
-export async function getTendenciaMensual() {
-  const { data } = await api.get('/analytics/tendencia-mensual')
+export async function getTendenciaMensual(refresh = false) {
+  const { data } = await api.get('/analytics/tendencia-mensual', withRefresh(refresh))
   return data.data
 }
 
-export async function getPorGravedad() {
-  const { data } = await api.get('/analytics/por-gravedad')
+export async function getPorGravedad(refresh = false) {
+  const { data } = await api.get('/analytics/por-gravedad', withRefresh(refresh))
   return data.data
 }
 
-export async function getTopEstudiantes() {
-  const { data } = await api.get('/analytics/top-estudiantes')
+export async function getTopEstudiantes(refresh = false) {
+  const { data } = await api.get('/analytics/top-estudiantes', withRefresh(refresh))
   return data.data
 }
 
-export async function getTiempoResolucion() {
-  const { data } = await api.get('/analytics/tiempo-resolucion')
+export async function getTiempoResolucion(refresh = false) {
+  const { data } = await api.get('/analytics/tiempo-resolucion', withRefresh(refresh))
   return data.data
 }
 
@@ -39,13 +41,13 @@ export async function getDetalleCeldaMapaCalor({ cursoId, mes, anio }) {
   return data.data
 }
 
-export async function getUsuariosActividad() {
-  const { data } = await api.get('/analytics/usuarios-actividad')
+export async function getUsuariosActividad(refresh = false) {
+  const { data } = await api.get('/analytics/usuarios-actividad', withRefresh(refresh))
   return data.data
 }
 
-export async function getPorAbordaje() {
-  const { data } = await api.get('/analytics/por-abordaje')
+export async function getPorAbordaje(refresh = false) {
+  const { data } = await api.get('/analytics/por-abordaje', withRefresh(refresh))
   return data.data
 }
 

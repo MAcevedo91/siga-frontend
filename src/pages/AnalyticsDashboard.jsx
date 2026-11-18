@@ -46,13 +46,13 @@ export default function AnalyticsDashboard() {
         abordajeData,
         usuariosData,
       ] = await Promise.all([
-        analyticsService.getResumen().catch(() => null),
-        analyticsService.getTendenciaMensual().catch(() => []),
-        analyticsService.getPorGravedad().catch(() => []),
-        analyticsService.getTopEstudiantes().catch(() => []),
+        analyticsService.getResumen(isManual).catch(() => null),
+        analyticsService.getTendenciaMensual(isManual).catch(() => []),
+        analyticsService.getPorGravedad(isManual).catch(() => []),
+        analyticsService.getTopEstudiantes(isManual).catch(() => []),
         getIncidentesPorCurso().catch(() => []),
-        analyticsService.getPorAbordaje().catch(() => []),
-        analyticsService.getUsuariosActividad().catch(() => ({ usuarios: [], totalIncidentesRegistrados: 0 })),
+        analyticsService.getPorAbordaje(isManual).catch(() => []),
+        analyticsService.getUsuariosActividad(isManual).catch(() => ({ usuarios: [], totalIncidentesRegistrados: 0 })),
       ])
 
       setResumen(resumenData)

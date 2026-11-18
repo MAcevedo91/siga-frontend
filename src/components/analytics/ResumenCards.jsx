@@ -19,6 +19,7 @@ export default function ResumenCards({ data = {}, loading = false }) {
       title: 'Incidentes del Mes',
       value: data.totalIncidentes ?? 0,
       change: data.variacion,
+      subtext: 'Sin registros mes anterior',
       icon: FolderOpen,
       iconBg: 'bg-gradient-to-tr from-purple-600 to-indigo-600 text-white shadow-2xs',
       cardBg:
@@ -27,7 +28,7 @@ export default function ResumenCards({ data = {}, loading = false }) {
     {
       title: 'Casos Abiertos',
       value: data.abiertos ?? 0,
-      subtext: 'En investigación activa',
+      subtext: 'Registrados, en investigación y derivados',
       icon: AlertTriangle,
       iconBg: 'bg-gradient-to-tr from-blue-600 to-cyan-600 text-white shadow-2xs',
       cardBg:
@@ -75,7 +76,7 @@ export default function ResumenCards({ data = {}, loading = false }) {
 
             {/* SUBTEXTO / VARIACIÓN */}
             <div className="text-[11px] opacity-80 font-medium flex items-center gap-1 truncate">
-              {card.change !== undefined ? (
+              {card.change !== undefined && card.change !== null ? (
                 <>
                   {card.change >= 0 ? (
                     <TrendingUp className="w-3.5 h-3.5 text-rose-600 shrink-0" />
