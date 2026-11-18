@@ -25,18 +25,31 @@ const SUGERENCIAS_CONSULTA = [
 ]
 
 /**
- * Procesa segmentos de texto para formatear negritas (**texto**) de forma semántica
+ * Procesa segmentos de texto para formatear negritas (**texto**) y cursivas (*texto*) de forma segura (sin innerHTML)
  */
 const formatearTextoInline = (texto) => {
   if (!texto) return ''
-  const partes = texto.split(/(\*\*[^*]+\*\*)/g)
+  const partes = texto.split(/(\*\*\*[^*\n]+\*\*\*|\*\*[^*\n]+\*\*|\*[^*\n]+\*)/g)
   return partes.map((parte, i) => {
-    if (parte.startsWith('**') && parte.endsWith('**')) {
-      const contenido = parte.slice(2, -2)
+    if (parte.startsWith('***') && parte.endsWith('***') && parte.length > 6) {
+      return (
+        <strong key={i} className="font-bold italic text-slate-900 dark:text-white">
+          {parte.slice(3, -3)}
+        </strong>
+      )
+    }
+    if (parte.startsWith('**') && parte.endsWith('**') && parte.length > 4) {
       return (
         <strong key={i} className="font-bold text-slate-900 dark:text-white">
-          {contenido}
+          {parte.slice(2, -2)}
         </strong>
+      )
+    }
+    if (parte.startsWith('*') && parte.endsWith('*') && parte.length > 2) {
+      return (
+        <em key={i} className="italic text-slate-600 dark:text-slate-300">
+          {parte.slice(1, -1)}
+        </em>
       )
     }
     return parte
